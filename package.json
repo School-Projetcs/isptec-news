@@ -28,7 +28,10 @@
       "@prisma/client",
       "@prisma/engines",
       "esbuild",
-      "prisma"
+      "ffmpeg-static",
+      "ffprobe-static",
+      "prisma",
+      "sharp"
     ]
   }
 }

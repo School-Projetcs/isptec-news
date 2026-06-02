@@ -63,3 +63,25 @@ export type HealthResponse = {
   db: 'connected' | 'disconnected';
   time: string;
 };
+
+/* ------------------------------------------------------------------ *
+ * DTOs de utilizador / autenticação
+ * ------------------------------------------------------------------ */
+export type PublicUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  createdAt?: string;
+};
+
+export type AuthResponse = { token: string; user: PublicUser };
+
+export const updateNewsSchema = z.object({
+  title: z.string().min(3).max(200).optional(),
+  summary: z.string().max(500).optional(),
+  body: z.string().min(1).optional(),
+  categoryId: z.string().nullable().optional(),
+  status: z.enum(['DRAFT', 'PUBLISHED']).optional(),
+});
+export type UpdateNewsInput = z.infer<typeof updateNewsSchema>;

@@ -1,53 +1,68 @@
-import { useEffect, useState } from 'react';
-import {
-  APP_NAME,
-  SHARED_VERSION,
-  type ApiResponse,
-  type HealthResponse,
-} from '@isptec/shared';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import type { ReactNode } from 'react';
+import { Layout } from './components/Layout';
+import { Feed } from './pages/Feed';
+import { NewsDetail } from './pages/NewsDetail';
+import { Live } from './pages/Live';
+import { Login } from './pages/Login';
+import { Register } from './pages/Register';
+import { Editor } from './pages/Editor';
+import { Manage } from './pages/Manage';
+import { MediaLab } from './pages/MediaLab';
+import { Admin } from './pages/Admin';
+import { useAuth } from './lib/auth';
+
+function Protected({ roles, children }: { roles?: string[]; children: ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return <p className="container muted">A carregar…</p>;
+  if (!user) return <Navigate to="/login" replace />;
+  if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
 
 export function App() {
-  const [health, setHealth] = useState<HealthResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch('/api/health')
-      .then((r) => r.json() as Promise<ApiResponse<HealthResponse>>)
-      .then((res) => {
-        if (res.ok) setHealth(res.data);
-        else setError(res.error);
-      })
-      .catch((e) => setError(String(e)));
-  }, []);
-
   return (
-    <main className="container">
-      <header>
-        <h1>{APP_NAME}</h1>
-        <p className="muted">Plataforma de Notícias Multimédia · shared v{SHARED_VERSION}</p>
-      </header>
-
-      <section className="card">
-        <h2>Estado da API</h2>
-        {error && <p className="bad">❌ {error}</p>}
-        {!error && !health && <p className="muted">A contactar a API…</p>}
-        {health && (
-          <ul>
-            <li>App: <strong>{health.app}</strong></li>
-            <li>Status: <strong className="good">{health.status}</strong></li>
-            <li>
-              Base de dados:{' '}
-              <strong className={health.db === 'connected' ? 'good' : 'bad'}>{health.db}</strong>
-            </li>
-            <li>Versão: {health.version}</li>
-            <li>Hora: {new Date(health.time).toLocaleString('pt-PT')}</li>
-          </ul>
-        )}
-      </section>
-
-      <p className="muted">
-        Fundação (Fase 0) ✓ — próximo: autenticação e notícias (Fase 1).
-      </p>
-    </main>
+    <Routes>
+      <Route element={<Layout />}>
+        <Route index element={<Feed />} />
+        <Route path="/noticia/:slug" element={<NewsDetail />} />
+        <Route path="/ao-vivo" element={<Live />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/registar" element={<Register />} />
+        <Route
+          path="/gerir"
+          element={
+            <Protected roles={['EDITOR', 'ADMIN']}>
+              <Manage />
+            </Protected>
+          }
+        />
+        <Route
+          path="/gerir/nova"
+          element={
+            <Protected roles={['EDITOR', 'ADMIN']}>
+              <Editor />
+            </Protected>
+          }
+        />
+        <Route
+          path="/media"
+          element={
+            <Protected roles={['EDITOR', 'ADMIN']}>
+              <MediaLab />
+            </Protected>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <Protected roles={['ADMIN']}>
+              <Admin />
+            </Protected>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Route>
+    </Routes>
   );
 }

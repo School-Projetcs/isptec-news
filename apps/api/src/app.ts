@@ -5,11 +5,20 @@ import { env } from './env';
 import { requestLogger } from './middleware/requestLogger';
 import { errorHandler, notFound } from './middleware/error';
 import { healthRouter } from './routes/health';
+import { authRouter } from './routes/auth';
+import { newsRouter } from './routes/news';
+import { categoriesRouter } from './routes/categories';
+import { usersRouter } from './routes/users';
+import { logsRouter } from './routes/logs';
+import { mediaRouter } from './routes/media';
+import { streamRouter } from './routes/stream';
 
 export function createApp() {
   const app = express();
 
-  app.use(helmet());
+  // crossOrigin: cross-origin permite que os clientes (Web/Mobile noutra origem)
+  // carreguem media/streaming servidos pela API.
+  app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.use(
     cors({
       origin: env.CORS_ORIGIN === '*' ? true : env.CORS_ORIGIN.split(',').map((o) => o.trim()),
@@ -22,8 +31,13 @@ export function createApp() {
     res.json({ ok: true, data: { name: 'ISPTEC News API', health: '/health' } });
   });
   app.use('/health', healthRouter);
-
-  // Próximas fases: /auth, /news, /media, /stream, /users, /logs
+  app.use('/auth', authRouter);
+  app.use('/news', newsRouter);
+  app.use('/categories', categoriesRouter);
+  app.use('/users', usersRouter);
+  app.use('/logs', logsRouter);
+  app.use('/media', mediaRouter);
+  app.use('/stream', streamRouter);
 
   app.use(notFound);
   app.use(errorHandler);

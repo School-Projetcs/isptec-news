@@ -1,0 +1,34 @@
+{
+  "name": "isptec-news",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ISPTEC News — Plataforma de Notícias Multimédia (Multimédia 2026, Grupo 26)",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @isptec/api --filter @isptec/web dev",
+    "dev:api": "pnpm --filter @isptec/api dev",
+    "dev:web": "pnpm --filter @isptec/web dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f db",
+    "db:generate": "pnpm --filter @isptec/api db:generate",
+    "db:migrate": "pnpm --filter @isptec/api db:migrate",
+    "db:seed": "pnpm --filter @isptec/api db:seed",
+    "db:studio": "pnpm --filter @isptec/api db:studio"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "prisma"
+    ]
+  }
+}

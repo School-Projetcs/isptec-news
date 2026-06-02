@@ -1,0 +1,143 @@
+// ISPTEC News — modelo de dados
+// Docs: docs/00-plano-mestre.md (secção 9)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  READER
+}
+
+enum NewsStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum MediaType {
+  IMAGE
+  AUDIO
+  VIDEO
+}
+
+enum MediaStatus {
+  UPLOADED
+  PROCESSING
+  READY
+  ERROR
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         Role      @default(READER)
+  news         News[]
+  media        Media[]
+  comments     Comment[]
+  logs         Log[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Category {
+  id   String @id @default(cuid())
+  name String
+  slug String @unique
+  news News[]
+}
+
+model News {
+  id           String     @id @default(cuid())
+  title        String
+  slug         String     @unique
+  summary      String     @default("")
+  body         String
+  status       NewsStatus @default(DRAFT)
+  viewCount    Int        @default(0)
+  author       User       @relation(fields: [authorId], references: [id])
+  authorId     String
+  category     Category?  @relation(fields: [categoryId], references: [id])
+  categoryId   String?
+  cover        Media?     @relation("NewsCover", fields: [coverMediaId], references: [id])
+  coverMediaId String?    @unique
+  media        Media[]    @relation("NewsMedia")
+  comments     Comment[]
+  publishedAt  DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+model Media {
+  id           String         @id @default(cuid())
+  type         MediaType
+  originalName String
+  originalPath String
+  originalSize Int
+  mimeType     String
+  status       MediaStatus    @default(UPLOADED)
+  durationMs   Int?
+  width        Int?
+  height       Int?
+  owner        User           @relation(fields: [ownerId], references: [id])
+  ownerId      String
+  news         News?          @relation("NewsMedia", fields: [newsId], references: [id])
+  newsId       String?
+  coverOf      News?          @relation("NewsCover")
+  variants     MediaVariant[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+// Cada variante = uma versão processada/comprimida do media original.
+// Materializa o RELATÓRIO COMPARATIVO de compressão exigido pelo professor.
+model MediaVariant {
+  id               String   @id @default(cuid())
+  media            Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  mediaId          String
+  label            String // ex: "webp-q80", "h264-720p", "mp3-128k", "huffman-own"
+  format           String // ex: "webp", "mp4", "mp3"
+  codec            String? // ex: "h264", "h265", "vp9", "aac"
+  path             String
+  size             Int
+  compressionRatio Float    @default(0) // tamanho original / tamanho comprimido
+  processingMs     Int      @default(0)
+  qualityScore     Float? // ex: PSNR (imagem)
+  width            Int?
+  height           Int?
+  bitrateKbps      Int?
+  createdAt        DateTime @default(now())
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  body      String
+  news      News     @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  newsId    String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+}
+
+// Registo de logs (requisito obrigatório do servidor).
+model Log {
+  id         String   @id @default(cuid())
+  level      String   @default("info")
+  action     String
+  user       User?    @relation(fields: [userId], references: [id])
+  userId     String?
+  ip         String?
+  method     String?
+  path       String?
+  statusCode Int?
+  message    String?
+  createdAt  DateTime @default(now())
+}

@@ -1,6 +1,6 @@
 # TEST_PLAN — ISPTEC News
 
-> Guia para um avaliador validar o projeto do início ao fim. Atualizado: **2026-06-06**.
+> Guia para um avaliador validar o projeto do início ao fim. Atualizado: **2026-06-06** (F7.4/F7.6/F7.8/F7.9 + B8 ✅).
 > Estado de cada fluxo: ✅ a passar hoje · ⏳ depende de feature em desenvolvimento.
 > Login de demonstração: **`admin@isptec.local` / `admin123`** (ADMIN).
 > Outros: `editor@isptec.local` / `editor123` · `leitor@isptec.local` / `reader123`.
@@ -65,7 +65,7 @@ Abrir **http://localhost:5173**.
 
 | Passo | Ação | Resultado esperado | Estado |
 |---|---|---|---|
-| Ver notícia | Abrir do feed | Capa, metadados, corpo, multimédia | ✅ |
+| Ver notícia | Abrir do feed | Capa, **metadados (categoria · autor · data às hora · tempo de leitura · vistas)**, badge "Recente", corpo, multimédia | ✅ |
 | Vídeo (VOD) | Play/seek no player | Reprodução + seek por HTTP Range (206) | ✅ |
 | Offline | "Descarregar" variante | Ficheiro guardado localmente | ✅ |
 
@@ -78,29 +78,33 @@ Abrir **http://localhost:5173**.
 | Ver | Abrir "Ao Vivo" | Player HLS com badge ● AO VIVO (autoplay mudo) | ✅ |
 | Encerrar | Parar OBS / "Parar transmissão" | Estado passa a offline (~12 s); player mostra fallback | ✅ |
 
-### 4.6 Modo Dev
+### 4.6 Modo Dev/Demo
 
 | Passo | Ação | Resultado esperado | Estado |
 |---|---|---|---|
-| Ativar | Definições → Developer Mode | Surgem painéis (pipeline FFmpeg, Huffman, HLS, eventos) | ⏳ |
-| Validar | Fazer upload / iniciar stream | Painéis mostram passos em tempo real | ⏳ |
-| Desativar | Desligar o toggle | App normal, sem elementos técnicos | ⏳ |
+| Ativar | Definições → "Modo Programador / Demo" | Painel fixo no canto; indicador verde na nav; SSE liga (ponto "ligado") | ✅ |
+| Compressão | Login editor/admin → Media → upload de imagem | Painel mostra, ao vivo, `Imagem` (variantes WebP/JPEG c/ rácio+PSNR+ms) e `Huffman` (rácio sem perdas) | ✅ |
+| Streaming | "Ao Vivo" → "Iniciar transmissão" | Painel mostra evento `HLS` (transmissão simulada → HLS) em tempo real | ✅ |
+| Filtros | Clicar num separador de canal (ex.: Imagem) | Lista filtra só esse canal; contadores por canal corretos | ✅ |
+| Sem sessão | Ativar sem login | Painel pede sessão de editor/admin (SSE exige JWT) | ✅ |
+| Desativar | Desligar o toggle (ou ✕ no painel) | App normal, sem painel nem elementos técnicos | ✅ |
 
 ### 4.7 Ouvir notícia (TTS — APIs de áudio padrão)
 
 | Passo | Ação | Resultado esperado | Estado |
 |---|---|---|---|
-| Ouvir | No detalhe, clicar "🔊 Ouvir" | O browser lê o título+corpo em voz (pt) via Web Speech API | ⏳ |
-| Pausa/parar | Pausar e parar a leitura | Leitura pausa/retoma/termina; botão reflete o estado | ⏳ |
-| Mobile | Abrir notícia no Expo → "Ouvir" | `expo-speech` lê em voz alta | ⏳ |
+| Ouvir | No detalhe, clicar "🔊 Ouvir" | O browser lê título+resumo+corpo em voz (pt-PT) via Web Speech API | ✅ |
+| Pausa/parar | Pausar/retomar e parar a leitura | Botão alterna Ouvir↔Pausar/Retomar↔Parar; estado reflete `speechSynthesis` | ✅ |
+| Velocidade | Mudar o seletor (0.8/1/1.25/1.5×) | A leitura continua à nova velocidade a partir do ponto atual | ✅ |
+| Mobile | Abrir notícia no Expo → "Ouvir"/"Parar" | `expo-speech` (pt-PT) lê em voz alta | 🟡 (typecheck + bundle Metro 808 mód.; falta dispositivo) |
 
 ### 4.8 Resumo do dia (FAB flutuante)
 
 | Passo | Ação | Resultado esperado | Estado |
 |---|---|---|---|
-| Abrir | Clicar no FAB "Resumo do dia" | Painel com **≥3 notícias mais importantes** (título+resumo+link) | ⏳ |
-| Navegar | Clicar numa do resumo | Abre a notícia correspondente | ⏳ |
-| Ouvir resumo | "Ouvir resumo" | TTS lê os 3 resumos em sequência | ⏳ |
+| Abrir | Clicar no FAB "🗞️ Resumo do dia" (canto inf. esquerdo) | Painel com **top 5 notícias** (ranking vistas+recência via `/news/digest`), numeradas, com resumo, categoria·data·vistas e badge "Recente" | ✅ |
+| Navegar | Clicar numa notícia do resumo | Abre a notícia e fecha o painel | ✅ |
+| Ouvir resumo | "🔊 Ouvir" no painel | TTS lê "Resumo do dia" + os títulos/resumos em sequência (reutiliza F7.8) | ✅ |
 
 ### 4.9 Desktop (Electron)
 
@@ -115,6 +119,22 @@ Abrir **http://localhost:5173**.
 |---|---|---|---|
 | Arranque | `pnpm --filter @isptec/mobile start` + Expo Go | App abre; login; feed | 🟡 (typecheck+bundle ok; falta dispositivo) |
 | VOD | Abrir notícia com vídeo | Player reproduz (HTTP Range) | 🟡 |
+
+### 4.11 Navegação e responsividade (F7.6)
+
+| Passo | Ação | Resultado esperado | Estado |
+|---|---|---|---|
+| Filtrar por categoria | No feed, clicar num chip (ex.: "Tecnologia") | Mostra só as notícias dessa categoria; chip realçado; "Todas" limpa | ✅ |
+| Pesquisa + categoria | Pesquisar e depois filtrar | Os dois filtros combinam-se (`/news?search=&category=`) | ✅ |
+| Mobile-web | Reduzir a janela a ~375 px | Cabeçalho/nav re-organiza-se sem scroll horizontal | ✅ |
+
+### 4.12 Comentários (B8)
+
+| Passo | Ação | Resultado esperado | Estado |
+|---|---|---|---|
+| Comentar | No detalhe (com sessão), escrever e "Comentar" | Comentário aparece no topo da lista; contador atualiza | ✅ |
+| Sem sessão | Abrir detalhe sem login | Em vez do formulário, "Inicia sessão para comentar" | ✅ |
+| Eliminar | Autor (ou admin) clica "Eliminar" | Comentário removido; só o autor/admin vê o botão | ✅ |
 
 ## 5. Critério de aceitação
 

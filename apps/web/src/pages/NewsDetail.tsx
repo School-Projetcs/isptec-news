@@ -3,6 +3,9 @@ import { Link, useParams } from 'react-router-dom';
 import { api, API_BASE } from '../lib/api';
 import type { Media, NewsItem } from '../types';
 import { ErrorState, Loading } from '../components/States';
+import { ListenButton } from '../components/ListenButton';
+import { Comments } from '../components/Comments';
+import { fmtDate, fmtTime, isRecent, metaLine, readingMinutes } from '../lib/format';
 
 export function NewsDetail() {
   const { slug } = useParams();
@@ -30,13 +33,24 @@ export function NewsDetail() {
   }
   if (!news) return <Loading />;
 
+  const when = news.publishedAt ?? news.createdAt;
+  const mins = readingMinutes(news.body);
   return (
     <article className="card">
       <Link to="/" className="muted">← Notícias</Link>
-      <h1>{news.title}</h1>
+      <h1>
+        {isRecent(when) && <span className="tag new">Recente</span>} {news.title}
+      </h1>
       <p className="meta">
-        {news.category?.name ?? 'Geral'} · {news.author?.name} · {news.viewCount} visualizações
+        {metaLine([
+          news.category?.name ?? 'Geral',
+          news.author?.name,
+          when && `${fmtDate(when)} às ${fmtTime(when)}`,
+          mins > 0 && `${mins} min de leitura`,
+          `${news.viewCount} visualizações`,
+        ])}
       </p>
+      <ListenButton text={`${news.title}. ${news.summary ? news.summary + '. ' : ''}${news.body ?? ''}`} />
       {news.cover && (
         <img
           className="preview hero"
@@ -59,6 +73,8 @@ export function NewsDetail() {
           ))}
         </section>
       )}
+
+      <Comments slug={news.slug} />
     </article>
   );
 }

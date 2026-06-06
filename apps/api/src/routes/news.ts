@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { Prisma } from '@prisma/client';
-import { createNewsSchema, updateNewsSchema } from '@isptec/shared';
+import { createNewsSchema, updateNewsSchema, createCommentSchema } from '@isptec/shared';
 import { prisma } from '../lib/prisma';
 import { ah } from '../lib/asyncHandler';
 import { requireAuth, requireRole } from '../middleware/auth';
@@ -34,6 +34,36 @@ newsRouter.get(
       },
     });
     res.json({ ok: true, data: news });
+  }),
+);
+
+// Público — "Resumo do dia": as notícias mais importantes (vistas + recência).
+// Registado ANTES de `/:slug` para não ser capturado como slug.
+newsRouter.get(
+  '/digest',
+  ah(async (_req, res) => {
+    const published = await prisma.news.findMany({
+      where: { status: 'PUBLISHED' },
+      orderBy: { publishedAt: 'desc' },
+      take: 40,
+      include: {
+        author: { select: { name: true } },
+        category: true,
+        cover: { include: { variants: true } },
+      },
+    });
+    const now = Date.now();
+    const scored = published
+      .map((n) => {
+        const when = (n.publishedAt ?? n.createdAt).getTime();
+        const ageHours = Math.max(0, (now - when) / 3_600_000);
+        // Recência com decaimento exponencial (~meia-vida 33 h); soma-se às vistas.
+        const recencyBoost = Math.round(200 * Math.exp(-ageHours / 48));
+        return { ...n, score: n.viewCount + recencyBoost };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+    res.json({ ok: true, data: scored });
   }),
 );
 
@@ -89,6 +119,46 @@ newsRouter.get(
     }
     await prisma.news.update({ where: { id: news.id }, data: { viewCount: { increment: 1 } } });
     res.json({ ok: true, data: { ...news, viewCount: news.viewCount + 1 } });
+  }),
+);
+
+// ── Comentários (por notícia, via slug) ─────────────────────────────────────
+
+/** Localiza uma notícia publicada por slug; devolve o id ou null. */
+async function publishedNewsIdBySlug(slug: string): Promise<string | null> {
+  const n = await prisma.news.findUnique({ where: { slug }, select: { id: true, status: true } });
+  return n && n.status === 'PUBLISHED' ? n.id : null;
+}
+
+// Público — lista comentários de uma notícia (mais recentes primeiro)
+newsRouter.get(
+  '/:slug/comments',
+  ah(async (req, res) => {
+    const newsId = await publishedNewsIdBySlug(req.params.slug);
+    if (!newsId) return res.status(404).json({ ok: false, error: 'Notícia não encontrada' });
+    const comments = await prisma.comment.findMany({
+      where: { newsId },
+      orderBy: { createdAt: 'desc' },
+      include: { user: { select: { id: true, name: true } } },
+    });
+    res.json({ ok: true, data: comments });
+  }),
+);
+
+// Autenticado — comentar (qualquer utilizador com sessão)
+newsRouter.post(
+  '/:slug/comments',
+  requireAuth,
+  validateBody(createCommentSchema),
+  ah(async (req, res) => {
+    const newsId = await publishedNewsIdBySlug(req.params.slug);
+    if (!newsId) return res.status(404).json({ ok: false, error: 'Notícia não encontrada' });
+    const comment = await prisma.comment.create({
+      data: { body: req.body.body, newsId, userId: req.user!.id },
+      include: { user: { select: { id: true, name: true } } },
+    });
+    await writeLog({ action: 'comment.create', userId: req.user!.id, message: newsId });
+    res.status(201).json({ ok: true, data: comment });
   }),
 );
 

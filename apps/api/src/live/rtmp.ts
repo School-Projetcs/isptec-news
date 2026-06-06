@@ -5,6 +5,7 @@
 import NodeMediaServer from 'node-media-server';
 import { startRtmpHls, stopRtmpHls } from './hls';
 import { logger } from '../lib/logger';
+import { emitDev } from '../lib/devbus';
 
 let started = false;
 
@@ -28,6 +29,7 @@ export function startRtmpServer() {
       const key = streamKey(session.streamPath);
       if (key) {
         logger.info(`RTMP publish recebido: ${session.streamPath} → HLS`);
+        emitDev('rtmp', 'rtmp.publish', `Publicação RTMP recebida em ${session.streamPath}`, { key, streamPath: session.streamPath });
         startRtmpHls(key);
       }
     });
@@ -36,6 +38,7 @@ export function startRtmpServer() {
       const key = streamKey(session.streamPath);
       if (key) {
         logger.info(`RTMP publish terminado: ${session.streamPath}`);
+        emitDev('rtmp', 'rtmp.done', `Publicação RTMP terminada em ${session.streamPath}`, { key, streamPath: session.streamPath });
         stopRtmpHls(key);
       }
     });

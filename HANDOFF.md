@@ -67,8 +67,51 @@ multimédia (capa + galeria imagem/áudio/vídeo, comprimidos no upload); `GET /
 `PUT /news/:id` com `coverMediaId`. Ficheiros: `apps/web/src/pages/Editor.tsx`, `Manage.tsx`,
 `apps/api/src/routes/news.ts`, `packages/shared/src/index.ts`.
 
-A seguir por impacto: **F7.3 metadados editoriais (data/hora/tempo de leitura)** → F7.4 Modo Dev →
-F7.5 redesign → F7.6 UX → F7.7 TEST_PLAN/conformidade → F7.8 TTS → F7.9 "Resumo do dia". Backlog em `TASKS.md`.
+**F7.3 metadados editoriais ✅ feito** — data+hora, autor, categoria, tempo de leitura e badge
+"Recente" (<48h) no feed e detalhe; util `apps/web/src/lib/format.ts`.
+
+**F7.4 Modo Dev/Demo ✅ feito e verificado** — toggle em Definições (`/definicoes`, persiste no
+localStorage via `lib/devmode.tsx`). Painel fixo (`components/DevPanel.tsx`) liga-se por **SSE**
+(`GET /stream/dev/events`, JWT em `?token=`, EDITOR/ADMIN) e mostra em tempo real, por canais
+coloridos/filtráveis, o pipeline: **compressão** imagem/áudio/vídeo (rácio+PSNR+ms), **Huffman**
+próprio, **HLS**, **RTMP** e **sistema**. Emissão por barramento em memória `apps/api/src/lib/devbus.ts`
+(`emitDev`/`subscribeDev` + buffer p/ backfill), instrumentado em `media-engine/process.ts`,
+`live/{hls,rtmp}.ts` e `lib/logService.ts` (espelha writeLog). Tipo `DevEvent` em `packages/shared`.
+**Verificado no browser:** upload de imagem → eventos Imagem×4 + Huffman; transmissão simulada →
+evento HLS ao vivo; filtros por canal e contadores corretos; SSE exige sessão (estado "sem sessão").
+
+**F7.8 Ouvir notícia (TTS) ✅ feito** — leitura em voz alta com APIs de áudio padrão. **Web/Desktop:**
+`apps/web/src/lib/tts.ts` (`useTts` sobre `speechSynthesis`, voz pt-PT, texto dividido em frases numa
+fila de utterances → pausa fiável e sem corte ~15 s do Chrome) + `components/ListenButton.tsx`
+(Ouvir/Pausar/Retomar/Parar + velocidade), ligado em `pages/NewsDetail.tsx`. **Mobile:** `expo-speech@13.0.1`
+(SDK 52) + `apps/mobile/src/components/ListenButton.tsx` (Ouvir/Parar — pause/resume é só iOS), ligado em
+`screens/NewsDetailScreen.tsx`. **Verificado:** Web no browser (Ouvir→Pausar→Retomar→Parar, 6 vozes);
+Mobile typecheck + bundle Metro (808 módulos). Reutilizável no "Resumo do dia" (F7.9).
+
+**F7.9 "Resumo do dia" ✅ feito** — FAB (canto inf. esquerdo) abre painel com o **top 5** por
+**vistas + recência** (decaimento exp.), via `GET /news/digest` (público, em `routes/news.ts` **antes
+de `/:slug`**). Itens numerados (resumo, categoria·data·vistas, badge "Recente", link que fecha o painel)
++ botão **"Ouvir"** que reutiliza a TTS sobre os resumos. UI em `apps/web/src/components/DailyDigest.tsx`
+(montado no `Layout`, ao lado do DevPanel). **Verificado no browser:** 5 itens ranqueados, ouvir resumo
+→ `speaking`, navegação fecha o painel.
+
+**F7.6 Auditoria de UX ✅ feito** — auditados os fluxos (Editor↔Media e editar já OK desde F7.2).
+Correções: (1) **filtro de categorias** no feed (`apps/web/src/pages/Feed.tsx`) com chips Todas+categorias,
+combinável com a pesquisa — expõe `GET /news?category=slug` que a API já suportava; (2) **cabeçalho/nav
+responsivo** (`styles.css`: `.nav`/`.navlinks` flex-wrap + media query ≤640px) — sem overflow horizontal
+a 375px; empty-state do feed clarificado. **Verificado no browser** (Tecnologia: 7→2 cards; nav a 375px OK).
+
+**F7.7 docs/conformidade ✅ feito** — `TEST_PLAN.md` atualizado (4.1–4.11) e
+[`docs/05-auditoria-conformidade.md`](docs/05-auditoria-conformidade.md) **reescrito** para a Fase 7:
+todos os auto-fail ✅, requisitos de produto ✅ (exceto redesign), **mapa de prontidão por critério/peso**
+de avaliação e lacunas remanescentes (só opcionais/manuais).
+
+**Toda a Fase 7 sem bloqueio está concluída.** Resta apenas o **F7.5 redesign single-page**, que
+**aguarda aprovação da proposta** ([`docs/03-proposta-redesign.md`](docs/03-proposta-redesign.md)).
+**B8 comentários ✅ feito** — `GET/POST /news/:slug/comments` (POST autenticado) + `DELETE /comments/:id`
+(autor/admin); `routes/comments.ts` montado em `/comments`; UI `apps/web/src/components/Comments.tsx` no
+detalhe. **Verificado no browser** (criar→aparece→eliminar). Pendentes só manuais: VERIF-M (Mobile em
+dispositivo), F4.4 (empacotar Desktop), F6.2 (vídeo de demo). Backlog em `TASKS.md`.
 
 ## Arranque em 30 s
 

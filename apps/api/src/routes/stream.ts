@@ -6,8 +6,53 @@ import { ah } from '../lib/asyncHandler';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { livePath } from '../media-engine/storage';
 import { startSimulated, stopSimulated, liveStatus } from '../live/hls';
+import { verifyToken } from '../lib/jwt';
+import { recentDevEvents, subscribeDev } from '../lib/devbus';
 
 export const streamRouter = Router();
+
+// ── Modo Dev/Demo — eventos do pipeline em tempo real (SSE) ─────────────────────
+
+/**
+ * Stream SSE dos eventos internos (compressão, Huffman, HLS, RTMP, sistema) para o
+ * painel de Modo Dev. EventSource não envia cabeçalhos, por isso o token JWT pode vir
+ * em `?token=` (ou no Authorization). Exige EDITOR/ADMIN — é informação de bastidores.
+ */
+streamRouter.get('/dev/events', (req, res) => {
+  const header = req.headers.authorization;
+  const token =
+    (typeof req.query.token === 'string' && req.query.token) ||
+    (header?.startsWith('Bearer ') ? header.slice(7) : '');
+  try {
+    const payload = verifyToken(token);
+    if (payload.role !== 'EDITOR' && payload.role !== 'ADMIN') {
+      return res.status(403).json({ ok: false, error: 'Sem permissão para o Modo Dev' });
+    }
+  } catch {
+    return res.status(401).json({ ok: false, error: 'Token inválido ou em falta' });
+  }
+
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no', // evita buffering em proxies (nginx/vite)
+  });
+  res.flushHeaders?.();
+
+  const send = (data: unknown) => res.write(`data: ${JSON.stringify(data)}\n\n`);
+
+  // Backfill: histórico recente para o painel não abrir vazio.
+  for (const ev of recentDevEvents()) send(ev);
+
+  const unsubscribe = subscribeDev(send);
+  const ping = setInterval(() => res.write(': ping\n\n'), 15_000);
+
+  req.on('close', () => {
+    clearInterval(ping);
+    unsubscribe();
+  });
+});
 
 // ── Streaming ao vivo por HLS (RTMP real ou transmissão simulada) ──────────────
 

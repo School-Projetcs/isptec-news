@@ -77,6 +77,36 @@ export type PublicUser = {
 
 export type AuthResponse = { token: string; user: PublicUser };
 
+/* ------------------------------------------------------------------ *
+ * Modo Dev/Demo — eventos em tempo real do pipeline (compressão/streaming)
+ * Partilhados entre a API (emissor/SSE) e a Web (painel de observação).
+ * ------------------------------------------------------------------ */
+export const DevChannel = {
+  IMAGE: 'image',
+  AUDIO: 'audio',
+  VIDEO: 'video',
+  HUFFMAN: 'huffman',
+  HLS: 'hls',
+  RTMP: 'rtmp',
+  SYSTEM: 'system',
+} as const;
+export type DevChannel = (typeof DevChannel)[keyof typeof DevChannel];
+
+/** Evento observável do pipeline, transmitido por SSE para o painel de Modo Dev. */
+export type DevEvent = {
+  id: number;
+  ts: number; // epoch ms
+  channel: DevChannel;
+  action: string; // ex.: "image.variant", "huffman.encode", "hls.start"
+  message: string; // descrição legível (pt)
+  data?: Record<string, unknown>;
+};
+
+export const createCommentSchema = z.object({
+  body: z.string().min(1).max(1000),
+});
+export type CreateCommentInput = z.infer<typeof createCommentSchema>;
+
 export const updateNewsSchema = z.object({
   title: z.string().min(3).max(200).optional(),
   summary: z.string().max(500).optional(),

@@ -6,6 +6,7 @@ import { api } from '../lib/api';
 import { theme } from '../lib/theme';
 import type { NewsItem } from '../lib/types';
 import { MediaPlayer } from '../components/MediaPlayer';
+import { ListenButton } from '../components/ListenButton';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'NewsDetail'>;
 
@@ -37,6 +38,7 @@ export function NewsDetailScreen({ route }: Props) {
       <Text style={styles.meta}>
         {news.author?.name ?? '—'} · {news.viewCount} visualizações
       </Text>
+      <ListenButton text={`${news.title}. ${news.summary ? news.summary + '. ' : ''}${news.body ?? ''}`} />
       {!!news.summary && <Text style={styles.lead}>{news.summary}</Text>}
 
       {news.body?.split('\n').map((p, i) => (

@@ -6,7 +6,8 @@
 
 ## Progresso global
 
-Fases 0–4 ✅ (3 auto-fail cobertos) · Fase 5 ✅ · Fase 6 🔵 · **Fase 7 (feedback de produto) 🔵 a arrancar**.
+Fases 0–4 ✅ (3 auto-fail cobertos) · Fase 5 ✅ · Fase 6 🔵 · **Fase 7 quase ✅** (F7.1–F7.4, F7.6–F7.9 ✅;
+**só falta F7.5 redesign — aguarda aprovação da proposta**). Bónus B8 comentários ✅. Manuais: VERIF-M, F4.4, F6.2.
 
 ---
 
@@ -27,24 +28,48 @@ Fases 0–4 ✅ (3 auto-fail cobertos) · Fase 5 ✅ · Fase 6 🔵 · **Fase 7 
       ecrã de **editar** notícia existente (rota `/gerir/editar/:id` + "Editar" na gestão).
       API nova: `GET /news/manage/:id`; `PUT /news/:id` aceita `coverMediaId`/`status`.
       Suporta as 4 combinações (texto / +imagens / +vídeo / +ambos). E2E testado (criar→anexar→capa).
-- [ ] **F7.3 — Metadados editoriais** — data + hora de publicação, autor, categoria, **tempo de
-      leitura**, **destaque de recentes** em todas as páginas de notícia.
-- [ ] **F7.4 — Modo Dev/Demo** — toggle (Definições → Developer Mode); painéis em tempo real:
-      pipeline FFmpeg, Huffman, conversão de vídeo, geração de HLS, eventos do sistema. Off = app normal.
+- [x] **F7.3 — Metadados editoriais** ✅ **verificado** — data + hora, autor, categoria,
+      **tempo de leitura** e **badge "Recente"** (<48 h) no feed e no detalhe. Util `lib/format.ts`
+      (`fmtDate`/`fmtTime`/`readingMinutes`/`isRecent`).
+- [x] **F7.4 — Modo Dev/Demo** ✅ **verificado** — toggle em Definições → "Modo Programador / Demo"
+      (persiste no localStorage). Painel fixo liga-se por **SSE** (`GET /stream/dev/events`, JWT em
+      query, EDITOR/ADMIN) e mostra, em tempo real e por canais coloridos/filtráveis: **compressão**
+      de imagem/áudio/vídeo (rácio+PSNR+ms), **Huffman** próprio (rácio sem perdas), **HLS**, **RTMP**
+      e **sistema** (writeLog espelhado). Off = app normal. Barramento em memória `lib/devbus.ts`
+      (emitDev/subscribeDev + buffer p/ backfill). E2E verificado no browser (upload imagem → eventos
+      Imagem×4 + Huffman; stream → evento HLS; filtros + contadores OK). Ficheiros: `apps/api/src/lib/devbus.ts`,
+      `media-engine/process.ts`, `live/{hls,rtmp}.ts`, `lib/logService.ts`, `routes/stream.ts`;
+      `apps/web/src/lib/devmode.tsx`, `pages/Settings.tsx`, `components/DevPanel.tsx`; `packages/shared` (DevEvent).
 - [ ] **F7.5 — Redesign single-page (Euronews)** 🟡 *requer aprovação da proposta* — tema claro
       elegante + `ThemeToggle`; **HeroLive** (autoplay) + widgets **Tempo** (Open-Meteo) e **Mercados**;
       **FeaturedGrid** bento; **VideoCard** com autoplay in-card; detalhe repaginado.
-- [ ] **F7.6 — Auditoria de UX** — corrigir fluxos mortos (Editor↔Media, falta de editar),
-      consistência visual, navegação.
-- [ ] **F7.7 — TEST_PLAN + conformidade** — manter [`TEST_PLAN.md`](TEST_PLAN.md) atualizado à
-      medida que as features aterram; rever [`docs/05-auditoria-conformidade.md`](docs/05-auditoria-conformidade.md).
-- [ ] **F7.8 — Ouvir notícia (TTS)** — leitura em voz alta com **APIs de áudio padrão**:
-      Web Speech API (`speechSynthesis`) na Web/Desktop e `expo-speech` no Mobile. Botão "🔊 Ouvir"
-      no detalhe da notícia (e no resumo do dia), voz pt-PT, controlos play/pausa/parar + velocidade.
-- [ ] **F7.9 — "Resumo do dia" flutuante** — botão **flutuante (FAB)** que abre painel com as
-      **≥3 notícias mais importantes do dia** (ranking por vistas + recência), cada uma com o seu
-      resumo e link; botão "ouvir resumo" reutiliza a TTS (F7.8). Endpoint `GET /news/digest`.
-- [ ] **B8 — Comentários** (opcional) — `Comment` existe no schema; falta rotas/UI.
+- [x] **F7.6 — Auditoria de UX** ✅ **verificado** — auditados os fluxos (Editor↔Media e editar já
+      OK desde F7.2). Correções concretas: (1) **filtro de categorias** no feed (chips Todas+categorias,
+      combina com pesquisa) — expõe a capacidade já existente da API `GET /news?category=slug`; (2)
+      **cabeçalho/nav responsivo** (flex-wrap + media query ≤640px) — deixa de transbordar em mobile-web
+      (375px sem scroll horizontal); empty-state do feed clarificado para filtros. **Verificado no
+      browser** (Tecnologia: 7→2 cards; nav a 375px sem overflow). Ficheiros: `apps/web/src/pages/Feed.tsx`,
+      `apps/web/src/styles.css`.
+- [x] **F7.7 — TEST_PLAN + conformidade** ✅ — [`TEST_PLAN.md`](TEST_PLAN.md) atualizado a cada feature
+      (secções 4.1–4.11); [`docs/05-auditoria-conformidade.md`](docs/05-auditoria-conformidade.md)
+      **reescrito** para refletir a Fase 7 (todos os auto-fail ✅; req. de produto ✅ exceto redesign)
+      + novo **mapa de prontidão por critério de avaliação** (pesos) e lacunas remanescentes.
+- [x] **F7.8 — Ouvir notícia (TTS)** ✅ **verificado (Web)** — leitura em voz alta com **APIs de áudio
+      padrão**: Web Speech API (`speechSynthesis`) na Web/Desktop (`lib/tts.ts` + `components/ListenButton.tsx`)
+      e `expo-speech` no Mobile (`apps/mobile/src/components/ListenButton.tsx`). Botão "🔊 Ouvir" no detalhe,
+      voz pt-PT, controlos Ouvir/Pausar/Retomar/Parar + velocidade (0.8–1.5×). Web divide o texto em frases
+      (fila de utterances) para pausa fiável e evitar o corte ~15 s do Chrome. **Verificado no browser**
+      (Ouvir→Pausar→Retomar→Parar, 6 vozes, `speaking` true); Mobile: typecheck + bundle Metro (808 mód.).
+      Reutilizável no resumo do dia (F7.9).
+- [x] **F7.9 — "Resumo do dia" flutuante** ✅ **verificado** — **FAB** (canto inf. esquerdo) abre painel
+      com o **top 5** notícias por **vistas + recência** (decaimento exp.), via `GET /news/digest`
+      (público, registado antes de `/:slug`). Itens numerados com resumo, categoria·data·vistas, badge
+      "Recente" e link (fecha o painel ao navegar); botão **"Ouvir"** reutiliza a TTS (F7.8) sobre os
+      resumos. **Verificado no browser** (5 itens ranqueados; ouvir resumo → `speaking`; navegação fecha
+      painel). Ficheiros: `apps/api/src/routes/news.ts`, `apps/web/src/components/DailyDigest.tsx`, `Layout.tsx`.
+- [x] **B8 — Comentários** ✅ **verificado** — `GET/POST /news/:slug/comments` (POST autenticado) +
+      `DELETE /comments/:id` (autor/admin); UI no detalhe (`components/Comments.tsx`): lista, formulário
+      para quem tem sessão, eliminar próprio (ou admin). **Verificado no browser** (criar→aparece→eliminar).
 
 ---
 
@@ -79,7 +104,7 @@ Fases 0–4 ✅ (3 auto-fail cobertos) · Fase 5 ✅ · Fase 6 🔵 · **Fase 7 
       vistas variadas, ordem determinística (publishedAt escalonado); 5 capas + galeria de 3 imagens
       + áudio + vídeo, tudo processado pelo pipeline real. Seed declarativo (idempotente: `update`
       autoritário converge sempre para o estado de demo; media incremental por `originalName`).
-- [ ] **Comentários** — Modelo `Comment` existe no schema mas não tem rotas/UI.
+- [x] **Comentários** ✅ — rotas (`/news/:slug/comments`, `/comments/:id`) + UI no detalhe (ver B8).
 - [ ] **Deploy** — Produção bónus (Render/Fly + PostgreSQL gerido).
 
 ---

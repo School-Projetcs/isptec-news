@@ -13,12 +13,12 @@ entregáveis/documentação de defesa (Fase 6).
 
 ## Fase atual
 
-**Fase 5 ✅ · Fase 6 quase ✅ · Fase 7 (feedback de produto) 🔵 a arrancar.** Segurança ✅; F5.3 ✅
+**Fase 5 ✅ · Fase 6 quase ✅ · Fase 7 (feedback de produto) 🔵 em curso.** Segurança ✅; F5.3 ✅
 polish UX Web; F6.3 ✅ seed rico (verificados no browser). Entregáveis: [relatório](docs/01-relatorio-tecnico.md),
 [manual](docs/02-manual-utilizador.md), [TEST_PLAN](TEST_PLAN.md), [auditoria](docs/05-auditoria-conformidade.md).
-**Novo (feedback):** **F7.1 streaming real RTMP→HLS ✅ feito** (A2 auto-fail agora coberto a sério —
-ingestão RTMP via node-media-server + FFmpeg→HLS + `hls.js`, com transmissão simulada). A seguir:
-CMS multi-formato, metadados editoriais, Modo Dev, redesign single-page (ver "Próximo passo").
+**Fase 7 (quase ✅):** **F7.1 streaming RTMP→HLS ✅ · F7.2 CMS multi-formato ✅ · F7.3 metadados ✅ ·
+F7.4 Modo Dev/Demo ✅ · F7.6 auditoria de UX ✅ · F7.7 docs/conformidade ✅ · F7.8 TTS ✅ · F7.9 "Resumo
+do dia" ✅**. **Só falta o redesign single-page (F7.5), que aguarda aprovação** (ver "Próximo passo").
 
 ## Concluído (Fases 0–3 + parte da 4)
 
@@ -54,9 +54,16 @@ CMS multi-formato, metadados editoriais, Modo Dev, redesign single-page (ver "Pr
 streaming = `node-media-server`+FFmpeg+HLS+`hls.js` (com transmissão simulada); redesign = single-page
 claro elegante (hero-live + widgets, video cards autoplay) — **proposta aguarda aprovação antes da UI**.
 
-**F7.1 streaming real ✅ + F7.2 CMS multi-formato/editar ✅** (ambos verificados). Ordem seguinte:
-**F7.3 metadados editoriais** (data/hora/tempo de leitura) → F7.4 Modo Dev → F7.5 redesign →
-F7.6 UX → F7.7 TEST_PLAN/conformidade → F7.8 ouvir notícia (TTS) → F7.9 "Resumo do dia" flutuante.
+**F7.1 streaming ✅ · F7.2 CMS multi-formato/editar ✅ · F7.3 metadados ✅ · F7.4 Modo Dev/Demo ✅ ·
+F7.6 auditoria de UX ✅ · F7.8 ouvir notícia (TTS) ✅ · F7.9 "Resumo do dia" ✅** (verificados no browser;
+Mobile TTS via expo-speech por typecheck+bundle). O **Modo Dev** transmite por SSE os eventos do pipeline
+(compressão imagem/áudio/vídeo + Huffman, HLS, RTMP, sistema) — prova ao vivo dos auto-fail. O **TTS** lê
+o detalhe em voz pt-PT. O **"Resumo do dia"** (FAB) mostra o top 5 (`/news/digest`) e lê-o em voz alta.
+A **F7.6** acrescentou filtro de categorias no feed (expõe `GET /news?category=`) e tornou o cabeçalho
+responsivo (sem overflow a 375px). A **F7.7** atualizou o TEST_PLAN e reescreveu a auditoria de
+conformidade ([docs/05](docs/05-auditoria-conformidade.md)) com um mapa de prontidão por critério/peso.
+**Toda a Fase 7 sem bloqueio está feita — resta apenas a F7.5 (redesign), que aguarda aprovação.**
+Implementado também o bónus **B8 comentários** (rotas + UI no detalhe, verificado no browser).
 Pendentes anteriores (opcionais): vídeo de demo (F6.2), VERIF-M, empacotar Desktop (F4.4).
 
 > Nota: para obter o seed rico numa BD já populada, basta `pnpm db:seed` — o seed é declarativo

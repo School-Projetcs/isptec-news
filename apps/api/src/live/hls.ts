@@ -13,6 +13,7 @@ import ffmpegPath from 'ffmpeg-static';
 import { prisma } from '../lib/prisma';
 import { LIVE_DIR, livePath, uploadPath } from '../media-engine/storage';
 import { writeLog } from '../lib/logService';
+import { emitDev } from '../lib/devbus';
 
 const FF = ffmpegPath as string;
 
@@ -83,11 +84,13 @@ export async function startSimulated(userId?: string): Promise<ReturnType<typeof
   proc.stderr?.on('data', () => {/* ruído do ffmpeg ignorado; erros fatais saem em 'exit' */});
   proc.on('exit', (code) => {
     if (sim?.proc === proc) sim = null;
+    emitDev('hls', 'hls.simulate.exit', `FFmpeg da transmissão simulada terminou (código ${code ?? 0})`, { key: SIM_KEY, code });
     if (code && code !== 0 && code !== 255) {
       void writeLog({ level: 'warn', action: 'stream.simulate.exit', message: `ffmpeg saiu com código ${code}` });
     }
   });
 
+  emitDev('hls', 'hls.simulate.start', `Transmissão simulada → HLS (fonte: ${source}, segmentos de 2 s)`, { key: SIM_KEY, source });
   void writeLog({ action: 'stream.simulate.start', userId, message: `fonte=${source} key=${SIM_KEY}` });
   return liveStatus();
 }
@@ -97,6 +100,7 @@ export async function stopSimulated(userId?: string): Promise<ReturnType<typeof 
   if (sim) {
     try { sim.proc.kill(); } catch {/* já terminado */}
     sim = null;
+    emitDev('hls', 'hls.simulate.stop', 'Transmissão simulada parada', { key: SIM_KEY });
     void writeLog({ action: 'stream.simulate.stop', userId });
   }
   return liveStatus();
@@ -118,6 +122,7 @@ export function startRtmpHls(key: string) {
   const proc = spawn(FF, args, { stdio: ['ignore', 'ignore', 'pipe'] });
   rtmpProcs.set(key, { proc, startedAt: Date.now() });
   proc.on('exit', () => { rtmpProcs.delete(key); });
+  emitDev('rtmp', 'rtmp.hls.start', `Ingestão RTMP "${key}" → conversão FFmpeg para HLS`, { key });
   void writeLog({ action: 'stream.rtmp.start', message: `key=${key}` });
 }
 
@@ -127,6 +132,7 @@ export function stopRtmpHls(key: string) {
   if (s) {
     try { s.proc.kill(); } catch {/* já terminado */}
     rtmpProcs.delete(key);
+    emitDev('rtmp', 'rtmp.hls.stop', `Conversão RTMP→HLS "${key}" terminada`, { key });
     void writeLog({ action: 'stream.rtmp.stop', message: `key=${key}` });
   }
 }

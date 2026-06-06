@@ -13,6 +13,7 @@ import { usersRouter } from './routes/users';
 import { logsRouter } from './routes/logs';
 import { mediaRouter } from './routes/media';
 import { streamRouter } from './routes/stream';
+import { commentsRouter } from './routes/comments';
 
 export function createApp() {
   const app = express();
@@ -40,6 +41,7 @@ export function createApp() {
   app.use('/logs', logsRouter);
   app.use('/media', mediaRouter);
   app.use('/stream', streamRouter);
+  app.use('/comments', commentsRouter);
 
   app.use(notFound);
   app.use(errorHandler);

@@ -1,5 +1,6 @@
 import { prisma } from './prisma';
 import { logger } from './logger';
+import { emitDev } from './devbus';
 
 export type LogInput = {
   action: string;
@@ -14,6 +15,12 @@ export type LogInput = {
 
 /** Persiste uma ação na tabela Log (requisito: registo de logs). */
 export async function writeLog(opts: LogInput) {
+  // Espelha no Modo Dev (canal "sistema") — não falha o log se ninguém ouvir.
+  emitDev('system', opts.action, opts.message ?? opts.action, {
+    level: opts.level ?? 'info',
+    ...(opts.statusCode != null ? { statusCode: opts.statusCode } : {}),
+    ...(opts.path ? { path: opts.path } : {}),
+  });
   try {
     await prisma.log.create({
       data: {

@@ -6,9 +6,11 @@
 
 ## Estado atual
 
-Monorepo pnpm/TS a correr. **Fases 0–3 concluídas e committadas; Fase 4 em curso.** Compressão
-verificada (selftest passa). **Desktop (Electron) já funcional** (dev + prod via `app://`). URL da
-API agora configurável (`VITE_API_URL`). Falta o **Mobile (Expo)** para fechar o auto-fail #3.
+Monorepo pnpm/TS a correr. **Fases 0–5 concluídas; Fase 6 quase** (committar pendente). Os
+**3 auto-fail** cobertos e verificados: compressão (selftest), streaming (VOD Range + live MJPEG)
+e **3 clientes** (Web + Desktop Electron + Mobile Expo). Segurança com **rate-limiting** + roles.
+**F5.3 (polish UX Web)** e **F6.3 (seed de demo rico)** concluídos e **verificados no browser**.
+Resta apenas o **vídeo de demonstração (F6.2)** — manual.
 
 ## Trabalho concluído
 
@@ -16,33 +18,43 @@ API agora configurável (`VITE_API_URL`). Falta o **Mobile (Expo)** para fechar 
   (image/audio/video + Huffman próprio), relatório de compressão, VOD por HTTP Range,
   download offline, live MJPEG. Prisma schema + migração + seed.
 - **Web** (`apps/web`): feed, detalhe, live, login/registo, gestão, editor, MediaLab, admin.
-  Agora com `API_BASE` configurável (`lib/api.ts`) + `.env.production`.
-- **Desktop** (`apps/desktop`): Electron (`main.cjs`) — modo dev (Vite) e prod (`app://` + SPA
-  fallback). `electron` em `pnpm.onlyBuiltDependencies`. Scripts: `dev:desktop`, `desktop`.
+  `API_BASE` configurável (`lib/api.ts`) + `.env.production`.
+- **Desktop** (`apps/desktop`): Electron (`main.cjs`) — dev (Vite) e prod (`app://` + SPA fallback).
+- **Mobile** (`apps/mobile`): Expo/RN + React Navigation — login, feed, detalhe, player VOD
+  (expo-av), upload+relatório (expo-image-picker), offline (expo-file-system). Metro monorepo
+  config + `@babel/runtime` direto (fix pnpm). Verificado: typecheck + bundle Metro.
 - **shared** (`packages/shared`): tipos + schemas zod.
+- **Segurança** (Fase 5): `middleware/rateLimit.ts` — `apiLimiter` global (ignora streaming/health)
+  + `authLimiter` (20/15min) em login/registo. `requireRole` já aplicado em news/users/media.
+- **Polish UX** (F5.3): `apps/web/src/components/States.tsx` (`Loading`/`ErrorState` com retry);
+  Feed/Manage tratam erros; capa no feed (thumbnail) + detalhe (hero); `onError` no live MJPEG.
+- **Seed rico** (F6.3): `apps/api/prisma/seed.ts` — 7 notícias + 1 rascunho, vistas e ordem
+  determinísticas, 5 capas + galeria de 3 imagens + áudio + vídeo (pipeline real). Declarativo e
+  idempotente: `update` autoritário; `ensureMedia(originalName)` incremental.
+- **Entregáveis** (Fase 6): `docs/01-relatorio-tecnico.md` + `docs/02-manual-utilizador.md`;
+  roadmap do `README.md` corrigido + secção de clientes.
 
 ## Trabalho pendente
 
-1. **Fase 4.2** — Mobile (Expo). *(auto-fail #3 — único cliente que falta)*
-2. **Fase 4.4** — empacotar Desktop (electron-builder → instaladores).
-3. **Fase 5** — rate-limit, roleGuard dedicado, polish UX.
-4. **Fase 6** — relatório técnico, manual, vídeo demo.
-5. Atualizar roadmap do `README.md` (está desatualizado).
+1. **F6.2** — vídeo de demonstração 5–10 min (manual; guião na secção 6 do manual).
+2. **VERIF-M** — correr o Mobile em Expo Go/emulador (só foi feito typecheck+bundle, não run).
+3. **Fase 4.4** — empacotar Desktop (electron-builder → instaladores).
+4. Bónus opcionais: HLS (F3+), comentários (rotas/UI), deploy.
 
 ## Problemas conhecidos
 
 - **Porta 3333** (não 3000 — ocupada por outra app local).
-- **Electron postinstall**: se `electron --version` falhar, correr
-  `node node_modules/.pnpm/electron@*/node_modules/electron/install.js` (ou `pnpm rebuild electron`).
-- **README** com roadmap desatualizado.
+- **Mobile**: `localhost` não funciona no telemóvel — usar IP LAN em `EXPO_PUBLIC_API_URL`.
+  Metro+pnpm exige `@babel/runtime` como dep direta (já adicionado) e `metro.config.js` monorepo.
+- **Electron postinstall**: se `electron --version` falhar, correr o `install.js` do electron
+  (ou `pnpm rebuild electron`).
 - **Comment** existe no schema mas sem rotas/UI.
-- Verificação de **role** feita dentro dos handlers, não num middleware dedicado.
-- **Empacotamento Desktop** (instaladores) ainda não configurado.
+- Ownership do DELETE de notícias é validada no handler (autor-ou-admin) — correto.
 
 ## Próxima ação recomendada
 
-`continue` → iniciar **F4.2 (Mobile Expo)**: scaffold `apps/mobile`, reutilizar `@isptec/shared`,
-implementar login→feed→detalhe→player(VOD)→upload→offline apontando à API via `API_BASE_URL`.
+Núcleo completo e verificado. Resta o **vídeo de demonstração (F6.2)** — manual, guião na secção 6
+do manual. Opcionais: VERIF-M (Mobile em dispositivo), F4.4 (empacotar Desktop), HLS, comentários, deploy.
 
 ## Arranque em 30 s
 

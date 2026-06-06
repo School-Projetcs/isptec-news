@@ -53,7 +53,14 @@ isptec-news/
 │  ├─ desktop/                     # ✅ Electron — embrulha a Web (dev: Vite · prod: app://)
 │  │  ├─ main.cjs                  #   processo principal (modos dev/prod + protocolo app://)
 │  │  └─ package.json              #   scripts: dev, start
-│  └─ mobile/                      # ⏳ Fase 4.2 — Expo (só README placeholder)
+│  └─ mobile/                      # ✅ Expo/React Native — cliente Android/iOS
+│     ├─ app.json / metro.config.js#   config Expo + Metro (monorepo-aware)
+│     ├─ index.ts                  #   registerRootComponent
+│     └─ src/
+│        ├─ App.tsx                #   navegação (React Navigation) + gate de auth
+│        ├─ lib/                   #   api, auth, types, theme
+│        ├─ components/MediaPlayer #   reprodução VOD (expo-av) + offline (expo-file-system)
+│        └─ screens/               #   Login, Feed, NewsDetail, Upload(+relatório)
 │
 ├─ packages/
 │  └─ shared/                      # @isptec/shared — tipos + schemas zod partilhados
@@ -64,7 +71,9 @@ isptec-news/
 │  └─ processed/.gitkeep           # variantes comprimidas
 │
 ├─ docs/
-│  └─ 00-plano-mestre.md           # PLANO COMPLETO (referência de avaliação)
+│  ├─ 00-plano-mestre.md           # PLANO COMPLETO (referência de avaliação)
+│  ├─ 01-relatorio-tecnico.md      # relatório técnico (arquitetura, compressão, métricas)
+│  └─ 02-manual-utilizador.md      # manual: instalar, executar, demonstrar, troubleshooting
 │
 ├─ docker-compose.yml             # PostgreSQL 16 + Adminer
 ├─ pnpm-workspace.yaml            # workspaces: apps/*, packages/*

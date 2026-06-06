@@ -4,9 +4,13 @@ import { API_BASE } from '../lib/api';
 export function Live() {
   const [on, setOn] = useState(true);
   const [streamId, setStreamId] = useState(() => Date.now());
+  const [failed, setFailed] = useState(false);
 
   function toggle() {
-    if (!on) setStreamId(Date.now()); // nova ligação ao reiniciar
+    if (!on) {
+      setStreamId(Date.now()); // nova ligação ao reiniciar
+      setFailed(false);
+    }
     setOn((v) => !v);
   }
 
@@ -23,7 +27,19 @@ export function Live() {
         o servidor gera e envia frames JPEG continuamente.
       </p>
       {on ? (
-        <img className="preview live" src={`${API_BASE}/stream/live?t=${streamId}`} alt="Transmissão ao vivo" />
+        failed ? (
+          <p className="bad">
+            ⚠️ Não foi possível ligar à transmissão. Confirma que a API está a correr e tenta
+            reiniciar.
+          </p>
+        ) : (
+          <img
+            className="preview live"
+            src={`${API_BASE}/stream/live?t=${streamId}`}
+            alt="Transmissão ao vivo"
+            onError={() => setFailed(true)}
+          />
+        )
       ) : (
         <p className="muted">Transmissão parada. Clica em “Iniciar” para ligar.</p>
       )}

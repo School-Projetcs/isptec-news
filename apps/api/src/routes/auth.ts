@@ -5,6 +5,7 @@ import { prisma } from '../lib/prisma';
 import { signToken } from '../lib/jwt';
 import { ah } from '../lib/asyncHandler';
 import { validateBody } from '../middleware/validate';
+import { authLimiter } from '../middleware/rateLimit';
 import { requireAuth } from '../middleware/auth';
 import { writeLog } from '../lib/logService';
 
@@ -21,6 +22,7 @@ const publicUser = (u: DbUser) => ({
 
 authRouter.post(
   '/register',
+  authLimiter,
   validateBody(registerSchema),
   ah(async (req, res) => {
     const { name, email, password } = req.body;
@@ -40,6 +42,7 @@ authRouter.post(
 
 authRouter.post(
   '/login',
+  authLimiter,
   validateBody(loginSchema),
   ah(async (req, res) => {
     const { email, password } = req.body;

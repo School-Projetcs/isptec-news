@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "ISPTEC News",
+    "slug": "isptec-news",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "isptecnews",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0f1320"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "ao.isptec.news"
+    },
+    "android": {
+      "package": "ao.isptec.news",
+      "permissions": ["READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE", "INTERNET"]
+    },
+    "plugins": [
+      "expo-av",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "A app precisa de aceder às suas fotos para enviar multimédia."
+        }
+      ]
+    ]
+  }
+}

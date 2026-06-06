@@ -81,6 +81,14 @@ button.danger { background: #3a1620; border: 1px solid #6b2535; color: #ffb4c0; 
   background: var(--panel); color: var(--text);
 }
 .newscard:hover { border-color: var(--accent); text-decoration: none; }
+.newscard .thumb {
+  width: 100%; aspect-ratio: 16 / 9; object-fit: cover;
+  border-radius: 8px; margin-bottom: 12px; display: block;
+}
+
+/* estados */
+.errorstate { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.preview.hero { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; margin: 16px 0; }
 
 /* tabela */
 .table { width: 100%; border-collapse: collapse; }

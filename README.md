@@ -81,9 +81,21 @@ Serviços locais:
 ## Roadmap
 
 - [x] **Fase 0** — Fundação (monorepo, BD, `/health`, Web base)
-- [ ] **Fase 1** — Autenticação + Notícias
-- [ ] **Fase 2** — Media + Compressão *(auto-fail)*
-- [ ] **Fase 3** — Streaming *(auto-fail)*
-- [ ] **Fase 4** — Desktop + Mobile *(cliente multiplataforma)*
-- [ ] **Fase 5** — Segurança + polish
-- [ ] **Fase 6** — Entregáveis (relatório, manual, vídeo)
+- [x] **Fase 1** — Autenticação + Notícias
+- [x] **Fase 2** — Media + Compressão *(auto-fail)*
+- [x] **Fase 3** — Streaming *(auto-fail)*
+- [x] **Fase 4** — Desktop (Electron) + Mobile (Expo) *(cliente multiplataforma)*
+- [~] **Fase 5** — Segurança (rate-limit ✅, roles ✅) + polish de UX
+- [~] **Fase 6** — Entregáveis ([relatório técnico](docs/01-relatorio-tecnico.md),
+  [manual](docs/02-manual-utilizador.md) ✅; vídeo pendente)
+
+> Estado operacional detalhado em [`CURRENT_STATE.md`](CURRENT_STATE.md) ·
+> arquitetura em [`ARCHITECTURE.md`](ARCHITECTURE.md).
+
+## Clientes (multiplataforma)
+
+| Cliente | Pasta | Arrancar |
+|---|---|---|
+| Web | `apps/web` | `pnpm dev:web` (http://localhost:5173) |
+| Desktop (Electron) | `apps/desktop` | `pnpm dev:desktop` (dev) · `pnpm desktop` (prod) |
+| Mobile (Expo) | `apps/mobile` | `pnpm --filter @isptec/mobile start` (Expo Go) |

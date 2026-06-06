@@ -1,18 +1,24 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { api } from '../lib/api';
+import { api, API_BASE } from '../lib/api';
 import type { NewsItem } from '../types';
+import { ErrorState, Loading } from '../components/States';
 
 export function Feed() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
   function load(q = '') {
     setLoading(true);
+    setError(null);
+    setQuery(q);
     api
       .get<NewsItem[]>(`/news${q ? `?search=${encodeURIComponent(q)}` : ''}`)
       .then(setNews)
+      .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }
 
@@ -36,13 +42,25 @@ export function Feed() {
       </div>
 
       {loading ? (
-        <p className="muted">A carregar…</p>
+        <Loading />
+      ) : error ? (
+        <ErrorState message={error} onRetry={() => load(query)} />
       ) : news.length === 0 ? (
-        <p className="muted">Sem notícias publicadas.</p>
+        <p className="muted">
+          {query ? `Sem resultados para “${query}”.` : 'Sem notícias publicadas.'}
+        </p>
       ) : (
         <div className="grid">
           {news.map((n) => (
             <Link key={n.id} to={`/noticia/${n.slug}`} className="newscard">
+              {n.cover && (
+                <img
+                  className="thumb"
+                  src={`${API_BASE}/media/${n.cover.id}/raw?variant=webp-q80`}
+                  alt=""
+                  loading="lazy"
+                />
+              )}
               <h3>{n.title}</h3>
               <p className="muted">{n.summary || '—'}</p>
               <p className="meta">

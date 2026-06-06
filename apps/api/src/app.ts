@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { env } from './env';
 import { requestLogger } from './middleware/requestLogger';
+import { apiLimiter } from './middleware/rateLimit';
 import { errorHandler, notFound } from './middleware/error';
 import { healthRouter } from './routes/health';
 import { authRouter } from './routes/auth';
@@ -26,6 +27,7 @@ export function createApp() {
   );
   app.use(express.json({ limit: '2mb' }));
   app.use(requestLogger);
+  app.use(apiLimiter);
 
   app.get('/', (_req, res) => {
     res.json({ ok: true, data: { name: 'ISPTEC News API', health: '/health' } });

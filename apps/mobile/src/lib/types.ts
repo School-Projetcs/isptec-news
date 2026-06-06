@@ -1,3 +1,5 @@
+// Tipos de visualização do cliente Mobile. Os enums/roles vêm de @isptec/shared
+// (import type — apagado em runtime, tal como na Web).
 import type { Role } from '@isptec/shared';
 
 export type Category = { id: string; name: string; slug: string };
@@ -35,7 +37,6 @@ export type NewsItem = {
   publishedAt: string | null;
   author?: { name: string };
   category?: Category | null;
-  cover?: Media | null;
   media?: Media[];
 };
 
@@ -61,20 +62,4 @@ export type CompressionReport = {
   variants: ReportVariant[];
 };
 
-export type LogItem = {
-  id: string;
-  action: string;
-  level: string;
-  createdAt: string;
-  message?: string | null;
-  ip?: string | null;
-  user?: { name: string; email: string } | null;
-};
-
-export type UserItem = {
-  id: string;
-  name: string;
-  email: string;
-  role: Role;
-  createdAt: string;
-};
+export type { Role };

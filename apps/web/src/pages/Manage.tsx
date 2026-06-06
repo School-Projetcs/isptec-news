@@ -2,27 +2,42 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import type { NewsItem } from '../types';
+import { ErrorState, Loading } from '../components/States';
 
 export function Manage() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   function load() {
     setLoading(true);
-    api.get<NewsItem[]>('/news/manage/all').then(setNews).finally(() => setLoading(false));
+    setError(null);
+    api
+      .get<NewsItem[]>('/news/manage/all')
+      .then(setNews)
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
   }
   useEffect(() => {
     load();
   }, []);
 
   async function toggle(n: NewsItem) {
-    await api.post(`/news/${n.id}/${n.status === 'PUBLISHED' ? 'unpublish' : 'publish'}`);
-    load();
+    try {
+      await api.post(`/news/${n.id}/${n.status === 'PUBLISHED' ? 'unpublish' : 'publish'}`);
+      load();
+    } catch (e) {
+      setError((e as Error).message);
+    }
   }
   async function remove(n: NewsItem) {
     if (!confirm(`Eliminar "${n.title}"?`)) return;
-    await api.del(`/news/${n.id}`);
-    load();
+    try {
+      await api.del(`/news/${n.id}`);
+      load();
+    } catch (e) {
+      setError((e as Error).message);
+    }
   }
 
   return (
@@ -32,7 +47,11 @@ export function Manage() {
         <Link to="/gerir/nova" className="btn">+ Nova notícia</Link>
       </div>
       {loading ? (
-        <p className="muted">A carregar…</p>
+        <Loading />
+      ) : error ? (
+        <ErrorState message={error} onRetry={load} />
+      ) : news.length === 0 ? (
+        <p className="muted">Ainda não há notícias. Cria a primeira.</p>
       ) : (
         <table className="table">
           <thead>

@@ -31,7 +31,9 @@ serve vários clientes. O "coração" académico é o **media-engine** (compress
          PostgreSQL    /media (FS)   ffmpeg/sharp
           (Prisma)   uploads+processed
 ```
-`*` Desktop = **implementado** (`apps/desktop`, Electron). Mobile = **Fase 4.2 (pendente)**.
+`*` Desktop (`apps/desktop`, Electron) e Mobile (`apps/mobile`, Expo) = **ambos implementados**.
+Os 3 clientes consomem a mesma API REST e leem o URL base de variável de ambiente
+(`VITE_API_URL` na Web/Desktop, `EXPO_PUBLIC_API_URL` no Mobile).
 
 ---
 
@@ -45,7 +47,7 @@ serve vários clientes. O "coração" académico é o **media-engine** (compress
 | **BD** | PostgreSQL 16 (Docker em dev) | ✅ schema + migração + seed |
 | **media-engine** | sharp + fluent-ffmpeg + Huffman próprio | ✅ image/audio/video/huffman |
 | **Desktop** | Electron (embrulha build da Web) | ✅ Fase 4.1 (dev + prod `app://`) |
-| **Mobile** | Expo (React Native) | ⏳ Fase 4.2 |
+| **Mobile** | Expo (React Native) + React Navigation | ✅ Fase 4.2 (typecheck + bundle Metro) |
 
 ---
 
@@ -125,11 +127,17 @@ Definido em [`apps/api/prisma/schema.prisma`](apps/api/prisma/schema.prisma).
 ## 7. Segurança
 
 - **Auth:** JWT (`lib/jwt.ts`) + bcrypt; middleware `requireAuth` (`middleware/auth.ts`).
+- **Permissões:** `requireRole(...roles)` (`middleware/auth.ts`) aplicado por rota em
+  `news`, `users` e `media` (ex.: criar/editar exige EDITOR/ADMIN; users exige ADMIN).
+  A propriedade (autor) é validada no handler do DELETE de notícias.
 - **Validação:** zod (`middleware/validate.ts` + schemas em `@isptec/shared`).
 - **HTTP:** `helmet` (com `crossOriginResourcePolicy: cross-origin` p/ media) + `cors`.
+- **Rate-limit** (`middleware/rateLimit.ts`): `apiLimiter` global (1000/15min, ignora
+  `/health` e streaming `/media/*`, `/stream/*`) + `authLimiter` estrito (20/15min) em
+  `/auth/login` e `/auth/register` (anti força-bruta).
 - **Logs:** `requestLogger` grava na tabela `Log`.
-- ⚠️ **Em falta (Fase 5):** `rate-limit`, roleGuard granular por rota (hoje a verificação de
-  role é feita dentro de cada handler, não num middleware dedicado).
+- ⚠️ **Produção:** definir `app.set('trust proxy', 1)` atrás de proxy/CDN para o rate-limit
+  contar o IP real do cliente.
 
 ---
 

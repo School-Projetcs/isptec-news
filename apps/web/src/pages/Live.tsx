@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_BASE } from '../lib/api';
 
 export function Live() {
   const [on, setOn] = useState(true);
@@ -22,7 +23,7 @@ export function Live() {
         o servidor gera e envia frames JPEG continuamente.
       </p>
       {on ? (
-        <img className="preview live" src={`/api/stream/live?t=${streamId}`} alt="Transmissão ao vivo" />
+        <img className="preview live" src={`${API_BASE}/stream/live?t=${streamId}`} alt="Transmissão ao vivo" />
       ) : (
         <p className="muted">Transmissão parada. Clica em “Iniciar” para ligar.</p>
       )}

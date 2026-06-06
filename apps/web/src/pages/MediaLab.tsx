@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { api, uploadForm } from '../lib/api';
+import { api, uploadForm, API_BASE } from '../lib/api';
 import type { CompressionReport, Media, NewsItem } from '../types';
 
 const fmtBytes = (n: number) =>
@@ -106,7 +106,7 @@ export function MediaLab() {
                 <td>—</td>
                 <td>—</td>
                 <td>
-                  <a href={`/api/media/${media.id}/raw`} target="_blank" rel="noreferrer">abrir</a>
+                  <a href={`${API_BASE}/media/${media.id}/raw`} target="_blank" rel="noreferrer">abrir</a>
                 </td>
               </tr>
               {report.variants.map((v) => (
@@ -121,7 +121,7 @@ export function MediaLab() {
                   <td>{v.qualityScore != null ? `${v.qualityScore} dB` : '—'}</td>
                   <td>{v.processingMs} ms</td>
                   <td>
-                    <a href={`/api/media/${media.id}/download?variant=${v.label}`}>↓</a>
+                    <a href={`${API_BASE}/media/${media.id}/download?variant=${v.label}`}>↓</a>
                   </td>
                 </tr>
               ))}
@@ -141,7 +141,7 @@ export function MediaLab() {
 }
 
 function MediaPreview({ report, mediaId }: { report: CompressionReport; mediaId: string }) {
-  const base = `/api/media/${mediaId}/raw`;
+  const base = `${API_BASE}/media/${mediaId}/raw`;
   if (report.type === 'IMAGE') {
     return (
       <div className="comparerow">

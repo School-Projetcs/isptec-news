@@ -41,11 +41,11 @@ async function testImage() {
       ` ${spec.label.padEnd(11)} ${kb(out.length).padStart(10)}  ratio ${(png.length / out.length).toFixed(2)}x  PSNR ${psnr}  ${ms}ms`,
     );
   }
-  const raw = await sharp(png).removeAlpha().raw().toBuffer();
+  const rawPixels = await sharp(png).removeAlpha().raw().toBuffer();
   const t0 = Date.now();
-  const huff = huffmanEncode(raw);
+  const huff = huffmanEncode(rawPixels);
   const ms = Date.now() - t0;
-  const ok = huffmanDecode(huff.encoded).equals(raw);
+  const ok = huffmanDecode(huff.encoded).equals(rawPixels);
   console.log(
     ` huffman-own  pixels brutos ${kb(raw.length)} -> ${kb(huff.encodedSize)}  ratio ${huff.ratio.toFixed(2)}x  ${ms}ms  round-trip ${ok ? 'OK ✓' : 'FALHOU ✗'}`,
   );

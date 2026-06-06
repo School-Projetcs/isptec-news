@@ -1,0 +1,15 @@
+{
+  "name": "@isptec/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cliente Desktop (Electron) — embrulha a app Web do ISPTEC News",
+  "main": "main.cjs",
+  "scripts": {
+    "dev": "electron . http://localhost:5173",
+    "start": "electron .",
+    "build:web": "pnpm --filter @isptec/web build"
+  },
+  "devDependencies": {
+    "electron": "^33.2.1"
+  }
+}

@@ -1,4 +1,9 @@
-const BASE = '/api';
+// Base do servidor. Em desenvolvimento (Vite) fica "/api" e usa o proxy do vite.config;
+// em produção (Electron/Mobile/publicado) lê VITE_API_URL → os clientes apontam para a
+// API com uma única variável de ambiente (cumpre o requisito de configuração de ambiente).
+const ENV_URL = import.meta.env.VITE_API_URL as string | undefined;
+export const API_BASE = ENV_URL ? ENV_URL.replace(/\/$/, '') : '/api';
+
 const TOKEN_KEY = 'isptec_token';
 
 export const tokenStore = {
@@ -9,7 +14,7 @@ export const tokenStore = {
 
 async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const t = tokenStore.get();
-  const res = await fetch(BASE + path, {
+  const res = await fetch(API_BASE + path, {
     ...opts,
     headers: {
       'Content-Type': 'application/json',
@@ -25,7 +30,7 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
 /** Upload multipart (ficheiros) — não define Content-Type (o browser trata). */
 export async function uploadForm<T>(path: string, form: FormData): Promise<T> {
   const t = tokenStore.get();
-  const res = await fetch(BASE + path, {
+  const res = await fetch(API_BASE + path, {
     method: 'POST',
     body: form,
     headers: { ...(t ? { Authorization: `Bearer ${t}` } : {}) },

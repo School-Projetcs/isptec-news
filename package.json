@@ -10,6 +10,8 @@
     "dev": "pnpm --parallel --filter @isptec/api --filter @isptec/web dev",
     "dev:api": "pnpm --filter @isptec/api dev",
     "dev:web": "pnpm --filter @isptec/web dev",
+    "dev:desktop": "pnpm --filter @isptec/desktop dev",
+    "desktop": "pnpm --filter @isptec/web build && pnpm --filter @isptec/desktop start",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
     "db:up": "docker compose up -d",
@@ -27,6 +29,7 @@
     "onlyBuiltDependencies": [
       "@prisma/client",
       "@prisma/engines",
+      "electron",
       "esbuild",
       "ffmpeg-static",
       "ffprobe-static",

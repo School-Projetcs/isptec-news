@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { api } from '../lib/api';
+import { api, API_BASE } from '../lib/api';
 import type { Media, NewsItem } from '../types';
 
 export function NewsDetail() {
@@ -51,7 +51,7 @@ export function NewsDetail() {
 }
 
 function NewsMedia({ media }: { media: Media }) {
-  const base = `/api/media/${media.id}/raw`;
+  const base = `${API_BASE}/media/${media.id}/raw`;
   if (media.type === 'IMAGE') {
     return <img className="preview" src={`${base}?variant=webp-q80`} alt={media.originalName} />;
   }

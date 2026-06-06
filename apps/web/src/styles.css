@@ -104,6 +104,16 @@ button.danger { background: #3a1620; border: 1px solid #6b2535; color: #ffb4c0; 
 }
 .tag.good { color: var(--good); border-color: #2e6b46; }
 
+/* live / streaming */
+.livedot { display: inline-block; width: 12px; height: 12px; border-radius: 999px; background: var(--muted); margin-right: 6px; vertical-align: middle; }
+.livedot.on { background: var(--bad); box-shadow: 0 0 0 0 rgba(248,113,113,0.6); animation: livepulse 1.6s infinite; }
+@keyframes livepulse { 70% { box-shadow: 0 0 0 8px rgba(248,113,113,0); } 100% { box-shadow: 0 0 0 0 rgba(248,113,113,0); } }
+.liveframe { position: relative; }
+.livebadge { position: absolute; top: 12px; left: 12px; z-index: 2; background: var(--bad); color: #fff; font-weight: 700; font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px; }
+.liveoffline { padding: 32px; text-align: center; border: 1px dashed var(--border); border-radius: 12px; margin-top: 8px; }
+.obshelp { margin-top: 16px; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
+.obshelp summary { cursor: pointer; color: var(--muted); }
+
 /* media */
 .preview { max-width: 100%; border-radius: 8px; border: 1px solid var(--border); display: block; }
 figure { margin: 0; }

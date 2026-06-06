@@ -46,6 +46,7 @@ Os 3 clientes consomem a mesma API REST e leem o URL base de variável de ambien
 | **shared** | `@isptec/shared` (tipos + zod) | ✅ base |
 | **BD** | PostgreSQL 16 (Docker em dev) | ✅ schema + migração + seed |
 | **media-engine** | sharp + fluent-ffmpeg + Huffman próprio | ✅ image/audio/video/huffman |
+| **streaming live** | node-media-server (RTMP) + FFmpeg → HLS + `hls.js` | ✅ F7.1 (RTMP real + simulada) |
 | **Desktop** | Electron (embrulha build da Web) | ✅ Fase 4.1 (dev + prod `app://`) |
 | **Mobile** | Expo (React Native) + React Navigation | ✅ Fase 4.2 (typecheck + bundle Metro) |
 
@@ -80,8 +81,12 @@ Montagem em [`apps/api/src/app.ts`](apps/api/src/app.ts). `🔒` = `requireAuth`
 | GET | `/media/:id/raw` | — | **Streaming VOD** (HTTP Range / 206) |
 | GET | `/media/:id/download` | — | Download (offline) |
 | DELETE | `/media/:id` | 🔒 | Apagar media + variantes |
-| GET | `/stream/live` | — | **Live MJPEG** (multipart/x-mixed-replace) |
-| GET | `/stream/live/status` | — | Estado da transmissão |
+| GET | `/stream/live/status` | — | Estado da transmissão (live/mode/key/hlsUrl) |
+| GET | `/stream/hls/:key/:file` | — | **Distribuição HLS** (manifesto `.m3u8` + segmentos `.ts`) |
+| POST | `/stream/simulate/start` | 🔒 | Iniciar **transmissão simulada** (FFmpeg→HLS) |
+| POST | `/stream/simulate/stop` | 🔒 | Parar transmissão simulada |
+| GET | `/stream/live` | — | Live MJPEG legacy (pré-visualização) |
+| (RTMP) | `rtmp://:1935/live/<chave>` | — | **Ingestão RTMP** (OBS/telemóvel) via node-media-server |
 
 ---
 
@@ -108,11 +113,13 @@ Cada variante grava em `MediaVariant`: `size`, `compressionRatio`, `processingMs
 
 - **VOD (sob demanda):** `GET /media/:id/raw` → `serveWithRange()` responde `206 Partial Content`
   com `Accept-Ranges: bytes`. O `<video>`/`<audio>` HTML5 faz seek/pause/play reais.
-- **Live (atual):** `GET /stream/live` → MJPEG (`multipart/x-mixed-replace`), o servidor empurra
-  frames JPEG (gerados com sharp) a cada 500 ms. ⚠️ **Sintético — sem ingestão real.**
-- **Live (Fase 7, planeado):** **RTMP→HLS** real — `node-media-server` (ingestão RTMP :1935) +
-  FFmpeg → HLS + `hls.js` no cliente, com **transmissão simulada** (FFmpeg) para a demo sem câmara.
-  Detalhe e fluxo de dados em [`docs/04-arquitetura-streaming.md`](docs/04-arquitetura-streaming.md).
+- **Live (RTMP→HLS, implementado · F7.1):** `node-media-server` v4 recebe a publicação **RTMP**
+  em `:1935/live/<chave>`; em cada publicação, o **FFmpeg** lê o RTMP e gera **HLS**
+  (`MEDIA/live/<chave>/index.m3u8`), servido por `GET /stream/hls/:key/:file`; o cliente reproduz
+  com `hls.js`. Há ainda **transmissão simulada** (`POST /stream/simulate/start|stop` → FFmpeg→HLS)
+  para a demo sem câmara. Módulos: `src/live/hls.ts` (HLS+simulada) e `src/live/rtmp.ts` (NMS).
+  Fluxo de dados em [`docs/04-arquitetura-streaming.md`](docs/04-arquitetura-streaming.md).
+- **Live (legacy):** `GET /stream/live` → MJPEG sintético, mantido como pré-visualização instantânea.
 - **Offline:** `GET /media/:id/download` entrega a variante processada para guardar localmente.
 
 ---
@@ -151,6 +158,7 @@ Definido em [`apps/api/prisma/schema.prisma`](apps/api/prisma/schema.prisma).
 | `DATABASE_URL` | `apps/api/.env` | PostgreSQL Docker (`isptec`) |
 | `JWT_SECRET` | `apps/api/.env` | — |
 | `PORT` | `apps/api/.env` | **3333** (3000 ocupada por outra app local) |
+| RTMP `:1935` | node-media-server (fixo) | ingestão RTMP do streaming ao vivo |
 | `CORS_ORIGIN` | `apps/api/.env` | `*` ou lista |
 | `MEDIA_DIR` | `apps/api/.env` | `./media` |
 | `VITE_API_URL` | `apps/web/.env` | `http://localhost:3333` |

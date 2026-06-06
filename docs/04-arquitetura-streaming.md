@@ -1,8 +1,13 @@
 # Arquitetura de Streaming ao Vivo — ISPTEC News (RTMP → HLS)
 
 > Resposta ao feedback de produto, secção 4 ("streaming real"). Atualizado: **2026-06-06**.
-> Substitui o *live* atual, que é **MJPEG sintético** (frames desenhados no servidor — não há
-> ingestão real). Estado: **PLANEADO / a implementar**.
+> Estado: **✅ IMPLEMENTADO E VERIFICADO** (F7.1). O MJPEG sintético foi rebaixado a
+> pré-visualização legacy.
+>
+> **Nota de implementação:** o `node-media-server` **v4** já não faz HLS nativo (só RTMP/FLV).
+> Por isso usa-se o NMS **apenas para a ingestão RTMP** e, em cada publicação (`postPublish`),
+> arranca-se um **FFmpeg** que lê o RTMP e gera o HLS — exatamente o encadeamento
+> **RTMP + FFmpeg + HLS** do enunciado. Código: `apps/api/src/live/hls.ts` + `live/rtmp.ts`.
 
 ## 1. Cenário-alvo (do enunciado/feedback)
 

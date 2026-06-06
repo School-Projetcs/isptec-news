@@ -73,10 +73,10 @@ Abrir **http://localhost:5173**.
 
 | Passo | Ação | Resultado esperado | Estado |
 |---|---|---|---|
-| Iniciar (simulada) | "Transmissão simulada" (sem câmara) | FFmpeg gera HLS; player mostra o vivo | ⏳ (RTMP→HLS a implementar) |
-| Iniciar (real) | OBS → `rtmp://localhost:1935/live` (chave `isptec`) | Stream ingerido e visível na Web | ⏳ |
-| Ver | Abrir "Ao Vivo" | Player HLS com badge ● AO VIVO (autoplay mudo) | ⏳ |
-| Encerrar | Parar OBS / "Parar" | Estado passa a offline; player mostra fallback | ⏳ |
+| Iniciar (simulada) | Login editor/admin → "Ao Vivo" → "Iniciar transmissão" | FFmpeg gera HLS; player mostra o vivo em ~2 s | ✅ |
+| Iniciar (real) | OBS → `rtmp://localhost:1935/live` (chave `test`/`isptec`) | Stream ingerido (RTMP→FFmpeg→HLS) e visível na Web | ✅ |
+| Ver | Abrir "Ao Vivo" | Player HLS com badge ● AO VIVO (autoplay mudo) | ✅ |
+| Encerrar | Parar OBS / "Parar transmissão" | Estado passa a offline (~12 s); player mostra fallback | ✅ |
 
 ### 4.6 Modo Dev
 

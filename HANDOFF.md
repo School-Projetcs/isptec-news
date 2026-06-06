@@ -58,10 +58,13 @@ Resta apenas o **vídeo de demonstração (F6.2)** — manual.
 `TEST_PLAN.md`. Decisões: streaming = `node-media-server`+FFmpeg+HLS+`hls.js` (+ transmissão simulada);
 redesign = single-page claro elegante (**proposta aguarda aprovação antes da UI**).
 
-Implementar por impacto: **F7.1 streaming real (RTMP→HLS)** → F7.2 CMS multi-formato+editar →
-F7.3 metadados editoriais (data/hora/tempo de leitura) → F7.4 Modo Dev → F7.5 redesign → F7.6 UX →
-F7.7 TEST_PLAN/conformidade → **F7.8 ouvir notícia (TTS, Web Speech API/`expo-speech`)** →
-**F7.9 "Resumo do dia" flutuante (FAB, ≥3 notícias, `GET /news/digest`)**. Backlog em `TASKS.md` (Fase 7).
+**F7.1 streaming real ✅ feito e verificado** — `node-media-server` v4 (RTMP :1935) + FFmpeg→HLS +
+`hls.js`; transmissão simulada e ingestão RTMP real ambas testadas. Módulos `apps/api/src/live/{hls,rtmp}.ts`,
+`routes/stream.ts`, `apps/web/src/components/HlsPlayer.tsx`, `pages/Live.tsx`. RTMP em `:1935/live/<chave>`.
+
+A seguir por impacto: **F7.2 CMS multi-formato+editar** → F7.3 metadados editoriais (data/hora/tempo
+de leitura) → F7.4 Modo Dev → F7.5 redesign → F7.6 UX → F7.7 TEST_PLAN/conformidade →
+F7.8 ouvir notícia (TTS) → F7.9 "Resumo do dia" flutuante. Backlog em `TASKS.md` (Fase 7).
 
 ## Arranque em 30 s
 

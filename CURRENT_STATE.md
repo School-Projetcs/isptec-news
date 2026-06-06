@@ -16,9 +16,9 @@ entregáveis/documentação de defesa (Fase 6).
 **Fase 5 ✅ · Fase 6 quase ✅ · Fase 7 (feedback de produto) 🔵 a arrancar.** Segurança ✅; F5.3 ✅
 polish UX Web; F6.3 ✅ seed rico (verificados no browser). Entregáveis: [relatório](docs/01-relatorio-tecnico.md),
 [manual](docs/02-manual-utilizador.md), [TEST_PLAN](TEST_PLAN.md), [auditoria](docs/05-auditoria-conformidade.md).
-**Novo (feedback):** ver "Próximo passo" — streaming real RTMP→HLS, CMS multi-formato, metadados
-editoriais, Modo Dev e redesign single-page. Auditoria identifica **A2 (streaming) como única lacuna
-auto-fail** (hoje o live é MJPEG sintético).
+**Novo (feedback):** **F7.1 streaming real RTMP→HLS ✅ feito** (A2 auto-fail agora coberto a sério —
+ingestão RTMP via node-media-server + FFmpeg→HLS + `hls.js`, com transmissão simulada). A seguir:
+CMS multi-formato, metadados editoriais, Modo Dev, redesign single-page (ver "Próximo passo").
 
 ## Concluído (Fases 0–3 + parte da 4)
 
@@ -54,9 +54,10 @@ auto-fail** (hoje o live é MJPEG sintético).
 streaming = `node-media-server`+FFmpeg+HLS+`hls.js` (com transmissão simulada); redesign = single-page
 claro elegante (hero-live + widgets, video cards autoplay) — **proposta aguarda aprovação antes da UI**.
 
-Ordem de implementação (impacto): **F7.1 streaming real** → F7.2 CMS multi-formato+editar →
-F7.3 metadados editoriais → F7.4 Modo Dev → F7.5 redesign → F7.6 UX → F7.7 TEST_PLAN/conformidade →
-**F7.8 ouvir notícia (TTS)** → **F7.9 "Resumo do dia" flutuante**.
+**F7.1 streaming real ✅ concluído e verificado** (RTMP→FFmpeg→HLS + transmissão simulada; ambos
+testados, incl. push RTMP). Ordem seguinte: **F7.2 CMS multi-formato+editar** → F7.3 metadados
+editoriais → F7.4 Modo Dev → F7.5 redesign → F7.6 UX → F7.7 TEST_PLAN/conformidade →
+F7.8 ouvir notícia (TTS) → F7.9 "Resumo do dia" flutuante.
 Pendentes anteriores (opcionais): vídeo de demo (F6.2), VERIF-M, empacotar Desktop (F4.4).
 
 > Nota: para obter o seed rico numa BD já populada, basta `pnpm db:seed` — o seed é declarativo

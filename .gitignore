@@ -24,6 +24,7 @@ pnpm-debug.log*
 # media gerada/enviada (não versionar conteúdos)
 media/uploads/*
 media/processed/*
+media/live/
 !media/uploads/.gitkeep
 !media/processed/.gitkeep
 

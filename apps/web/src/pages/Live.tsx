@@ -1,47 +1,126 @@
-import { useState } from 'react';
-import { API_BASE } from '../lib/api';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { api, API_BASE } from '../lib/api';
+import { useAuth } from '../lib/auth';
+import { HlsPlayer } from '../components/HlsPlayer';
+
+type LiveStatus = {
+  live: boolean;
+  key: string;
+  mode: 'simulated' | 'rtmp' | 'offline';
+  source: string | null;
+  startedAt: number | null;
+  hlsUrl: string;
+};
 
 export function Live() {
-  const [on, setOn] = useState(true);
-  const [streamId, setStreamId] = useState(() => Date.now());
-  const [failed, setFailed] = useState(false);
+  const { user } = useAuth();
+  const canBroadcast = user && (user.role === 'EDITOR' || user.role === 'ADMIN');
 
-  function toggle() {
-    if (!on) {
-      setStreamId(Date.now()); // nova ligação ao reiniciar
-      setFailed(false);
+  const [status, setStatus] = useState<LiveStatus | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const refresh = useCallback(async () => {
+    try {
+      const s = await api.get<LiveStatus>('/stream/live/status');
+      setStatus(s);
+    } catch {
+      /* status é best-effort */
     }
-    setOn((v) => !v);
+  }, []);
+
+  useEffect(() => {
+    refresh();
+    timer.current = setInterval(refresh, 4000);
+    return () => { if (timer.current) clearInterval(timer.current); };
+  }, [refresh]);
+
+  async function start() {
+    setBusy(true);
+    setError(null);
+    try {
+      await api.post('/stream/simulate/start');
+      // Poll rápido até os primeiros segmentos aparecerem.
+      for (let i = 0; i < 8; i++) {
+        await new Promise((r) => setTimeout(r, 1000));
+        await refresh();
+      }
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
   }
+
+  async function stop() {
+    setBusy(true);
+    setError(null);
+    try {
+      await api.post('/stream/simulate/stop');
+      await refresh();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const live = status?.live;
 
   return (
     <div className="card">
       <div className="row between">
-        <h1>🔴 Transmissão ao vivo</h1>
-        <button className={on ? 'danger' : ''} onClick={toggle}>
-          {on ? 'Parar' : 'Iniciar'}
-        </button>
+        <h1>
+          <span className={live ? 'livedot on' : 'livedot'} /> Transmissão ao vivo
+        </h1>
+        {canBroadcast && (
+          live ? (
+            <button className="danger" disabled={busy} onClick={stop}>Parar transmissão</button>
+          ) : (
+            <button disabled={busy} onClick={start}>{busy ? 'A iniciar…' : 'Iniciar transmissão'}</button>
+          )
+        )}
       </div>
+
       <p className="muted">
-        Streaming em <strong>tempo real</strong> via MJPEG (<code>multipart/x-mixed-replace</code>):
-        o servidor gera e envia frames JPEG continuamente.
+        Streaming ao vivo por <strong>HLS</strong> (HTTP Live Streaming). O servidor recebe uma
+        fonte <strong>RTMP</strong> ou uma <strong>transmissão simulada</strong> e segmenta-a com
+        FFmpeg; o player reproduz com <code>hls.js</code>.
       </p>
-      {on ? (
-        failed ? (
-          <p className="bad">
-            ⚠️ Não foi possível ligar à transmissão. Confirma que a API está a correr e tenta
-            reiniciar.
+
+      {error && <p className="bad">⚠️ {error}</p>}
+
+      {live ? (
+        <>
+          <div className="liveframe">
+            <span className="livebadge">● AO VIVO</span>
+            <HlsPlayer src={`${API_BASE}${status!.hlsUrl}`} className="preview live" autoPlay muted controls />
+          </div>
+          <p className="meta">
+            Modo: {status!.mode === 'simulated' ? 'transmissão simulada' : 'ingestão RTMP'}
+            {status!.source ? ` · fonte: ${status!.source}` : ''}
           </p>
-        ) : (
-          <img
-            className="preview live"
-            src={`${API_BASE}/stream/live?t=${streamId}`}
-            alt="Transmissão ao vivo"
-            onError={() => setFailed(true)}
-          />
-        )
+        </>
       ) : (
-        <p className="muted">Transmissão parada. Clica em “Iniciar” para ligar.</p>
+        <div className="liveoffline">
+          <p className="muted">
+            Sem transmissão no ar.{' '}
+            {canBroadcast ? 'Clica em “Iniciar transmissão” para uma demonstração simulada.' : 'Volta mais tarde.'}
+          </p>
+        </div>
+      )}
+
+      {canBroadcast && (
+        <details className="obshelp">
+          <summary>Transmitir de uma câmara real (OBS / telemóvel)</summary>
+          <p className="muted small">
+            Configura o OBS com <strong>Serviço: Personalizado</strong>,{' '}
+            <strong>Servidor: <code>rtmp://localhost:1935/live</code></strong> e{' '}
+            <strong>Chave: <code>isptec</code></strong>. Ao iniciar a transmissão no OBS, o vídeo
+            aparece aqui automaticamente.
+          </p>
+        </details>
       )}
     </div>
   );

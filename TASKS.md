@@ -16,9 +16,12 @@ Fases 0–4 ✅ (3 auto-fail cobertos) · Fase 5 ✅ · Fase 6 🔵 · **Fase 7 
 > [`docs/04-arquitetura-streaming.md`](docs/04-arquitetura-streaming.md) ·
 > [`docs/05-auditoria-conformidade.md`](docs/05-auditoria-conformidade.md) · [`TEST_PLAN.md`](TEST_PLAN.md).
 
-- [ ] **F7.1 — Streaming real (RTMP→HLS)** 🔴 *prioridade máxima* — `node-media-server` (RTMP :1935)
-      + FFmpeg → HLS + `hls.js`. Inclui **transmissão simulada** (FFmpeg, sem câmara) e status/eventos.
-      Substitui o MJPEG sintético. *(decisão: o mais simples que cumpre RTMP+FFmpeg+HLS do enunciado)*
+- [x] **F7.1 — Streaming real (RTMP→HLS)** ✅ **verificado** — `node-media-server` v4 (RTMP :1935)
+      recebe a publicação e o FFmpeg converte RTMP→**HLS**; player `hls.js`. **Transmissão simulada**
+      (FFmpeg→HLS, sem câmara) e **ingestão RTMP real** (testada com push FFmpeg/OBS) ambas a funcionar;
+      estado/eventos em `/stream/live/status`. Substitui o MJPEG (mantido como pré-visualização legacy).
+      Ficheiros: `apps/api/src/live/{hls,rtmp}.ts`, `routes/stream.ts`, `apps/web/src/components/HlsPlayer.tsx`,
+      `pages/Live.tsx`.
 - [ ] **F7.2 — CMS multi-formato + editar** — Editor passa a **anexar imagem/vídeo/áudio** e
       **escolher capa**; ecrã de **editar** notícia existente (API `PUT /news/:id` já existe).
 - [ ] **F7.3 — Metadados editoriais** — data + hora de publicação, autor, categoria, **tempo de

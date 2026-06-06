@@ -7,9 +7,15 @@ import { env } from '../env';
 export const MEDIA_ROOT = resolve(process.cwd(), env.MEDIA_DIR);
 export const UPLOADS_DIR = join(MEDIA_ROOT, 'uploads');
 export const PROCESSED_DIR = join(MEDIA_ROOT, 'processed');
+/** Raiz dos segmentos HLS do streaming ao vivo (`live/<key>/index.m3u8`). */
+export const LIVE_DIR = join(MEDIA_ROOT, 'live');
 
-for (const d of [UPLOADS_DIR, PROCESSED_DIR]) {
+for (const d of [UPLOADS_DIR, PROCESSED_DIR, LIVE_DIR]) {
   if (!existsSync(d)) mkdirSync(d, { recursive: true });
+}
+
+export function livePath(...parts: string[]): string {
+  return join(LIVE_DIR, ...parts);
 }
 
 export function newId(): string {

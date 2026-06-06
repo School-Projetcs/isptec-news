@@ -46,6 +46,14 @@ export function App() {
           }
         />
         <Route
+          path="/gerir/editar/:id"
+          element={
+            <Protected roles={['EDITOR', 'ADMIN']}>
+              <Editor />
+            </Protected>
+          }
+        />
+        <Route
           path="/media"
           element={
             <Protected roles={['EDITOR', 'ADMIN']}>

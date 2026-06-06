@@ -62,9 +62,13 @@ redesign = single-page claro elegante (**proposta aguarda aprovação antes da U
 `hls.js`; transmissão simulada e ingestão RTMP real ambas testadas. Módulos `apps/api/src/live/{hls,rtmp}.ts`,
 `routes/stream.ts`, `apps/web/src/components/HlsPlayer.tsx`, `pages/Live.tsx`. RTMP em `:1935/live/<chave>`.
 
-A seguir por impacto: **F7.2 CMS multi-formato+editar** → F7.3 metadados editoriais (data/hora/tempo
-de leitura) → F7.4 Modo Dev → F7.5 redesign → F7.6 UX → F7.7 TEST_PLAN/conformidade →
-F7.8 ouvir notícia (TTS) → F7.9 "Resumo do dia" flutuante. Backlog em `TASKS.md` (Fase 7).
+**F7.2 CMS multi-formato+editar ✅ feito** — Editor unificado (criar/editar) com gestor de
+multimédia (capa + galeria imagem/áudio/vídeo, comprimidos no upload); `GET /news/manage/:id`,
+`PUT /news/:id` com `coverMediaId`. Ficheiros: `apps/web/src/pages/Editor.tsx`, `Manage.tsx`,
+`apps/api/src/routes/news.ts`, `packages/shared/src/index.ts`.
+
+A seguir por impacto: **F7.3 metadados editoriais (data/hora/tempo de leitura)** → F7.4 Modo Dev →
+F7.5 redesign → F7.6 UX → F7.7 TEST_PLAN/conformidade → F7.8 TTS → F7.9 "Resumo do dia". Backlog em `TASKS.md`.
 
 ## Arranque em 30 s
 

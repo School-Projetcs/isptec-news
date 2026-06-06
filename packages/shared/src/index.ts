@@ -82,6 +82,7 @@ export const updateNewsSchema = z.object({
   summary: z.string().max(500).optional(),
   body: z.string().min(1).optional(),
   categoryId: z.string().nullable().optional(),
+  coverMediaId: z.string().nullable().optional(),
   status: z.enum(['DRAFT', 'PUBLISHED']).optional(),
 });
 export type UpdateNewsInput = z.infer<typeof updateNewsSchema>;

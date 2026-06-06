@@ -51,6 +51,26 @@ newsRouter.get(
   }),
 );
 
+// Gestão — uma notícia por id (inclui rascunhos, media e capa) para o editor
+newsRouter.get(
+  '/manage/:id',
+  requireAuth,
+  requireRole('EDITOR', 'ADMIN'),
+  ah(async (req, res) => {
+    const news = await prisma.news.findUnique({
+      where: { id: req.params.id },
+      include: {
+        author: { select: { name: true } },
+        category: true,
+        media: { include: { variants: true } },
+        cover: { include: { variants: true } },
+      },
+    });
+    if (!news) return res.status(404).json({ ok: false, error: 'Notícia não encontrada' });
+    res.json({ ok: true, data: news });
+  }),
+);
+
 // Público — detalhe por slug (só publicadas); incrementa visualizações
 newsRouter.get(
   '/:slug',
@@ -116,9 +136,18 @@ newsRouter.put(
     if (typeof b.title === 'string') data.title = b.title;
     if (typeof b.summary === 'string') data.summary = b.summary;
     if (typeof b.body === 'string') data.body = b.body;
+    if (b.status === 'DRAFT' || b.status === 'PUBLISHED') {
+      data.status = b.status;
+      data.publishedAt = b.status === 'PUBLISHED' ? (existing.publishedAt ?? new Date()) : null;
+    }
     if ('categoryId' in b) {
       data.category = b.categoryId
         ? { connect: { id: String(b.categoryId) } }
+        : { disconnect: true };
+    }
+    if ('coverMediaId' in b) {
+      data.cover = b.coverMediaId
+        ? { connect: { id: String(b.coverMediaId) } }
         : { disconnect: true };
     }
     const news = await prisma.news.update({ where: { id: req.params.id }, data });

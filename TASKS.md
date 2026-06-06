@@ -22,8 +22,11 @@ Fases 0–4 ✅ (3 auto-fail cobertos) · Fase 5 ✅ · Fase 6 🔵 · **Fase 7 
       estado/eventos em `/stream/live/status`. Substitui o MJPEG (mantido como pré-visualização legacy).
       Ficheiros: `apps/api/src/live/{hls,rtmp}.ts`, `routes/stream.ts`, `apps/web/src/components/HlsPlayer.tsx`,
       `pages/Live.tsx`.
-- [ ] **F7.2 — CMS multi-formato + editar** — Editor passa a **anexar imagem/vídeo/áudio** e
-      **escolher capa**; ecrã de **editar** notícia existente (API `PUT /news/:id` já existe).
+- [x] **F7.2 — CMS multi-formato + editar** ✅ **verificado** — Editor unificado criar/editar:
+      anexa **imagem/vídeo/áudio** (comprimidos no upload), define/remove **capa**, elimina media;
+      ecrã de **editar** notícia existente (rota `/gerir/editar/:id` + "Editar" na gestão).
+      API nova: `GET /news/manage/:id`; `PUT /news/:id` aceita `coverMediaId`/`status`.
+      Suporta as 4 combinações (texto / +imagens / +vídeo / +ambos). E2E testado (criar→anexar→capa).
 - [ ] **F7.3 — Metadados editoriais** — data + hora de publicação, autor, categoria, **tempo de
       leitura**, **destaque de recentes** em todas as páginas de notícia.
 - [ ] **F7.4 — Modo Dev/Demo** — toggle (Definições → Developer Mode); painéis em tempo real:

@@ -104,6 +104,17 @@ button.danger { background: #3a1620; border: 1px solid #6b2535; color: #ffb4c0; 
 }
 .tag.good { color: var(--good); border-color: #2e6b46; }
 
+/* editor — gestor de multimédia */
+.mediablock { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+.mediablock h4 { margin: 0 0 10px; }
+.mediagrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.mediaitem { display: flex; flex-direction: column; gap: 8px; }
+.mediaitem .thumb { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+.filepick { display: inline-block; cursor: pointer; }
+.filepick.disabled { opacity: 0.6; cursor: default; }
+.actions .ghostlink { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.actions .ghostlink:hover { border-color: var(--accent); }
+
 /* live / streaming */
 .livedot { display: inline-block; width: 12px; height: 12px; border-radius: 999px; background: var(--muted); margin-right: 6px; vertical-align: middle; }
 .livedot.on { background: var(--bad); box-shadow: 0 0 0 0 rgba(248,113,113,0.6); animation: livepulse 1.6s infinite; }

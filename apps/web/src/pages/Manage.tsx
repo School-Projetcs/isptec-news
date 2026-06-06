@@ -71,6 +71,7 @@ export function Manage() {
                 </td>
                 <td>{n.viewCount}</td>
                 <td className="actions">
+                  <Link to={`/gerir/editar/${n.id}`} className="btn ghostlink">Editar</Link>
                   <button onClick={() => toggle(n)}>
                     {n.status === 'PUBLISHED' ? 'Despublicar' : 'Publicar'}
                   </button>

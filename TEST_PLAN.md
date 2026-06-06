@@ -48,10 +48,10 @@ Abrir **http://localhost:5173**.
 | Passo | Ação | Resultado esperado | Estado |
 |---|---|---|---|
 | Criar | Gerir → Nova notícia → guardar rascunho | Notícia criada como DRAFT | ✅ |
-| Editar | Abrir notícia existente → alterar → guardar | Alterações persistidas | ⏳ (UI de editar a implementar) |
+| Editar | Gestão → "Editar" → alterar → "Guardar alterações" | Alterações persistidas | ✅ |
 | Publicar | Despublicada → "Publicar" | Passa a PUBLISHED; aparece no feed | ✅ |
 | Remover | "Eliminar" (autor ou admin) | Notícia removida | ✅ |
-| Multi-formato | Anexar imagem + vídeo a uma notícia | Aparecem no detalhe (galeria + player) | ⏳ (anexar no Editor a implementar) |
+| Multi-formato | Editar → "Carregar capa" + "Adicionar multimédia" (imagem/áudio/vídeo) | Capa + galeria comprimidas; surgem no detalhe | ✅ |
 
 ### 4.3 Upload de média
 

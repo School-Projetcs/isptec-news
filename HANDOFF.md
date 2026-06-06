@@ -2,7 +2,7 @@
 
 > Transferência de contexto entre agentes (fonte de verdade para `handoff`,
 > `resume-work`, `emergency-handoff`). Formato compacto, atualizar a cada checkpoint.
-> Atualizado: **2026-06-06** · base commit `8f80ddf` · branch `main` (alterações **por committar**).
+> Atualizado: **2026-06-06** · branch `main` · **Fase 7 committada em `678e4cf`**.
 
 ## Estado atual
 

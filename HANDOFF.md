@@ -109,9 +109,14 @@ de avaliação e lacunas remanescentes (só opcionais/manuais).
 **Toda a Fase 7 sem bloqueio está concluída.** Resta apenas o **F7.5 redesign single-page**, que
 **aguarda aprovação da proposta** ([`docs/03-proposta-redesign.md`](docs/03-proposta-redesign.md)).
 **B8 comentários ✅ feito** — `GET/POST /news/:slug/comments` (POST autenticado) + `DELETE /comments/:id`
-(autor/admin); `routes/comments.ts` montado em `/comments`; UI `apps/web/src/components/Comments.tsx` no
-detalhe. **Verificado no browser** (criar→aparece→eliminar). Pendentes só manuais: VERIF-M (Mobile em
-dispositivo), F4.4 (empacotar Desktop), F6.2 (vídeo de demo). Backlog em `TASKS.md`.
+(autor/admin); `routes/comments.ts` montado em `/comments`; UI no detalhe na Web e no Mobile.
+**Verificado no browser** (criar→aparece→eliminar).
+
+**Paridade do Mobile (Expo) ✅ feita** — portadas para o Expo: **comentários** (`components/Comments.tsx`
++ `api.del`), **filtro de categorias** no feed (chips horizontais) e **"Resumo do dia"**
+(`components/DailyDigest.tsx`: FAB + Modal + "ouvir" via expo-speech). Modo Dev fica fora (SSE de
+bastidores; RN sem EventSource nativo). **Verificado:** typecheck + bundle Metro (808 mód.); falta correr
+em dispositivo (VERIF-M). Pendentes só manuais: VERIF-M, F4.4 (empacotar Desktop), F6.2 (vídeo). Backlog em `TASKS.md`.
 
 ## Arranque em 30 s
 

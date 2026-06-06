@@ -119,6 +119,7 @@ Abrir **http://localhost:5173**.
 |---|---|---|---|
 | Arranque | `pnpm --filter @isptec/mobile start` + Expo Go | App abre; login; feed | 🟡 (typecheck+bundle ok; falta dispositivo) |
 | VOD | Abrir notícia com vídeo | Player reproduz (HTTP Range) | 🟡 |
+| Paridade Fase 7 | No app: filtro de categorias no feed, TTS no detalhe, comentários, FAB "Resumo do dia" | Mesmas funcionalidades da Web (exceto Modo Dev) | 🟡 (typecheck+bundle ok; falta dispositivo) |
 
 ### 4.11 Navegação e responsividade (F7.6)
 

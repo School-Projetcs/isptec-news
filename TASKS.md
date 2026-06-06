@@ -79,7 +79,8 @@ Fases 0–4 ✅ (3 auto-fail cobertos) · Fase 5 ✅ · Fase 6 🔵 · **Fase 7 
 
 - [x] **F4.1** — Desktop Electron (`apps/desktop`, dev + prod `app://`). ✅ smoke test OK
 - [x] **F4.2** — Mobile Expo (`apps/mobile`): login, feed, detalhe, player VOD, upload+relatório,
-      offline. ✅ typecheck + bundle Metro (804 módulos). ⚠️ falta correr em dispositivo.
+      offline **+ paridade Fase 7** (TTS, comentários, filtro de categorias, "Resumo do dia").
+      ✅ typecheck + bundle Metro (808 módulos). ⚠️ falta correr em dispositivo (VERIF-M).
 - [x] **F4.3** — Clientes leem o URL da API de config (`VITE_API_URL` / `EXPO_PUBLIC_API_URL`).
 - [x] **VERIF** — `selftest-compression.ts` confirma imagem+áudio+vídeo (corrigido `SyntaxError`).
 

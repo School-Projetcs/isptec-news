@@ -62,4 +62,11 @@ export type CompressionReport = {
   variants: ReportVariant[];
 };
 
+export type Comment = {
+  id: string;
+  body: string;
+  createdAt: string;
+  user: { id: string; name: string };
+};
+
 export type { Role };

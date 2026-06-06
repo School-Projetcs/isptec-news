@@ -64,6 +64,9 @@ responsivo (sem overflow a 375px). A **F7.7** atualizou o TEST_PLAN e reescreveu
 conformidade ([docs/05](docs/05-auditoria-conformidade.md)) com um mapa de prontidão por critério/peso.
 **Toda a Fase 7 sem bloqueio está feita — resta apenas a F7.5 (redesign), que aguarda aprovação.**
 Implementado também o bónus **B8 comentários** (rotas + UI no detalhe, verificado no browser).
+**Paridade do Mobile (Expo):** o app passou a ter **comentários, filtro de categorias e "Resumo do dia"**
+(além do TTS já existente) — só o Modo Dev fica de fora (painel SSE de bastidores, sem sentido no telemóvel).
+Verificado por typecheck + bundle Metro (808 mód.); falta correr em dispositivo (VERIF-M).
 Pendentes anteriores (opcionais): vídeo de demo (F6.2), VERIF-M, empacotar Desktop (F4.4).
 
 > Nota: para obter o seed rico numa BD já populada, basta `pnpm db:seed` — o seed é declarativo

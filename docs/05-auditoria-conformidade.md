@@ -10,7 +10,7 @@
 |---|---|---|---|
 | A1 | **Compressão** (motor próprio) | ✅ | `media-engine/*` (image/audio/video + **Huffman próprio**); `MediaVariant` com métricas (rácio, PSNR, tempo); `selftest-compression.ts` passa |
 | A2 | **Streaming** | ✅ | VOD por **HTTP Range** (206, `media-engine/serve.ts`) **+ live HLS real**: ingestão **RTMP** (`live/rtmp.ts`, node-media-server :1935) → **FFmpeg→HLS** (`live/hls.ts`) **+** transmissão simulada à prova de falhas; player `hls.js` (`components/HlsPlayer.tsx`, `pages/Live.tsx`) |
-| A3 | **Cliente multiplataforma** | ✅ | Web (React) + Desktop (Electron) + Mobile (Expo). Mesma API, URL por env. ⚠️ Mobile ainda não corrido em dispositivo (VERIF-M; só typecheck+bundle Metro) |
+| A3 | **Cliente multiplataforma** | ✅ | Web (React) + Desktop (Electron) + Mobile (Expo), **em paridade de funcionalidades** (feed+filtro, detalhe, TTS, comentários, resumo do dia; Desktop herda a Web). Mesma API, URL por env. ⚠️ Mobile ainda não corrido em dispositivo (VERIF-M; só typecheck+bundle Metro 808 mód.) |
 
 ## B. Requisitos funcionais (enunciado)
 
@@ -23,7 +23,7 @@
 | B5 | Relatório de compressão | ✅ | `GET /media/:id/report` + MediaLab |
 | B6 | Logs do servidor | ✅ | `requestLogger` → tabela `Log`; `/logs` (admin); espelhados no Modo Dev |
 | B7 | Segurança (rate-limit, validação) | ✅ | `rateLimit.ts`, zod, helmet, cors |
-| B8 | Comentários | ✅ | `GET/POST /news/:slug/comments` + `DELETE /comments/:id` (autor/admin); UI no detalhe (`components/Comments.tsx`) |
+| B8 | Comentários | ✅ | `GET/POST /news/:slug/comments` + `DELETE /comments/:id` (autor/admin); UI no detalhe na **Web e no Mobile** (`components/Comments.tsx`) |
 
 ## C. Feedback de produto (novos requisitos)
 
@@ -34,11 +34,11 @@
 | 3 | **Notícia multi-formato** (texto / +imagens / +vídeo / +ambos) no CMS | ✅ | F7.2: Editor unificado com `MediaManager` (capa + galeria imagem/áudio/vídeo, comprimidos no upload) |
 | 4 | **Streaming real** (RTMP→HLS) | ✅ | F7.1: `live/{hls,rtmp}.ts`, `routes/stream.ts`; ingestão RTMP real e simulada, estado em `/stream/live/status` |
 | 5 | **Modo Dev/Demo** (painéis de pipeline) | ✅ | F7.4: barramento `lib/devbus.ts` + SSE `GET /stream/dev/events`; painel filtrável (`components/DevPanel.tsx`) com compressão/Huffman/HLS/RTMP/sistema em tempo real |
-| 6 | **Auditoria de UX** | ✅ | F7.6: filtro de categorias no feed, cabeçalho responsivo (≤640px sem overflow); Editor↔Media e editar já resolvidos na F7.2 |
+| 6 | **Auditoria de UX** | ✅ | F7.6: filtro de categorias no feed (**Web e Mobile**), cabeçalho responsivo (≤640px sem overflow); Editor↔Media e editar já resolvidos na F7.2 |
 | 7 | **`TEST_PLAN.md`** | ✅ | [`/TEST_PLAN.md`](../TEST_PLAN.md) — atualizado a cada feature (4.1–4.11) |
 | 8 | **Relatório de conformidade** | ✅ | este documento |
 | 9 | **Ouvir notícia (TTS, APIs de áudio padrão)** | ✅ | F7.8: Web Speech API (`lib/tts.ts` + `ListenButton`) na Web/Desktop; `expo-speech` no Mobile; voz pt-PT, Ouvir/Pausar/Retomar/Parar + velocidade |
-| 10 | **"Resumo do dia" flutuante (≥3 notícias)** | ✅ | F7.9: FAB + painel (`components/DailyDigest.tsx`); `GET /news/digest` (top 5 por vistas+recência) + "ouvir resumo" reutiliza o TTS |
+| 10 | **"Resumo do dia" flutuante (≥3 notícias)** | ✅ | F7.9: FAB + painel na **Web e no Mobile** (`components/DailyDigest.tsx`); `GET /news/digest` (top 5 por vistas+recência) + "ouvir resumo" reutiliza o TTS |
 
 ## D. Mapa de prontidão por critério de avaliação
 

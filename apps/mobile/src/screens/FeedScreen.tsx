@@ -4,6 +4,7 @@ import {
   Text,
   FlatList,
   Pressable,
+  ScrollView,
   StyleSheet,
   RefreshControl,
   ActivityIndicator,
@@ -13,20 +14,32 @@ import type { RootStackParamList } from '../App';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { theme } from '../lib/theme';
-import type { NewsItem } from '../lib/types';
+import type { Category, NewsItem } from '../lib/types';
+import { DailyDigest } from '../components/DailyDigest';
+
+function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+  return (
+    <Pressable style={[styles.chip, active && styles.chipActive]} onPress={onPress}>
+      <Text style={[styles.chipTxt, active && styles.chipTxtActive]}>{label}</Text>
+    </Pressable>
+  );
+}
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Feed'>;
 
 export function FeedScreen({ navigation }: Props) {
   const { user, logout } = useAuth();
   const [news, setNews] = useState<NewsItem[]>([]);
+  const [cats, setCats] = useState<Category[]>([]);
+  const [cat, setCat] = useState(''); // slug ativo ('' = todas)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (c = '') => {
     try {
       setError(null);
-      setNews(await api.get<NewsItem[]>('/news'));
+      setCat(c);
+      setNews(await api.get<NewsItem[]>(`/news${c ? `?category=${encodeURIComponent(c)}` : ''}`));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Erro ao carregar');
     } finally {
@@ -36,6 +49,7 @@ export function FeedScreen({ navigation }: Props) {
 
   useEffect(() => {
     void load();
+    api.get<Category[]>('/categories').then(setCats).catch(() => {});
   }, [load]);
 
   const canEdit = user?.role === 'EDITOR' || user?.role === 'ADMIN';
@@ -66,41 +80,66 @@ export function FeedScreen({ navigation }: Props) {
   }
 
   return (
-    <FlatList
-      data={news}
-      keyExtractor={(n) => n.id}
-      contentContainerStyle={styles.list}
-      refreshControl={<RefreshControl refreshing={false} onRefresh={load} tintColor={theme.text} />}
-      ListEmptyComponent={
-        <Text style={styles.muted}>{error ?? 'Sem notícias publicadas ainda.'}</Text>
-      }
-      renderItem={({ item }) => (
-        <Pressable
-          style={styles.card}
-          onPress={() => navigation.navigate('NewsDetail', { slug: item.slug, title: item.title })}
-        >
-          <Text style={styles.cat}>
-            {item.category?.name ?? 'Geral'}
-            {item.media && item.media.length > 0 ? '  ·  🎞 multimédia' : ''}
+    <View style={styles.container}>
+      <FlatList
+        data={news}
+        keyExtractor={(n) => n.id}
+        contentContainerStyle={styles.list}
+        refreshControl={<RefreshControl refreshing={false} onRefresh={() => load(cat)} tintColor={theme.text} />}
+        ListHeaderComponent={
+          cats.length > 0 ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.chips}
+            >
+              <Chip label="Todas" active={cat === ''} onPress={() => load('')} />
+              {cats.map((c) => (
+                <Chip key={c.id} label={c.name} active={cat === c.slug} onPress={() => load(c.slug)} />
+              ))}
+            </ScrollView>
+          ) : null
+        }
+        ListEmptyComponent={
+          <Text style={styles.muted}>
+            {error ?? (cat ? 'Sem notícias nesta categoria.' : 'Sem notícias publicadas ainda.')}
           </Text>
-          <Text style={styles.title}>{item.title}</Text>
-          {!!item.summary && (
-            <Text style={styles.summary} numberOfLines={2}>
-              {item.summary}
+        }
+        renderItem={({ item }) => (
+          <Pressable
+            style={styles.card}
+            onPress={() => navigation.navigate('NewsDetail', { slug: item.slug, title: item.title })}
+          >
+            <Text style={styles.cat}>
+              {item.category?.name ?? 'Geral'}
+              {item.media && item.media.length > 0 ? '  ·  🎞 multimédia' : ''}
             </Text>
-          )}
-          <Text style={styles.meta}>
-            {item.author?.name ?? '—'} · {item.viewCount} visualizações
-          </Text>
-        </Pressable>
-      )}
-    />
+            <Text style={styles.title}>{item.title}</Text>
+            {!!item.summary && (
+              <Text style={styles.summary} numberOfLines={2}>
+                {item.summary}
+              </Text>
+            )}
+            <Text style={styles.meta}>
+              {item.author?.name ?? '—'} · {item.viewCount} visualizações
+            </Text>
+          </Pressable>
+        )}
+      />
+      <DailyDigest onOpenNews={(slug, title) => navigation.navigate('NewsDetail', { slug, title })} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: theme.bg },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.bg },
   list: { padding: 16, gap: 12 },
+  chips: { flexDirection: 'row', gap: 8, paddingBottom: 12 },
+  chip: { borderColor: theme.border, borderWidth: 1, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 14, backgroundColor: theme.card },
+  chipActive: { borderColor: theme.primary, backgroundColor: theme.primary },
+  chipTxt: { color: theme.muted, fontSize: 13, fontWeight: '600' },
+  chipTxtActive: { color: '#fff' },
   card: {
     backgroundColor: theme.card,
     borderColor: theme.border,

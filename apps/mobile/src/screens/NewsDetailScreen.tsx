@@ -7,6 +7,7 @@ import { theme } from '../lib/theme';
 import type { NewsItem } from '../lib/types';
 import { MediaPlayer } from '../components/MediaPlayer';
 import { ListenButton } from '../components/ListenButton';
+import { Comments } from '../components/Comments';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'NewsDetail'>;
 
@@ -55,6 +56,8 @@ export function NewsDetailScreen({ route }: Props) {
           ))}
         </View>
       )}
+
+      <Comments slug={news.slug} />
     </ScrollView>
   );
 }

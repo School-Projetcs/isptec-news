@@ -108,8 +108,11 @@ Cada variante grava em `MediaVariant`: `size`, `compressionRatio`, `processingMs
 
 - **VOD (sob demanda):** `GET /media/:id/raw` → `serveWithRange()` responde `206 Partial Content`
   com `Accept-Ranges: bytes`. O `<video>`/`<audio>` HTML5 faz seek/pause/play reais.
-- **Live (tempo real):** `GET /stream/live` → MJPEG (`multipart/x-mixed-replace`), o servidor
-  empurra frames JPEG (gerados com sharp) a cada 500 ms; o cliente mostra num `<img>`.
+- **Live (atual):** `GET /stream/live` → MJPEG (`multipart/x-mixed-replace`), o servidor empurra
+  frames JPEG (gerados com sharp) a cada 500 ms. ⚠️ **Sintético — sem ingestão real.**
+- **Live (Fase 7, planeado):** **RTMP→HLS** real — `node-media-server` (ingestão RTMP :1935) +
+  FFmpeg → HLS + `hls.js` no cliente, com **transmissão simulada** (FFmpeg) para a demo sem câmara.
+  Detalhe e fluxo de dados em [`docs/04-arquitetura-streaming.md`](docs/04-arquitetura-streaming.md).
 - **Offline:** `GET /media/:id/download` entrega a variante processada para guardar localmente.
 
 ---

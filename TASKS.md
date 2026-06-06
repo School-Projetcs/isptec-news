@@ -6,7 +6,41 @@
 
 ## Progresso global
 
-Fases 0–4 ✅ (3 auto-fail cobertos) · Fase 5 ✅ (segurança + polish UX) · Fase 6 🔵 (docs + seed ✅, vídeo ⏳) — **~92%**.
+Fases 0–4 ✅ (3 auto-fail cobertos) · Fase 5 ✅ · Fase 6 🔵 · **Fase 7 (feedback de produto) 🔵 a arrancar**.
+
+---
+
+## 🚀 Fase 7 — Feedback de produto (Euronews-grade) · ordem de impacto
+
+> Propostas/auditoria: [`docs/03-proposta-redesign.md`](docs/03-proposta-redesign.md) ·
+> [`docs/04-arquitetura-streaming.md`](docs/04-arquitetura-streaming.md) ·
+> [`docs/05-auditoria-conformidade.md`](docs/05-auditoria-conformidade.md) · [`TEST_PLAN.md`](TEST_PLAN.md).
+
+- [ ] **F7.1 — Streaming real (RTMP→HLS)** 🔴 *prioridade máxima* — `node-media-server` (RTMP :1935)
+      + FFmpeg → HLS + `hls.js`. Inclui **transmissão simulada** (FFmpeg, sem câmara) e status/eventos.
+      Substitui o MJPEG sintético. *(decisão: o mais simples que cumpre RTMP+FFmpeg+HLS do enunciado)*
+- [ ] **F7.2 — CMS multi-formato + editar** — Editor passa a **anexar imagem/vídeo/áudio** e
+      **escolher capa**; ecrã de **editar** notícia existente (API `PUT /news/:id` já existe).
+- [ ] **F7.3 — Metadados editoriais** — data + hora de publicação, autor, categoria, **tempo de
+      leitura**, **destaque de recentes** em todas as páginas de notícia.
+- [ ] **F7.4 — Modo Dev/Demo** — toggle (Definições → Developer Mode); painéis em tempo real:
+      pipeline FFmpeg, Huffman, conversão de vídeo, geração de HLS, eventos do sistema. Off = app normal.
+- [ ] **F7.5 — Redesign single-page (Euronews)** 🟡 *requer aprovação da proposta* — tema claro
+      elegante + `ThemeToggle`; **HeroLive** (autoplay) + widgets **Tempo** (Open-Meteo) e **Mercados**;
+      **FeaturedGrid** bento; **VideoCard** com autoplay in-card; detalhe repaginado.
+- [ ] **F7.6 — Auditoria de UX** — corrigir fluxos mortos (Editor↔Media, falta de editar),
+      consistência visual, navegação.
+- [ ] **F7.7 — TEST_PLAN + conformidade** — manter [`TEST_PLAN.md`](TEST_PLAN.md) atualizado à
+      medida que as features aterram; rever [`docs/05-auditoria-conformidade.md`](docs/05-auditoria-conformidade.md).
+- [ ] **F7.8 — Ouvir notícia (TTS)** — leitura em voz alta com **APIs de áudio padrão**:
+      Web Speech API (`speechSynthesis`) na Web/Desktop e `expo-speech` no Mobile. Botão "🔊 Ouvir"
+      no detalhe da notícia (e no resumo do dia), voz pt-PT, controlos play/pausa/parar + velocidade.
+- [ ] **F7.9 — "Resumo do dia" flutuante** — botão **flutuante (FAB)** que abre painel com as
+      **≥3 notícias mais importantes do dia** (ranking por vistas + recência), cada uma com o seu
+      resumo e link; botão "ouvir resumo" reutiliza a TTS (F7.8). Endpoint `GET /news/digest`.
+- [ ] **B8 — Comentários** (opcional) — `Comment` existe no schema; falta rotas/UI.
+
+---
 
 ---
 

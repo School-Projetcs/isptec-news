@@ -13,11 +13,12 @@ entregáveis/documentação de defesa (Fase 6).
 
 ## Fase atual
 
-**Fase 5 ✅ + Fase 6 quase ✅.** Segurança ✅ (rate-limit + roles). **F5.3 ✅** polish de UX na Web
-(estados de erro/loading com retry + capas no feed/detalhe), **verificado no browser**. **F6.3 ✅**
-seed de demonstração rico (7 notícias + galeria + áudio + vídeo), **verificado no browser**.
-Entregáveis ✅: [relatório técnico](docs/01-relatorio-tecnico.md) e
-[manual do utilizador](docs/02-manual-utilizador.md). **Falta só:** vídeo de demonstração (F6.2).
+**Fase 5 ✅ · Fase 6 quase ✅ · Fase 7 (feedback de produto) 🔵 a arrancar.** Segurança ✅; F5.3 ✅
+polish UX Web; F6.3 ✅ seed rico (verificados no browser). Entregáveis: [relatório](docs/01-relatorio-tecnico.md),
+[manual](docs/02-manual-utilizador.md), [TEST_PLAN](TEST_PLAN.md), [auditoria](docs/05-auditoria-conformidade.md).
+**Novo (feedback):** ver "Próximo passo" — streaming real RTMP→HLS, CMS multi-formato, metadados
+editoriais, Modo Dev e redesign single-page. Auditoria identifica **A2 (streaming) como única lacuna
+auto-fail** (hoje o live é MJPEG sintético).
 
 ## Concluído (Fases 0–3 + parte da 4)
 
@@ -47,9 +48,16 @@ Entregáveis ✅: [relatório técnico](docs/01-relatorio-tecnico.md) e
 
 ## Próximo passo
 
-Núcleo funcional completo e verificado. Resta apenas o **vídeo de demonstração (F6.2)** — manual,
-com guião na secção 6 do [manual](docs/02-manual-utilizador.md). Opcionais: empacotar o Desktop
-(`electron-builder`, F4.4), correr o Mobile num dispositivo (VERIF-M), HLS (F3+), comentários, deploy.
+**Fase 7 — Feedback de produto (Euronews-grade).** Propostas e auditoria escritas:
+[redesign](docs/03-proposta-redesign.md) · [streaming RTMP→HLS](docs/04-arquitetura-streaming.md) ·
+[conformidade](docs/05-auditoria-conformidade.md) · [TEST_PLAN](TEST_PLAN.md). Decisões fechadas:
+streaming = `node-media-server`+FFmpeg+HLS+`hls.js` (com transmissão simulada); redesign = single-page
+claro elegante (hero-live + widgets, video cards autoplay) — **proposta aguarda aprovação antes da UI**.
+
+Ordem de implementação (impacto): **F7.1 streaming real** → F7.2 CMS multi-formato+editar →
+F7.3 metadados editoriais → F7.4 Modo Dev → F7.5 redesign → F7.6 UX → F7.7 TEST_PLAN/conformidade →
+**F7.8 ouvir notícia (TTS)** → **F7.9 "Resumo do dia" flutuante**.
+Pendentes anteriores (opcionais): vídeo de demo (F6.2), VERIF-M, empacotar Desktop (F4.4).
 
 > Nota: para obter o seed rico numa BD já populada, basta `pnpm db:seed` — o seed é declarativo
 > (o bloco `update` faz convergir o conteúdo/vistas/capa para o estado de demonstração).

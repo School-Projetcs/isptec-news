@@ -53,8 +53,15 @@ Resta apenas o **vídeo de demonstração (F6.2)** — manual.
 
 ## Próxima ação recomendada
 
-Núcleo completo e verificado. Resta o **vídeo de demonstração (F6.2)** — manual, guião na secção 6
-do manual. Opcionais: VERIF-M (Mobile em dispositivo), F4.4 (empacotar Desktop), HLS, comentários, deploy.
+**Fase 7 — feedback de produto (Euronews-grade).** Propostas/auditoria escritas em
+`docs/03-proposta-redesign.md`, `docs/04-arquitetura-streaming.md`, `docs/05-auditoria-conformidade.md`,
+`TEST_PLAN.md`. Decisões: streaming = `node-media-server`+FFmpeg+HLS+`hls.js` (+ transmissão simulada);
+redesign = single-page claro elegante (**proposta aguarda aprovação antes da UI**).
+
+Implementar por impacto: **F7.1 streaming real (RTMP→HLS)** → F7.2 CMS multi-formato+editar →
+F7.3 metadados editoriais (data/hora/tempo de leitura) → F7.4 Modo Dev → F7.5 redesign → F7.6 UX →
+F7.7 TEST_PLAN/conformidade → **F7.8 ouvir notícia (TTS, Web Speech API/`expo-speech`)** →
+**F7.9 "Resumo do dia" flutuante (FAB, ≥3 notícias, `GET /news/digest`)**. Backlog em `TASKS.md` (Fase 7).
 
 ## Arranque em 30 s
 

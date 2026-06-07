@@ -170,21 +170,11 @@ demo (F6.2).
 > Nota: para obter o seed rico numa BD já populada, basta `pnpm db:seed` — o seed é declarativo
 > (o bloco `update` faz convergir o conteúdo/vistas/capa para o estado de demonstração).
 
-## Como arrancar (relembrar)
+## Como arrancar (Zero Fricção)
 
 ```bash
 pnpm install
-pnpm db:up        # PostgreSQL + Adminer (Docker)
-pnpm db:migrate
-pnpm db:seed
-pnpm dev          # API :3333  +  Web :5173
-
-# Desktop (Electron):
-pnpm dev:desktop  # janela a apontar para o Vite (requer `pnpm dev` a correr)
-pnpm desktop      # build da Web + janela autónoma (modo produção)
-
-# Mobile (Expo) — requer a API a correr + EXPO_PUBLIC_API_URL no IP da máquina:
-pnpm --filter @isptec/mobile start   # ler QR com Expo Go (Android/iOS)
+pnpm start:all   # Inicia tudo: Docker, BD, API, Web, Desktop e Mobile (com IP auto-injetado)
 ```
 Login demo: `admin@isptec.local` / `admin123`.
 

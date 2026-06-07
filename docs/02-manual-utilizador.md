@@ -30,10 +30,22 @@ pnpm db:seed            # utilizadores + categorias + notícias de demo (capas/g
 
 ## 3. Executar os serviços
 
-### 3.1 API + Web (núcleo)
+A forma recomendada e mais fácil de correr todo o projeto é utilizando o nosso comando **Zero-Fricção**, que inicia tudo automaticamente:
+
+```bash
+pnpm start:all
+```
+*(Nota: O Desktop e o Mobile irão abrir-se automaticamente em novas janelas do terminal. Para aceder ao mobile, lê o QR code no Expo Go).*
+
+### 3.1 Execução Manual (opcional)
+
+Se precisares de correr as partes de forma isolada:
 
 ```bash
 pnpm dev                # API (:3333) + Web (:5173) em paralelo
+pnpm dev:desktop        # Desktop (Electron) em modo dev
+pnpm dev:mobile         # Mobile (Expo) - injeta o teu IP automaticamente
+pnpm desktop            # Produção: constrói a Web e abre a janela Electron
 ```
 
 | Serviço | URL |
@@ -41,25 +53,6 @@ pnpm dev                # API (:3333) + Web (:5173) em paralelo
 | API | http://localhost:3333 · health: `/health` |
 | Web | http://localhost:5173 |
 | Adminer (BD) | http://localhost:8080 |
-
-### 3.2 Cliente Desktop (Electron)
-
-```bash
-# opção A — desenvolvimento (carrega o Vite; requer `pnpm dev` a correr):
-pnpm dev:desktop
-
-# opção B — produção (build da Web + janela autónoma):
-pnpm desktop
-```
-
-### 3.3 Cliente Mobile (Expo)
-
-```bash
-# 1) a API tem de estar a correr (pnpm dev:api)
-# 2) define o URL da API para o IP da TUA máquina na rede local:
-#    apps/mobile/.env  →  EXPO_PUBLIC_API_URL=http://192.168.x.x:3333
-pnpm --filter @isptec/mobile start    # lê o QR code com a Expo Go
-```
 
 | Ambiente | `EXPO_PUBLIC_API_URL` |
 |---|---|

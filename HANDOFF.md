@@ -122,11 +122,11 @@ e por typecheck+bundle Metro (mobile). **A Fase 7 está agora COMPLETA.**
 bastidores; RN sem EventSource nativo). **Verificado:** typecheck + bundle Metro (808 mód.); falta correr
 em dispositivo (VERIF-M). Pendentes só manuais: VERIF-M, F4.4 (empacotar Desktop), F6.2 (vídeo). Backlog em `TASKS.md`.
 
-## Arranque em 30 s
+## Arranque Zero-Fricção (10 s)
 
 ```bash
-pnpm install && pnpm db:up && pnpm db:migrate && pnpm db:seed && pnpm dev
-# API :3333 · Web :5173 · login admin@isptec.local / admin123
+pnpm install && pnpm start:all
+# Liga DB, API, Web, Desktop e Mobile automaticamente. login: admin@isptec.local / admin123
 ```
 
 ## Ficheiros-chave

@@ -1,7 +1,7 @@
 # 06 — Deploy Zero-Cost (produção grátis)
 
 > Guia para publicar o **ISPTEC News** online **sem custos**, usando apenas free tiers.
-> A **demonstração principal é local** ("máquina como host" — `pnpm dev`); este deploy é um
+> A **demonstração principal é local** ("máquina como host" — `pnpm start:all`); este deploy é um
 > **bónus** para partilhar um URL público. Cumpre os requisitos sem cartão obrigatório, exceto
 > onde indicado (Fly.io pede cartão para verificação, mas tem alvo gratuito).
 
@@ -183,7 +183,7 @@ Mais fácil, **sem Docker**, mas **sem RTMP** (só live simulada) e **disco efé
 | Vercel / Netlify / Cloudflare Pages (Web) | Free | 0 € |
 | Open-Meteo · open.er-api · CoinGecko | Públicas | 0 € |
 
-**Total: 0 €.** Para a defesa, a **demo principal continua local** (`pnpm dev`), onde **todos** os
+**Total: 0 €.** Para a defesa, a **demo principal continua local** (`pnpm start:all`), onde **todos** os
 auto-fail (compressão, streaming RTMP real, multiplataforma) funcionam sem restrições de free tier.
 
 ---

@@ -14,29 +14,37 @@ Satisfaz o requisito de **cliente multiplataforma** (Windows/Linux/macOS).
 
 ## Executar
 
-### Desenvolvimento (com hot-reload da Web)
+Podes executar todo o ecossistema com zero-fricção através do comando na raiz do projeto:
 
+```bash
+pnpm start:all
+```
+*Isto irá lançar a API, a Web e abrir automaticamente a janela do Electron para o Desktop num novo terminal!*
+
+### Desenvolvimento Manual (com hot-reload da Web)
+
+Se preferires correr à mão:
 ```bash
 # Terminal 1 — API + Web (na raiz do monorepo)
 pnpm dev
 
 # Terminal 2 — janela Electron a apontar para o Vite
-pnpm --filter @isptec/desktop dev
+pnpm dev:desktop
 ```
 
 ### Produção (janela autónoma a partir do build)
 
 ```bash
-pnpm --filter @isptec/web build      # gera apps/web/dist (lê .env.production)
-pnpm --filter @isptec/desktop start  # abre a janela Electron a servir o dist
+pnpm desktop  # constrói a Web e abre a janela Electron a servir o build estático
 ```
-
-> A API (`pnpm dev:api` ou `pnpm --filter @isptec/api start`) tem de estar a correr
-> em `http://localhost:3333` para o cliente ter dados.
 
 ## Empacotamento (instaladores .exe/.AppImage/.dmg)
 
-Ainda não configurado — usar `electron-builder` numa iteração futura (Fase 4/5).
-Para a demo local, `start` abre a aplicação real sem necessidade de instalador.
+O `electron-builder` já está configurado. Podes gerar o instalador (ex: `.exe` no Windows) correndo o seguinte comando a partir da raiz:
+
+```bash
+pnpm --filter @isptec/desktop dist
+```
+O executável final ficará guardado na pasta `apps/desktop/release/`.
 
 > Detalhes no [plano-mestre](../../docs/00-plano-mestre.md).

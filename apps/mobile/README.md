@@ -33,13 +33,16 @@ cp .env.example .env   # define EXPO_PUBLIC_API_URL
 
 ## Executar
 
-```bash
-# 1) API a correr (noutro terminal, na raiz)
-pnpm dev:api          # http://localhost:3333
+Podes executar todo o ecossistema com zero-fricção através do comando na raiz do projeto:
 
-# 2) Mobile
-pnpm --filter @isptec/mobile start
-# Lê o QR code com a app Expo Go (Android/iOS), ou tecla "a"/"i" para emulador.
+```bash
+pnpm start:all
+```
+*Isto irá lançar a API, a Web e abrir automaticamente o terminal do Mobile com o teu IP já injetado. Depois basta leres o QR code com a app Expo Go!*
+
+Se precisares de rodar apenas o Mobile de forma isolada (assumindo que a API já corre):
+```bash
+pnpm dev:mobile
 ```
 
 ## Notas

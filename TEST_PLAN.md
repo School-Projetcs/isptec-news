@@ -25,9 +25,7 @@ pnpm db:seed      # dados de demonstração (notícias + media já comprimida)
 ## 3. Execução
 
 ```bash
-pnpm dev          # API :3333  +  Web :5173   (em paralelo)
-# Desktop (Electron):  pnpm dev:desktop   (requer 'pnpm dev' a correr)
-# Mobile (Expo):       pnpm --filter @isptec/mobile start   (EXPO_PUBLIC_API_URL = IP LAN)
+pnpm start:all    # Zero-Fricção: liga DB, migra, e lança API, Web, Desktop e Mobile (injetando o IP LAN auto)
 ```
 
 Abrir **http://localhost:5173**.

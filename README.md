@@ -169,66 +169,54 @@ Após o clone, copia os `.env.example` para `.env` (os valores de exemplo funcio
 - Portas livres: **3333** (API), **5173** (Web), **8080** (Adminer), **1935** (RTMP), **8081** (Metro/Expo)
 - (Mobile) app **Expo Go** (versão mais recente) no telemóvel, na mesma rede do computador
 
-### 3.2 Instalação
+### 3.2 Instalação e Execução (Setup Zero-Fricção)
+
+Graças ao nosso script inteligente de **zero-fricção**, basta clonares o repositório e correres dois comandos. Ele tratará de iniciar a base de dados (Docker), as migrações, a API, a Web, o Desktop e o Mobile de uma só vez (injetando automaticamente o teu IP local para o Mobile)!
 
 ```bash
 git clone https://github.com/School-Projetcs/isptec-news.git && cd isptec-news
 pnpm install
+pnpm start:all
 ```
 
-### 3.3 Configuração (variáveis de ambiente)
+*(Nota: O Desktop e o Mobile irão abrir-se automaticamente em novas janelas do terminal. Para aceder à app mobile, lê o QR code gerado no ecrã com a tua app Expo Go).*
 
-Se os `.env` não existirem após o clone, copia os modelos `.env.example` (os valores de exemplo
-funcionam em dev local — ver o [índice de configuração](#configuração-modelos-de-ambiente)):
+### 3.3 Configuração Manual (Modo Avançado / Produção)
+
+Se os ficheiros `.env` não existirem, os mesmos podem ser copiados manualmente a partir dos modelos `.env.example`:
 
 ```bash
 cp .env.example .env
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env
-cp apps/mobile/.env.example apps/mobile/.env   # só se fores correr o Mobile
+cp apps/mobile/.env.example apps/mobile/.env
 ```
 
-Configuração por cliente (apontar para a API):
+Atenção especial ao Mobile: se não usares o nosso atalho `pnpm dev:mobile`, precisarás de definir a `EXPO_PUBLIC_API_URL` com o **IP da tua máquina** na rede local.
 
-| Cliente | Variável | Exemplo |
-|---|---|---|
-| Web/Desktop | `VITE_API_URL` | `http://localhost:3333` (dev usa o proxy `/api` do Vite) |
-| Mobile | `EXPO_PUBLIC_API_URL` | `http://<IP-LAN>:3333` (no telemóvel **não** uses `localhost`) |
-
-Em produção, define `DATABASE_URL` para um PostgreSQL gerido (Supabase/Neon/Railway/Render/Fly) e
-`VITE_API_URL`/`EXPO_PUBLIC_API_URL` para a API publicada — ver
-[`docs/06-deploy-zero-cost.md`](docs/06-deploy-zero-cost.md).
+Em produção, define a `DATABASE_URL` para um PostgreSQL online — ver [guia de deploy](docs/06-deploy-zero-cost.md).
 
 ---
 
-## 4. Execução (desenvolvimento)
+## 4. Execução Manual (Passo-a-passo)
 
-### 4.1 Serviços auxiliares (base de dados)
+Se preferires arrancar as coisas separadamente (em vez de usares o `pnpm start:all`), faz o seguinte:
 
+### 4.1 Base de Dados (Docker)
 ```bash
-pnpm db:up        # PostgreSQL + Adminer (Docker)
-pnpm db:migrate   # cria/aplica o esquema
-pnpm db:seed      # utilizadores, categorias e notícias de demonstração (media já comprimida)
+pnpm db:up        # Inicia o PostgreSQL
+pnpm db:migrate   # Aplica o esquema
+pnpm db:seed      # Insere as notícias de demonstração
 ```
 
-### 4.2 Backend + Frontend
-
+### 4.2 Clientes
 ```bash
-pnpm dev          # API (:3333) + Web (:5173) em paralelo
-# ou separados:
-pnpm dev:api      # apenas a API
-pnpm dev:web      # apenas a Web
+pnpm dev          # Lança a API e a Web juntas
+pnpm dev:api      # (Lança só a API)
+pnpm dev:web      # (Lança só a Web)
+pnpm dev:desktop  # Lança o cliente Desktop (Electron) num terminal à parte
+pnpm dev:mobile   # Lança o cliente Mobile (Expo) injetando o teu IP LAN
 ```
-
-### 4.3 Projeto completo local (Setup Zero-Fricção)
-
-Temos um comando unificado que automatiza tudo de uma vez. Ele inicia o Docker, faz a migração, popula a base de dados e lança todos os clientes (API, Web, Desktop e Mobile), abrindo os terminais extra que forem necessários!
-
-```bash
-pnpm start:all
-```
-
-*(Nota: O Desktop e o Mobile irão abrir-se automaticamente em novas janelas do terminal. Para aceder ao mobile, lê o QR code no Expo Go).*
 
 | Serviço | URL |
 |---|---|

@@ -1,4 +1,4 @@
-import { execSync, spawn } from 'child_process';
+import { execSync, spawn, exec } from 'child_process';
 import os from 'os';
 import { setTimeout } from 'timers/promises';
 
@@ -15,7 +15,7 @@ try {
 } catch (e) {
   console.log('⏳ Docker não está a correr. A tentar iniciar o Docker Desktop automaticamente...');
   if (isWindows) {
-    spawn('cmd.exe', ['/c', 'start', '""', '"C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"'], { detached: true, stdio: 'ignore' });
+    exec('start "" "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"');
   } else if (isMac) {
     spawn('open', ['-a', 'Docker'], { detached: true, stdio: 'ignore' });
   } else {
@@ -61,7 +61,7 @@ try {
 
   const runInNewTerminal = (command, title) => {
     if (isWindows) {
-      spawn('cmd.exe', ['/c', 'start', `"${title}"`, 'cmd.exe', '/k', command], { detached: true, stdio: 'ignore' });
+      exec(`start "${title}" cmd.exe /k "${command}"`);
     } else if (isMac) {
       spawn('osascript', ['-e', `tell app "Terminal" to do script "cd \\"${process.cwd()}\\" && ${command}"`], { detached: true, stdio: 'ignore' });
     } else {

@@ -1,6 +1,6 @@
 # TEST_PLAN — ISPTEC News
 
-> Guia para um avaliador validar o projeto do início ao fim. Atualizado: **2026-06-06** (F7.4/F7.6/F7.8/F7.9 + B8 ✅).
+> Guia para um avaliador validar o projeto do início ao fim. Atualizado: **2026-06-07** (Fase 7 completa, incl. redesign F7.5).
 > Estado de cada fluxo: ✅ a passar hoje · ⏳ depende de feature em desenvolvimento.
 > Login de demonstração: **`admin@isptec.local` / `admin123`** (ADMIN).
 > Outros: `editor@isptec.local` / `editor123` · `leitor@isptec.local` / `reader123`.
@@ -136,6 +136,17 @@ Abrir **http://localhost:5173**.
 | Comentar | No detalhe (com sessão), escrever e "Comentar" | Comentário aparece no topo da lista; contador atualiza | ✅ |
 | Sem sessão | Abrir detalhe sem login | Em vez do formulário, "Inicia sessão para comentar" | ✅ |
 | Eliminar | Autor (ou admin) clica "Eliminar" | Comentário removido; só o autor/admin vê o botão | ✅ |
+
+### 4.13 Redesign single-page (F7.5)
+
+| Passo | Ação | Resultado esperado | Estado |
+|---|---|---|---|
+| Landing | Abrir a página inicial | Hero (ao vivo ou capa de destaque) + widgets (Tempo, Mercados, Últimas), grelha "bento" e secção filtrável | ✅ |
+| Tempo | Ver o widget de tempo | Temperatura real de Luanda (Open-Meteo); offline → "indisponível" | ✅ |
+| Vídeo in-card | Scroll até um card de vídeo | Vídeo faz autoplay mudo no card e pausa fora de vista | ✅ |
+| Tema | Clicar no ◐ no topo | Alterna claro/escuro; persiste; sem flash ao recarregar | ✅ |
+| Detalhe | Abrir uma notícia | Layout editorial (kicker, título display, hero, leitura) | ✅ |
+| Mobile | Abrir o app Expo | Visual claro editorial; feed com capas (image-forward); detalhe com hero | 🟡 (typecheck+bundle; falta dispositivo) |
 
 ## 5. Critério de aceitação
 

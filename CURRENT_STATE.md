@@ -16,9 +16,9 @@ entregáveis/documentação de defesa (Fase 6).
 **Fase 5 ✅ · Fase 6 quase ✅ · Fase 7 (feedback de produto) 🔵 em curso.** Segurança ✅; F5.3 ✅
 polish UX Web; F6.3 ✅ seed rico (verificados no browser). Entregáveis: [relatório](docs/01-relatorio-tecnico.md),
 [manual](docs/02-manual-utilizador.md), [TEST_PLAN](TEST_PLAN.md), [auditoria](docs/05-auditoria-conformidade.md).
-**Fase 7 (quase ✅):** **F7.1 streaming RTMP→HLS ✅ · F7.2 CMS multi-formato ✅ · F7.3 metadados ✅ ·
-F7.4 Modo Dev/Demo ✅ · F7.6 auditoria de UX ✅ · F7.7 docs/conformidade ✅ · F7.8 TTS ✅ · F7.9 "Resumo
-do dia" ✅**. **Só falta o redesign single-page (F7.5), que aguarda aprovação** (ver "Próximo passo").
+**Fase 7 ✅ COMPLETA:** F7.1 streaming RTMP→HLS · F7.2 CMS multi-formato · F7.3 metadados · F7.4 Modo
+Dev/Demo · F7.5 **redesign** · F7.6 auditoria de UX · F7.7 docs/conformidade · F7.8 TTS · F7.9 "Resumo do
+dia" — todas ✅. Bónus B8 comentários ✅. Restam só tarefas manuais (VERIF-M, empacotar Desktop, vídeo).
 
 ## Concluído (Fases 0–3 + parte da 4)
 
@@ -48,11 +48,11 @@ do dia" ✅**. **Só falta o redesign single-page (F7.5), que aguarda aprovaçã
 
 ## Próximo passo
 
-**Fase 7 — Feedback de produto (Euronews-grade).** Propostas e auditoria escritas:
-[redesign](docs/03-proposta-redesign.md) · [streaming RTMP→HLS](docs/04-arquitetura-streaming.md) ·
-[conformidade](docs/05-auditoria-conformidade.md) · [TEST_PLAN](TEST_PLAN.md). Decisões fechadas:
-streaming = `node-media-server`+FFmpeg+HLS+`hls.js` (com transmissão simulada); redesign = single-page
-claro elegante (hero-live + widgets, video cards autoplay) — **proposta aguarda aprovação antes da UI**.
+**Fase 7 — Feedback de produto (Euronews-grade): ✅ COMPLETA.** Propostas/auditoria:
+[redesign](docs/03-proposta-redesign.md) (implementado) · [streaming RTMP→HLS](docs/04-arquitetura-streaming.md) ·
+[conformidade](docs/05-auditoria-conformidade.md) · [TEST_PLAN](TEST_PLAN.md).
+**Próximas ações são manuais** (não-bloqueantes): VERIF-M (Mobile em dispositivo via Expo Go),
+F4.4 (empacotar Desktop com electron-builder) e F6.2 (gravar vídeo de demonstração).
 
 **F7.1 streaming ✅ · F7.2 CMS multi-formato/editar ✅ · F7.3 metadados ✅ · F7.4 Modo Dev/Demo ✅ ·
 F7.6 auditoria de UX ✅ · F7.8 ouvir notícia (TTS) ✅ · F7.9 "Resumo do dia" ✅** (verificados no browser;
@@ -62,8 +62,8 @@ o detalhe em voz pt-PT. O **"Resumo do dia"** (FAB) mostra o top 5 (`/news/diges
 A **F7.6** acrescentou filtro de categorias no feed (expõe `GET /news?category=`) e tornou o cabeçalho
 responsivo (sem overflow a 375px). A **F7.7** atualizou o TEST_PLAN e reescreveu a auditoria de
 conformidade ([docs/05](docs/05-auditoria-conformidade.md)) com um mapa de prontidão por critério/peso.
-**Toda a Fase 7 sem bloqueio está feita — resta apenas a F7.5 (redesign), que aguarda aprovação.**
-Implementado também o bónus **B8 comentários** (rotas + UI no detalhe, verificado no browser).
+**Fase 7 completa, incluindo o redesign (F7.5).** Implementado também o bónus **B8 comentários**
+(rotas + UI no detalhe nas duas plataformas).
 **Paridade do Mobile (Expo):** o app passou a ter **comentários, filtro de categorias e "Resumo do dia"**
 (além do TTS já existente) — só o Modo Dev fica de fora (painel SSE de bastidores, sem sentido no telemóvel).
 Verificado por typecheck + bundle Metro (808 mód.); falta correr em dispositivo (VERIF-M).

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
+  Image,
   FlatList,
   Pressable,
   ScrollView,
@@ -11,7 +12,7 @@ import {
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
-import { api } from '../lib/api';
+import { api, mediaUrl } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { theme } from '../lib/theme';
 import type { Category, NewsItem } from '../lib/types';
@@ -105,26 +106,33 @@ export function FeedScreen({ navigation }: Props) {
             {error ?? (cat ? 'Sem notícias nesta categoria.' : 'Sem notícias publicadas ainda.')}
           </Text>
         }
-        renderItem={({ item }) => (
-          <Pressable
-            style={styles.card}
-            onPress={() => navigation.navigate('NewsDetail', { slug: item.slug, title: item.title })}
-          >
-            <Text style={styles.cat}>
-              {item.category?.name ?? 'Geral'}
-              {item.media && item.media.length > 0 ? '  ·  🎞 multimédia' : ''}
-            </Text>
-            <Text style={styles.title}>{item.title}</Text>
-            {!!item.summary && (
-              <Text style={styles.summary} numberOfLines={2}>
-                {item.summary}
-              </Text>
-            )}
-            <Text style={styles.meta}>
-              {item.author?.name ?? '—'} · {item.viewCount} visualizações
-            </Text>
-          </Pressable>
-        )}
+        renderItem={({ item, index }) => {
+          const cover = item.cover ? mediaUrl(item.cover.id, 'webp-q80') : null;
+          const featured = index === 0 && !cat;
+          return (
+            <Pressable
+              style={styles.card}
+              onPress={() => navigation.navigate('NewsDetail', { slug: item.slug, title: item.title })}
+            >
+              {cover && <Image source={{ uri: cover }} style={featured ? styles.coverFeatured : styles.cover} />}
+              <View style={styles.cardBody}>
+                <Text style={styles.cat}>
+                  {item.category?.name ?? 'Geral'}
+                  {item.media && item.media.length > 0 ? '  ·  🎞 multimédia' : ''}
+                </Text>
+                <Text style={[styles.title, featured && styles.titleFeatured]}>{item.title}</Text>
+                {!!item.summary && (
+                  <Text style={styles.summary} numberOfLines={featured ? 3 : 2}>
+                    {item.summary}
+                  </Text>
+                )}
+                <Text style={styles.meta}>
+                  {item.author?.name ?? '—'} · {item.viewCount} visualizações
+                </Text>
+              </View>
+            </Pressable>
+          );
+        }}
       />
       <DailyDigest onOpenNews={(slug, title) => navigation.navigate('NewsDetail', { slug, title })} />
     </View>
@@ -136,7 +144,7 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.bg },
   list: { padding: 16, gap: 12 },
   chips: { flexDirection: 'row', gap: 8, paddingBottom: 12 },
-  chip: { borderColor: theme.border, borderWidth: 1, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 14, backgroundColor: theme.card },
+  chip: { borderColor: theme.border, borderWidth: 1, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 14, backgroundColor: theme.surface },
   chipActive: { borderColor: theme.primary, backgroundColor: theme.primary },
   chipTxt: { color: theme.muted, fontSize: 13, fontWeight: '600' },
   chipTxtActive: { color: '#fff' },
@@ -144,14 +152,18 @@ const styles = StyleSheet.create({
     backgroundColor: theme.card,
     borderColor: theme.border,
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 14,
+    overflow: 'hidden',
   },
-  cat: { color: theme.primary, fontSize: 12, fontWeight: '700', marginBottom: 4 },
-  title: { color: theme.text, fontSize: 18, fontWeight: '700' },
+  cover: { width: '100%', aspectRatio: 16 / 9, backgroundColor: theme.surface },
+  coverFeatured: { width: '100%', aspectRatio: 16 / 10, backgroundColor: theme.surface },
+  cardBody: { padding: 14 },
+  cat: { color: theme.primary, fontSize: 11, fontWeight: '800', letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 4 },
+  title: { color: theme.ink, fontSize: 18, fontWeight: '800', lineHeight: 23 },
+  titleFeatured: { fontSize: 22, lineHeight: 27 },
   summary: { color: theme.muted, marginTop: 6, lineHeight: 20 },
   meta: { color: theme.muted, fontSize: 12, marginTop: 10 },
   muted: { color: theme.muted, textAlign: 'center', marginTop: 40 },
   headerBtns: { flexDirection: 'row', gap: 16 },
-  headerLink: { color: theme.primary, fontWeight: '600', fontSize: 15 },
+  headerLink: { color: theme.primary, fontWeight: '700', fontSize: 15 },
 });

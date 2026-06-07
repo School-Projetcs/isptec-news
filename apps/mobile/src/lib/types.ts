@@ -37,6 +37,7 @@ export type NewsItem = {
   publishedAt: string | null;
   author?: { name: string };
   category?: Category | null;
+  cover?: Media | null;
   media?: Media[];
 };
 

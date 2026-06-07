@@ -1,7 +1,10 @@
 # Proposta de Redesign — ISPTEC News (single-page, estilo Euronews)
 
-> **Estado: PROPOSTA** — aguarda aprovação antes de qualquer alteração visual significativa
-> (conforme pedido no feedback de produto, secção 1). Atualizado: **2026-06-06**.
+> **Estado: ✅ IMPLEMENTADO** (aprovado para as 3 plataformas). Atualizado: **2026-06-07**.
+> Decisões §8 aplicadas com os defaults recomendados: estética editorial moderna (grotesk + vermelho),
+> tema claro por defeito **com** toggle escuro (Web), e ticker de mercados **ilustrativo**.
+> Web/Desktop: tema, HeroLive, widgets (Tempo Open-Meteo + Mercados), grelha bento, VideoCard,
+> detalhe repaginado. Mobile: linguagem visual clara editorial + feed image-forward (sem toggle).
 
 ## 1. Visão
 

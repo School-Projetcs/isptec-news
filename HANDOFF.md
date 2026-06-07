@@ -106,8 +106,12 @@ a 375px; empty-state do feed clarificado. **Verificado no browser** (Tecnologia:
 todos os auto-fail ✅, requisitos de produto ✅ (exceto redesign), **mapa de prontidão por critério/peso**
 de avaliação e lacunas remanescentes (só opcionais/manuais).
 
-**Toda a Fase 7 sem bloqueio está concluída.** Resta apenas o **F7.5 redesign single-page**, que
-**aguarda aprovação da proposta** ([`docs/03-proposta-redesign.md`](docs/03-proposta-redesign.md)).
+**F7.5 redesign ✅ feito** (aprovado p/ as 3 plataformas) — Web/Desktop: tema claro/escuro (`lib/theme.tsx`
++ `ThemeToggle`, fontes grotesk+Inter), landing `pages/Home.tsx` (HeroLive + WeatherWidget Open-Meteo +
+MarketsWidget ilustrativo + Últimas + grelha bento + VideoCard autoplay), detalhe repaginado; FAB do
+resumo movido p/ a direita, Modo Dev p/ a esquerda. Mobile: paleta clara editorial (`lib/theme.ts`) +
+feed image-forward (capas) + detalhe com hero. Faseado em 4 commits; verificado no browser (claro+escuro)
+e por typecheck+bundle Metro (mobile). **A Fase 7 está agora COMPLETA.**
 **B8 comentários ✅ feito** — `GET/POST /news/:slug/comments` (POST autenticado) + `DELETE /comments/:id`
 (autor/admin); `routes/comments.ts` montado em `/comments`; UI no detalhe na Web e no Mobile.
 **Verificado no browser** (criar→aparece→eliminar).

@@ -19,12 +19,12 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const navTheme: Theme = {
-  dark: true,
+  dark: false,
   colors: {
     primary: theme.primary,
     background: theme.bg,
     card: theme.card,
-    text: theme.text,
+    text: theme.ink,
     border: theme.border,
     notification: theme.primary,
   },
@@ -76,7 +76,7 @@ export default function App() {
   return (
     <AuthProvider>
       <NavigationContainer theme={navTheme}>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
         <Router />
       </NavigationContainer>
     </AuthProvider>

@@ -29,7 +29,7 @@
 
 | # | Requisito | Estado | Evidência / Lacuna |
 |---|---|---|---|
-| 1 | **Redesign Euronews** (single-page) | 🟡 | Proposta em [`03-proposta-redesign.md`](03-proposta-redesign.md) — **aguarda aprovação** antes da UI |
+| 1 | **Redesign Euronews** (single-page) | ✅ | F7.5: tema claro+escuro (`ThemeToggle`), HeroLive, widgets (Tempo Open-Meteo + Mercados), grelha bento, `VideoCard` autoplay, detalhe repaginado. Web/Desktop + linguagem visual no Mobile. Ver [`03-proposta-redesign.md`](03-proposta-redesign.md) |
 | 2 | **Metadados editoriais** (data, hora, autor, categoria, recência, tempo de leitura) | ✅ | F7.3: `lib/format.ts`; feed e detalhe mostram data·hora·autor·categoria·tempo de leitura + badge "Recente" |
 | 3 | **Notícia multi-formato** (texto / +imagens / +vídeo / +ambos) no CMS | ✅ | F7.2: Editor unificado com `MediaManager` (capa + galeria imagem/áudio/vídeo, comprimidos no upload) |
 | 4 | **Streaming real** (RTMP→HLS) | ✅ | F7.1: `live/{hls,rtmp}.ts`, `routes/stream.ts`; ingestão RTMP real e simulada, estado em `/stream/live/status` |
@@ -48,21 +48,23 @@
 | Funcionalidades (25%) | ✅ | Auth/roles, CMS multi-formato (criar/editar/publicar), categorias+filtro, upload+relatório, logs, live, TTS, resumo do dia |
 | Streaming (15%) | ✅ | VOD Range **+** live HLS real (RTMP→FFmpeg→HLS) + simulada |
 | Compressão (10%) | ✅ | Codecs reais (WebP/JPEG, MP3/AAC/OGG, H.264/H.265/VP9) **+ Huffman próprio**; métricas e Modo Dev tornam-no visível |
-| UX (10%) | 🟡→✅ | Estados de erro/loading, metadados, responsivo, filtro, TTS, resumo. **Redesign (F7.5) elevaria ainda mais** (aguarda aprovação) |
+| UX (10%) | ✅ | **Redesign editorial** (tema claro/escuro, hero, widgets, grelha bento, video cards, detalhe repaginado) + estados de erro/loading, metadados, responsivo, filtro, TTS, resumo do dia |
 | Defesa individual (10%) | — | Depende dos estudantes; o **Modo Dev** é forte apoio para demonstrar a compressão/streaming ao vivo |
 | Documentação (5%) | ✅ | `docs/01..05`, `README`, `TEST_PLAN`, e os 5 docs operacionais na raiz |
 
 ## E. Lacunas remanescentes (todas não-bloqueantes dos auto-fail)
 
-1. 🟡 **Redesign single-page** (req. 1 / UX) — proposta pronta, **aguarda aprovação**.
-2. ⚠️ **VERIF-M** — correr o Mobile em dispositivo/emulador (até agora typecheck + bundle Metro).
-3. ⚠️ **F4.4** — empacotar o Desktop (electron-builder → instaladores).
-4. ⚠️ **F6.2** — gravar o vídeo de demonstração (5–10 min; guião no manual).
+> Todas as funcionalidades (enunciado + feedback de produto, incluindo o redesign) estão implementadas.
+> Resta apenas verificação manual / empacotamento / material de apresentação:
+
+1. ⚠️ **VERIF-M** — correr o Mobile em dispositivo/emulador (até agora typecheck + bundle Metro).
+2. ⚠️ **F4.4** — empacotar o Desktop (electron-builder → instaladores).
+3. ⚠️ **F6.2** — gravar o vídeo de demonstração (5–10 min; guião no manual).
 
 ## F. Conclusão
 
 Os **três critérios auto-fail estão cobertos e verificados**: compressão (motor próprio + selftest),
 streaming (VOD Range **e** live HLS real RTMP→FFmpeg→HLS) e cliente multiplataforma (Web+Desktop+Mobile).
-Todo o feedback de produto está implementado **exceto o redesign single-page (F7.5), que aguarda
-aprovação**. As lacunas que restam são opcionais (comentários) ou de empacotamento/verificação manual
-(VERIF-M, instaladores Desktop, vídeo de demo) e não afetam a conformidade com o enunciado.
+**Todo o feedback de produto está implementado, incluindo o redesign single-page (F7.5).** As lacunas
+que restam são apenas de empacotamento/verificação manual (VERIF-M, instaladores Desktop, vídeo de demo)
+e não afetam a conformidade com o enunciado.

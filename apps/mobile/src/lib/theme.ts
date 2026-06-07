@@ -1,14 +1,17 @@
-// Paleta partilhada pelas telas (alinhada com o tema escuro da Web).
+// Paleta partilhada pelas telas — tema CLARO editorial (alinhado com o redesign
+// da Web/Euronews): fundo branco, tinta navy, acento vermelho noticioso.
 export const theme = {
-  bg: '#0f1320',
-  card: '#1a2032',
-  border: '#2a3350',
-  text: '#e8edf7',
-  muted: '#9aa6c2',
-  primary: '#4f7cff',
-  good: '#4ade80',
-  bad: '#f87171',
-  live: '#ef4444',
+  bg: '#ffffff',
+  card: '#ffffff',
+  surface: '#f5f6f8',
+  border: '#e6e8ec',
+  text: '#14181f',
+  muted: '#5b6472',
+  ink: '#0b1f3a',      // navy — títulos/marca
+  primary: '#e02424',  // vermelho noticioso — acento/ações/ao vivo
+  good: '#15803d',
+  bad: '#e02424',
+  live: '#e02424',
 };
 
 export function fmtBytes(n: number): string {

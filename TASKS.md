@@ -6,8 +6,9 @@
 
 ## Progresso global
 
-Fases 0–4 ✅ (3 auto-fail cobertos) · Fase 5 ✅ · Fase 6 🔵 · **Fase 7 quase ✅** (F7.1–F7.4, F7.6–F7.9 ✅;
-**só falta F7.5 redesign — aguarda aprovação da proposta**). Bónus B8 comentários ✅. Manuais: VERIF-M, F4.4, F6.2.
+Fases 0–4 ✅ (3 auto-fail cobertos) · Fase 5 ✅ · Fase 6 🔵 · **Fase 7 ✅ COMPLETA** (F7.1–F7.9, incl.
+redesign F7.5). Bónus B8 comentários ✅. Só faltam tarefas manuais: VERIF-M (Mobile em dispositivo),
+F4.4 (empacotar Desktop), F6.2 (vídeo de demo).
 
 ---
 
@@ -40,9 +41,12 @@ Fases 0–4 ✅ (3 auto-fail cobertos) · Fase 5 ✅ · Fase 6 🔵 · **Fase 7 
       Imagem×4 + Huffman; stream → evento HLS; filtros + contadores OK). Ficheiros: `apps/api/src/lib/devbus.ts`,
       `media-engine/process.ts`, `live/{hls,rtmp}.ts`, `lib/logService.ts`, `routes/stream.ts`;
       `apps/web/src/lib/devmode.tsx`, `pages/Settings.tsx`, `components/DevPanel.tsx`; `packages/shared` (DevEvent).
-- [ ] **F7.5 — Redesign single-page (Euronews)** 🟡 *requer aprovação da proposta* — tema claro
-      elegante + `ThemeToggle`; **HeroLive** (autoplay) + widgets **Tempo** (Open-Meteo) e **Mercados**;
-      **FeaturedGrid** bento; **VideoCard** com autoplay in-card; detalhe repaginado.
+- [x] **F7.5 — Redesign single-page (Euronews)** ✅ **verificado** — tema claro+escuro (`ThemeToggle`,
+      tipografia grotesk+Inter); **HeroLive** (HLS autoplay / capa de destaque) + widgets **Tempo**
+      (Open-Meteo real) e **Mercados** (ticker ilustrativo) + **Últimas**; **FeaturedGrid** bento;
+      **VideoCard** autoplay in-card; detalhe repaginado (coluna de leitura). **Web/Desktop** completo
+      (verificado no browser, claro+escuro); **Mobile** com linguagem visual clara editorial + feed
+      image-forward (typecheck+bundle). Faseado em 4 commits (tema→landing→detalhe→mobile).
 - [x] **F7.6 — Auditoria de UX** ✅ **verificado** — auditados os fluxos (Editor↔Media e editar já
       OK desde F7.2). Correções concretas: (1) **filtro de categorias** no feed (chips Todas+categorias,
       combina com pesquisa) — expõe a capacidade já existente da API `GET /news?category=slug`; (2)

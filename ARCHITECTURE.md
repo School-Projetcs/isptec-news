@@ -2,7 +2,7 @@
 
 > Visão de arquitetura **operacional** (fonte de verdade para o comando `architecture`).
 > Planeamento detalhado e justificações: [`docs/00-plano-mestre.md`](docs/00-plano-mestre.md).
-> Última sincronização com o código: **2026-06-06** (commit `8f80ddf`, Fases 0–3).
+> Última sincronização com o código: **2026-06-07** (Fase 7 + reestruturação UI: dropdown, modais, live RTMP→HLS).
 
 ---
 
@@ -10,7 +10,7 @@
 
 Plataforma de **notícias multimédia** cliente-servidor. Um único backend (API REST)
 serve vários clientes. O "coração" académico é o **media-engine** (compressão) e o
-**streaming** (VOD por HTTP Range + live MJPEG) — os dois itens de reprovação automática.
+**streaming** (VOD por HTTP Range + live **RTMP→HLS**) — os dois itens de reprovação automática.
 
 ```
 ┌─────────────┐   ┌─────────────┐   ┌─────────────┐
@@ -164,3 +164,24 @@ Definido em [`apps/api/prisma/schema.prisma`](apps/api/prisma/schema.prisma).
 | `VITE_API_URL` | `apps/web/.env` | `http://localhost:3333` |
 
 Trocar dev↔produção = mudar `DATABASE_URL` (API) e `VITE_API_URL` (clientes).
+
+---
+
+## 9. Web — arquitetura de UI (React)
+
+Ações de conta e administração estão **centralizadas**; modais substituem páginas de criação.
+
+| Peça | Ficheiro | Papel |
+|---|---|---|
+| **Layout** | `components/Layout.tsx` | Cabeçalho (nav + `UserMenu`) + `Outlet`; envolve tudo no `UIProvider`; mostra `DevPanel` **só p/ admin** |
+| **UIProvider** | `lib/ui.tsx` | Contexto global (`useUI`): abre os modais de **notícia** e **transmissão** de qualquer sítio; evento `isptec:news-changed` refresca as listas |
+| **UserMenu** | `components/UserMenu.tsx` | **Dropdown único** (sem página "Definições"): Tema (3 modos) + Notícias (Adicionar/Gerir/Iniciar transmissão, editor/admin) + Administração (Modo Dev/Media/Utilizadores, **só admin**) |
+| **NewsModal** | `components/{Modal,NewsModal}.tsx` | Criar/editar notícia (capa obrigatória + vídeo + preview); **gate** de média; link p/ gestão avançada (galeria/áudio) na página `/gerir/editar/:id` |
+| **LiveModal** | `components/LiveModal.tsx` | Escolher fonte (telemóvel-QR / webcam-OBS / externo / simulada); **nunca arranca sem fonte**; QR (`qrcode`) com o URL RTMP |
+| **LiveCard** | `components/LiveCard.tsx` | Componente **base único** da emissão (Home + `/ao-vivo`); estados LIVE/PREPARAÇÃO/OFF; na Home só reproduz em hover |
+| **Tema** | `lib/theme.tsx` | `system`(default)/`light`/`dark`; segue `prefers-color-scheme`; persiste; pré-pintura em `index.html` |
+| **Modo Dev** | `lib/devmode.tsx` + `components/DevPanel.tsx` | Toggle (localStorage) + painel SSE; **só renderiza p/ ADMIN** |
+
+> Rotas (`App.tsx`): `/` · `/noticia/:slug` · `/ao-vivo` · `/login` · `/registar` · `/gerir` (lista) ·
+> `/gerir/nova` + `/gerir/editar/:id` (**editor avançado** de multimédia — galeria/áudio) ·
+> `/media` (Media & Compressão) · `/admin`. Não há rota `/definicoes` (migrada para o dropdown).

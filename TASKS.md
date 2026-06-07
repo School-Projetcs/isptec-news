@@ -151,7 +151,11 @@ F4.4 (empacotar Desktop), F6.2 (vídeo de demo).
       + áudio + vídeo, tudo processado pelo pipeline real. Seed declarativo (idempotente: `update`
       autoritário converge sempre para o estado de demo; media incremental por `originalName`).
 - [x] **Comentários** ✅ — rotas (`/news/:slug/comments`, `/comments/:id`) + UI no detalhe (ver B8).
-- [ ] **Deploy** — Produção bónus (Render/Fly + PostgreSQL gerido).
+- [x] **Deploy (guia)** — **guia zero-cost escrito**: [`docs/06-deploy-zero-cost.md`](docs/06-deploy-zero-cost.md)
+      (Neon + Fly.io/Render + Vercel; Dockerfile/fly.toml; restrições de free tier honestas). Falta só
+      **executar** o deploy (opcional/bónus — a demo principal é local).
+- [x] **TEST_PLAN atualizado** — reescrito para o estado atual (dropdown de conta, modais de notícia/
+      transmissão+QR, tema 3 modos, hover-to-play/zoom, Dev Mode só-admin).
 
 ---
 

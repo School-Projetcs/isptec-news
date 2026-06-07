@@ -151,6 +151,22 @@ com API+Web, dados reais). Decisões prévias do utilizador: **fonte de live = R
    Administração do dropdown). Notas: rotas `/gerir/nova|editar` (Editor) ficam como **gestão avançada**
    de galeria/áudio (não removidas para não perder capacidade). Web `tsc` + build passam; consola limpa.
 
+**Documentação (2026-06-07):** **`TEST_PLAN.md` reescrito** para o estado atual; **novo guia de
+deploy zero-cost** [`docs/06-deploy-zero-cost.md`](docs/06-deploy-zero-cost.md) (Neon + Fly.io/Render +
+Vercel, com Dockerfile/fly.toml e restrições de free tier — live RTMP precisa de TCP 1935 → Fly; media
+efémera sem volume). **Sincronizados também:** `docs/02-manual-utilizador.md` (fluxos por dropdown/
+modais/tema/hover), `ARCHITECTURE.md` (nova §9 — UI: UIProvider/UserMenu/News·LiveModal/LiveCard) e
+`DIRECTORY_MAP.md` (componentes/páginas atuais; ficheiros removidos).
+
+**Auditoria de fluxos (2026-06-07):** corrigido o único fluxo **órfão** — a página de **edição
+avançada** (`/gerir/editar/:id`, gestão de **galeria/áudio/remover média**) deixara de ter link após os
+modais; o `NewsModal` em modo edição passa a ligar para ela ("gestão avançada de multimédia →").
+Limitações **conhecidas e por desenho** (não bugs): live "Webcam/Externo" usa RTMP (sem captura WebRTC
+no browser); o modal de notícia cria com capa+vídeo (galeria/áudio só na edição avançada); **Mobile**
+continua tema claro-único e sem os modais admin (cliente leitor/upload). **Falta (opcional/bónus):**
+executar o deploy, VERIF-M (Mobile em dispositivo), empacotar Desktop (F4.4, config pronta), vídeo de
+demo (F6.2).
+
 > Nota: para obter o seed rico numa BD já populada, basta `pnpm db:seed` — o seed é declarativo
 > (o bloco `update` faz convergir o conteúdo/vistas/capa para o estado de demonstração).
 

@@ -250,4 +250,8 @@ Alvos por sistema (definidos em `build`): **Windows** → NSIS (`.exe`), **macOS
 
 > Detalhe operacional: [`CURRENT_STATE.md`](CURRENT_STATE.md) · arquitetura: [`ARCHITECTURE.md`](ARCHITECTURE.md) ·
 > conformidade: [`docs/05-auditoria-conformidade.md`](docs/05-auditoria-conformidade.md) ·
-> validação ponta-a-ponta: [`TEST_PLAN.md`](TEST_PLAN.md).
+> validação ponta-a-ponta: [`TEST_PLAN.md`](TEST_PLAN.md) ·
+> **deploy zero-cost**: [`docs/06-deploy-zero-cost.md`](docs/06-deploy-zero-cost.md).
+
+> **Publicar online (grátis):** ver [`docs/06-deploy-zero-cost.md`](docs/06-deploy-zero-cost.md) — DB
+> (Neon) + API (Fly.io/Render) + Web (Vercel), tudo em free tier. A demo principal continua **local**.

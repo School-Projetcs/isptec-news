@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api, uploadForm, API_BASE } from '../lib/api';
 import type { Category, Media, NewsItem } from '../types';
 import { Modal } from './Modal';
@@ -168,6 +169,12 @@ export function NewsModal({ editId, onClose, onDone }: Props) {
             </div>
             {!hasMedia && (
               <p className="meta">⚠️ Adiciona pelo menos uma <strong>imagem de capa</strong> ou um <strong>vídeo</strong>.</p>
+            )}
+            {isEdit && (
+              <p className="meta">
+                Galeria, áudio e remover média:{' '}
+                <Link to={`/gerir/editar/${editId}`} onClick={onClose}>gestão avançada de multimédia →</Link>
+              </p>
             )}
           </div>
 

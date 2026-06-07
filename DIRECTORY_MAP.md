@@ -1,7 +1,7 @@
 # DIRECTORY_MAP — ISPTEC News
 
 > Mapa de módulos e diretórios (fonte de verdade para o comando `files`).
-> Sincronizado com o código em **2026-06-06** (commit `8f80ddf`).
+> Sincronizado com o código em **2026-06-07** (Fase 7 + reestruturação UI: dropdown, modais, live RTMP→HLS).
 
 ```text
 isptec-news/
@@ -31,24 +31,44 @@ isptec-news/
 │  │        └─ ffmpegSetup.ts      #   liga ffmpeg-static/ffprobe-static
 │  │
 │  ├─ web/                         # Cliente Web — React + Vite + TS
+│  │  ├─ index.html                # pré-pintura do tema (system/light/dark)
 │  │  └─ src/
 │  │     ├─ App.tsx                # rotas (react-router) + guards por role
-│  │     ├─ main.tsx               # bootstrap React
+│  │     ├─ main.tsx               # bootstrap React (Theme/Auth/DevMode providers)
 │  │     ├─ styles.css             # estilos globais
 │  │     ├─ types.ts               # tipos do cliente
-│  │     ├─ components/Layout.tsx  # cabeçalho/navegação
 │  │     ├─ lib/
-│  │     │  ├─ api.ts              # cliente fetch para a API
-│  │     │  └─ auth.tsx            # contexto de autenticação (JWT)
+│  │     │  ├─ api.ts              # cliente fetch + uploadForm + API_BASE
+│  │     │  ├─ auth.tsx            # contexto de autenticação (JWT)
+│  │     │  ├─ theme.tsx           # tema system(default)/light/dark
+│  │     │  ├─ devmode.tsx         # toggle Modo Programador (admin)
+│  │     │  ├─ ui.tsx              # UIProvider/useUI — abre modais globais
+│  │     │  ├─ format.ts           # datas, tempo de leitura, "recente"
+│  │     │  └─ tts.ts              # "Ouvir notícia" (Web Speech API)
+│  │     ├─ components/
+│  │     │  ├─ Layout.tsx          # cabeçalho (nav + UserMenu) + UIProvider
+│  │     │  ├─ UserMenu.tsx        # dropdown único (conta/tema/admin)
+│  │     │  ├─ Modal.tsx           # shell de modal reutilizável
+│  │     │  ├─ NewsModal.tsx       # criar/editar notícia (modal, capa+vídeo+preview)
+│  │     │  ├─ LiveModal.tsx       # iniciar transmissão (fontes + QR RTMP)
+│  │     │  ├─ LiveCard.tsx        # base única de live (estados; hover-to-play)
+│  │     │  ├─ LiveSection.tsx     # secção de live na Home (usa LiveCard)
+│  │     │  ├─ HlsPlayer.tsx       # player HLS (hls.js, fallback nativo)
+│  │     │  ├─ NewsCard.tsx / VideoCard.tsx  # cards (zoom/hover-to-play)
+│  │     │  ├─ WeatherWidget.tsx / MarketsWidget.tsx  # dados reais
+│  │     │  ├─ DailyDigest.tsx     # FAB "Resumo do dia"
+│  │     │  ├─ DevPanel.tsx        # painel SSE do Modo Dev (só admin)
+│  │     │  ├─ Comments.tsx · ListenButton.tsx · States.tsx
 │  │     └─ pages/
-│  │        ├─ Feed.tsx            # lista pública de notícias
-│  │        ├─ NewsDetail.tsx      # detalhe + player de media
-│  │        ├─ Live.tsx            # transmissão ao vivo (MJPEG)
+│  │        ├─ Home.tsx            # landing (hero + últimas + live + todas)
+│  │        ├─ NewsDetail.tsx      # detalhe + player + TTS + comentários
+│  │        ├─ Live.tsx            # página de transmissão (HLS) + relacionadas
 │  │        ├─ Login.tsx / Register.tsx
-│  │        ├─ Manage.tsx          # gestão de notícias (editor/admin)
-│  │        ├─ Editor.tsx          # criar/editar notícia
-│  │        ├─ MediaLab.tsx        # upload + relatório de compressão
+│  │        ├─ Manage.tsx          # gestão (modal add/edit + iniciar transmissão)
+│  │        ├─ Editor.tsx          # editor avançado de multimédia (galeria/áudio)
+│  │        ├─ MediaLab.tsx        # upload + relatório de compressão (admin)
 │  │        └─ Admin.tsx           # utilizadores + logs (admin)
+│  │     # (removidos: Settings.tsx, ManageMenu.tsx, ThemeToggle.tsx)
 │  │
 │  ├─ desktop/                     # ✅ Electron — embrulha a Web (dev: Vite · prod: app://)
 │  │  ├─ main.cjs                  #   processo principal (modos dev/prod + protocolo app://)
@@ -73,7 +93,11 @@ isptec-news/
 ├─ docs/
 │  ├─ 00-plano-mestre.md           # PLANO COMPLETO (referência de avaliação)
 │  ├─ 01-relatorio-tecnico.md      # relatório técnico (arquitetura, compressão, métricas)
-│  └─ 02-manual-utilizador.md      # manual: instalar, executar, demonstrar, troubleshooting
+│  ├─ 02-manual-utilizador.md      # manual: instalar, executar, demonstrar, troubleshooting
+│  ├─ 03-proposta-redesign.md      # proposta de redesign (implementada)
+│  ├─ 04-arquitetura-streaming.md  # fluxo RTMP→FFmpeg→HLS
+│  ├─ 05-auditoria-conformidade.md # mapa de conformidade por critério/peso
+│  └─ 06-deploy-zero-cost.md       # guia de deploy grátis (Neon + Fly/Render + Vercel)
 │
 ├─ docker-compose.yml             # PostgreSQL 16 + Adminer
 ├─ pnpm-workspace.yaml            # workspaces: apps/*, packages/*
@@ -99,4 +123,9 @@ isptec-news/
 | Mexer no live | `apps/api/src/routes/stream.ts` |
 | Modelo de dados | `apps/api/prisma/schema.prisma` |
 | UI / páginas | `apps/web/src/pages/*` |
+| Modal criar/editar notícia | `apps/web/src/components/NewsModal.tsx` + `lib/ui.tsx` |
+| Modal iniciar transmissão (QR) | `apps/web/src/components/LiveModal.tsx` |
+| Dropdown de conta/tema | `apps/web/src/components/UserMenu.tsx` |
+| Card/estados de live | `apps/web/src/components/LiveCard.tsx` |
+| Tema (system/light/dark) | `apps/web/src/lib/theme.tsx` + `apps/web/index.html` |
 | Tipos partilhados | `packages/shared/src/index.ts` |

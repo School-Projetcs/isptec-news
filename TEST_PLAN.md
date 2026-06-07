@@ -1,7 +1,8 @@
 # TEST_PLAN — ISPTEC News
 
-> Guia para um avaliador validar o projeto do início ao fim. Atualizado: **2026-06-07** (Fase 7 completa, incl. redesign F7.5).
-> Estado de cada fluxo: ✅ a passar hoje · ⏳ depende de feature em desenvolvimento.
+> Guia para um avaliador validar o projeto do início ao fim. Atualizado: **2026-06-07**
+> (inclui dropdown de conta, modais de notícia/transmissão, tema 3 modos e interações de hover).
+> Estado de cada fluxo: ✅ a passar hoje · 🟡 verificado por typecheck/bundle (falta dispositivo).
 > Login de demonstração: **`admin@isptec.local` / `admin123`** (ADMIN).
 > Outros: `editor@isptec.local` / `editor123` · `leitor@isptec.local` / `reader123`.
 
@@ -10,7 +11,7 @@
 - **Node ≥ 20** e **pnpm** (`npm i -g pnpm`).
 - **Docker Desktop** (PostgreSQL em contentor).
 - **FFmpeg**: incluído via `ffmpeg-static` (não é preciso instalar).
-- Portas livres: **3333** (API), **5173** (Web), **1935** (RTMP, quando o streaming real entrar).
+- Portas livres: **3333** (API), **5173** (Web), **8080** (Adminer), **1935** (RTMP, live real).
 
 ## 2. Instalação
 
@@ -37,119 +38,115 @@ Abrir **http://localhost:5173**.
 
 | Passo | Ação | Resultado esperado | Estado |
 |---|---|---|---|
-| Login | Entrar com `admin@isptec.local` / `admin123` | Sessão iniciada; nav mostra nome + role; links de gestão visíveis | ✅ |
+| Login | Entrar com `admin@isptec.local` / `admin123` | Sessão iniciada; dropdown de conta (canto sup. direito) mostra o nome + role | ✅ |
 | Login inválido | Password errada | Mensagem de erro clara; sem sessão | ✅ |
 | Registo | Criar conta nova | Conta criada (role READER) + sessão | ✅ |
-| Logout | "Sair" | Sessão terminada; volta a "Entrar" | ✅ |
+| Logout | Dropdown → "Sair" | Sessão terminada; trigger volta a "Conta" / "Entrar" | ✅ |
 | Rate-limit | >20 logins falhados em 15 min | HTTP 429 (anti força-bruta) | ✅ |
 
-### 4.2 Notícias (CMS)
+### 4.2 Dropdown de conta / configurações (centraliza tudo — sem página "Definições")
 
 | Passo | Ação | Resultado esperado | Estado |
 |---|---|---|---|
-| Criar | Gerir → Nova notícia → guardar rascunho | Notícia criada como DRAFT | ✅ |
-| Editar | Gestão → "Editar" → alterar → "Guardar alterações" | Alterações persistidas | ✅ |
-| Publicar | Despublicada → "Publicar" | Passa a PUBLISHED; aparece no feed | ✅ |
-| Remover | "Eliminar" (autor ou admin) | Notícia removida | ✅ |
-| Multi-formato | Editar → "Carregar capa" + "Adicionar multimédia" (imagem/áudio/vídeo) | Capa + galeria comprimidas; surgem no detalhe | ✅ |
+| Abrir | Clicar no avatar/nome (canto sup. direito) | Painel com header (nome) → **Tema** → (editor/admin) **Notícias** → (admin) **Administração** → Entrar/Sair | ✅ |
+| Tema (3 modos) | Escolher **Sistema / Claro / Escuro** | Aplica de imediato e persiste; **Sistema** segue o SO (`prefers-color-scheme`) e reage em tempo real; tooltip explica cada opção | ✅ |
+| Default do tema | Limpar `localStorage` + recarregar com SO escuro | App inicia em **escuro** (default = Sistema) sem flash | ✅ |
+| Leitor não vê admin | Login `leitor@…` → abrir dropdown | Vê **só** Tema + Sair (sem Notícias/Administração/Dev) | ✅ |
 
-### 4.3 Upload de média
-
-| Passo | Ação | Resultado esperado | Estado |
-|---|---|---|---|
-| Imagem | Media → upload `.jpg/.png` | Variantes WebP/JPEG + relatório de compressão | ✅ |
-| Vídeo | Media → upload `.mp4` | Variantes H.264/H.265/VP9 + thumbnail + relatório | ✅ |
-| Áudio | Media → upload `.wav/.mp3` | Variantes MP3/AAC/OGG + relatório | ✅ |
-
-### 4.4 Reprodução
+### 4.3 Notícias — criação/edição por **modal** (sem mudar de página)
 
 | Passo | Ação | Resultado esperado | Estado |
 |---|---|---|---|
-| Ver notícia | Abrir do feed | Capa, **metadados (categoria · autor · data às hora · tempo de leitura · vistas)**, badge "Recente", corpo, multimédia | ✅ |
-| Vídeo (VOD) | Play/seek no player | Reprodução + seek por HTTP Range (206) | ✅ |
-| Offline | "Descarregar" variante | Ficheiro guardado localmente | ✅ |
+| Abrir modal | Dropdown → "Adicionar notícia" (ou Gerir → "Adicionar notícia") | Abre **modal centralizado** com título, resumo, categoria, conteúdo, **capa**, vídeo e **pré-visualização** ao vivo | ✅ |
+| Gate de média | Preencher título + conteúdo, **sem** capa nem vídeo | **"Publicar" fica desativado** + aviso: precisa de imagem de capa ou vídeo | ✅ |
+| Publicar | Escolher capa (imagem) → "Publicar" | Cria rascunho → **comprime a capa** → liga capa → publica; modal fecha; notícia surge no feed | ✅ |
+| Preview | Escrever título/escolher capa | A pré-visualização (lado direito) atualiza em direto | ✅ |
+| Editar | Gerir → "Editar" numa linha | Abre o **mesmo modal** pré-preenchido (capa/vídeo atuais marcados) | ✅ |
+| Publicar/Despublicar | Gerir → "Publicar"/"Despublicar" | Estado alterna; reflete no feed | ✅ |
+| Remover | Gerir → "Eliminar" (autor/admin) | Notícia removida | ✅ |
 
-### 4.5 Streaming ao vivo
+> Média avançada (galeria com várias imagens / áudio) continua disponível na página de edição
+> (`/gerir/editar/:id`), que serve de gestor de multimédia avançado.
 
-| Passo | Ação | Resultado esperado | Estado |
-|---|---|---|---|
-| Iniciar (simulada) | Login editor/admin → "Ao Vivo" → "Iniciar transmissão" | FFmpeg gera HLS; player mostra o vivo em ~2 s | ✅ |
-| Iniciar (real) | OBS → `rtmp://localhost:1935/live` (chave `test`/`isptec`) | Stream ingerido (RTMP→FFmpeg→HLS) e visível na Web | ✅ |
-| Ver | Abrir "Ao Vivo" | Player HLS com badge ● AO VIVO (autoplay mudo) | ✅ |
-| Encerrar | Parar OBS / "Parar transmissão" | Estado passa a offline (~12 s); player mostra fallback | ✅ |
-
-### 4.6 Modo Dev/Demo
+### 4.4 Upload de média e compressão (admin)
 
 | Passo | Ação | Resultado esperado | Estado |
 |---|---|---|---|
-| Ativar | Definições → "Modo Programador / Demo" | Painel fixo no canto; indicador verde na nav; SSE liga (ponto "ligado") | ✅ |
-| Compressão | Login editor/admin → Media → upload de imagem | Painel mostra, ao vivo, `Imagem` (variantes WebP/JPEG c/ rácio+PSNR+ms) e `Huffman` (rácio sem perdas) | ✅ |
-| Streaming | "Ao Vivo" → "Iniciar transmissão" | Painel mostra evento `HLS` (transmissão simulada → HLS) em tempo real | ✅ |
-| Filtros | Clicar num separador de canal (ex.: Imagem) | Lista filtra só esse canal; contadores por canal corretos | ✅ |
-| Sem sessão | Ativar sem login | Painel pede sessão de editor/admin (SSE exige JWT) | ✅ |
-| Desativar | Desligar o toggle (ou ✕ no painel) | App normal, sem painel nem elementos técnicos | ✅ |
+| Imagem | Dropdown (admin) → **Media & Compressão** → upload `.jpg/.png` | Variantes WebP/JPEG + relatório de compressão (rácio/PSNR/ms) | ✅ |
+| Vídeo | Upload `.mp4` | Variantes H.264/H.265/VP9 + thumbnail + relatório | ✅ |
+| Áudio | Upload `.wav/.mp3` | Variantes MP3/AAC/OGG + relatório | ✅ |
 
-### 4.7 Ouvir notícia (TTS — APIs de áudio padrão)
+### 4.5 Streaming ao vivo — **modal de transmissão** (RTMP→HLS)
 
 | Passo | Ação | Resultado esperado | Estado |
 |---|---|---|---|
-| Ouvir | No detalhe, clicar "🔊 Ouvir" | O browser lê título+resumo+corpo em voz (pt-PT) via Web Speech API | ✅ |
-| Pausa/parar | Pausar/retomar e parar a leitura | Botão alterna Ouvir↔Pausar/Retomar↔Parar; estado reflete `speechSynthesis` | ✅ |
-| Velocidade | Mudar o seletor (0.8/1/1.25/1.5×) | A leitura continua à nova velocidade a partir do ponto atual | ✅ |
-| Mobile | Abrir notícia no Expo → "Ouvir"/"Parar" | `expo-speech` (pt-PT) lê em voz alta | 🟡 (typecheck + bundle Metro 808 mód.; falta dispositivo) |
+| Abrir | Login editor/admin → Dropdown/Gerir → "Iniciar transmissão" | Modal pede para **escolher a fonte**; **não arranca sozinho** (sem fonte não há botão Iniciar) | ✅ |
+| Fontes | Ver as opções | **Telemóvel (QR) · Webcam/OBS · Stream externo · Simulada** | ✅ |
+| Telemóvel (QR) | Escolher "Telemóvel (QR)" | Mostra **QR Code** (codifica `rtmp://<host>:1935/live/isptec`) + servidor/chave + estado "À espera da ligação…" | ✅ |
+| Telemóvel real | Ler o QR numa app RTMP (ex.: Larix) na mesma rede (abrir o painel pelo **IP LAN**, não `localhost`) | O telemóvel torna-se câmara; emissão entra no ar (RTMP→FFmpeg→HLS) | 🟡 (precisa de telemóvel; infra RTMP testada com OBS) |
+| Simulada | Escolher "Simulada" → "Iniciar" | FFmpeg gera HLS (~2 s); modal passa a **"Transmissão no ar" ● AO VIVO** | ✅ |
+| Encerrar | "Terminar transmissão" (simulada) ou parar na app (RTMP) | Estado passa a offline; live card volta a OFF AIR | ✅ |
 
-### 4.8 Resumo do dia (FAB flutuante)
-
-| Passo | Ação | Resultado esperado | Estado |
-|---|---|---|---|
-| Abrir | Clicar no FAB "🗞️ Resumo do dia" (canto inf. esquerdo) | Painel com **top 5 notícias** (ranking vistas+recência via `/news/digest`), numeradas, com resumo, categoria·data·vistas e badge "Recente" | ✅ |
-| Navegar | Clicar numa notícia do resumo | Abre a notícia e fecha o painel | ✅ |
-| Ouvir resumo | "🔊 Ouvir" no painel | TTS lê "Resumo do dia" + os títulos/resumos em sequência (reutiliza F7.8) | ✅ |
-
-### 4.9 Desktop (Electron)
+### 4.6 Live card e página Ao Vivo (utilizador final — sem dados técnicos)
 
 | Passo | Ação | Resultado esperado | Estado |
 |---|---|---|---|
-| Dev | `pnpm dev:desktop` | Janela Electron a apontar para o Vite | ✅ |
-| Produção | `pnpm desktop` | Build da Web embrulhada (`app://`) | ✅ |
+| Card (offline) | Home, sem emissão | Card que **parece um player** (placeholder ▶) + badge **○ OFF AIR**; o card nunca desaparece | ✅ |
+| Card (live) | Com emissão no ar | Badge **● AO VIVO**; **sem autoplay** — o vídeo só reproduz em **hover** no card | ✅ |
+| Hover | Passar o rato no card | Overlay com **título amigável** + estado (sem jargão técnico) | ✅ |
+| Página | Clicar no card → `/ao-vivo` | Player no topo → info → **notícias relacionadas** (cards verticais) | ✅ |
 
-### 4.10 Mobile (Expo)
-
-| Passo | Ação | Resultado esperado | Estado |
-|---|---|---|---|
-| Arranque | `pnpm --filter @isptec/mobile start` + Expo Go | App abre; login; feed | 🟡 (typecheck+bundle ok; falta dispositivo) |
-| VOD | Abrir notícia com vídeo | Player reproduz (HTTP Range) | 🟡 |
-| Paridade Fase 7 | No app: filtro de categorias no feed, TTS no detalhe, comentários, FAB "Resumo do dia" | Mesmas funcionalidades da Web (exceto Modo Dev) | 🟡 (typecheck+bundle ok; falta dispositivo) |
-
-### 4.11 Navegação e responsividade (F7.6)
+### 4.7 Home — hierarquia e filtros
 
 | Passo | Ação | Resultado esperado | Estado |
 |---|---|---|---|
-| Filtrar por categoria | No feed, clicar num chip (ex.: "Tecnologia") | Mostra só as notícias dessa categoria; chip realçado; "Todas" limpa | ✅ |
-| Pesquisa + categoria | Pesquisar e depois filtrar | Os dois filtros combinam-se (`/news?search=&category=`) | ✅ |
-| Mobile-web | Reduzir a janela a ~375 px | Cabeçalho/nav re-organiza-se sem scroll horizontal | ✅ |
+| Hero | Abrir a página inicial | **1** card de destaque com **só o título** (+ kicker "Em destaque") + widgets Tempo/Mercados (reais) | ✅ |
+| Últimas | Ver "Últimas notícias" | **Máx. 2 itens**, lista de texto (título + data + snippet), label discreta | ✅ |
+| Ver mais | Clicar "Ver mais" | **Scroll suave** para a lista completa (`#todas-noticias`) | ✅ |
+| Filtro "Todas" | Em "Todas as notícias", clicar **Todas** | **Mostra sempre todo o acervo** (nunca vazio se houver dados) | ✅ |
+| Filtro categoria | Clicar uma categoria | Mostra só as dessa categoria; fallback repõe tudo se o filtro não casar | ✅ |
 
-### 4.12 Comentários (B8)
-
-| Passo | Ação | Resultado esperado | Estado |
-|---|---|---|---|
-| Comentar | No detalhe (com sessão), escrever e "Comentar" | Comentário aparece no topo da lista; contador atualiza | ✅ |
-| Sem sessão | Abrir detalhe sem login | Em vez do formulário, "Inicia sessão para comentar" | ✅ |
-| Eliminar | Autor (ou admin) clica "Eliminar" | Comentário removido; só o autor/admin vê o botão | ✅ |
-
-### 4.13 Redesign single-page (F7.5)
+### 4.8 Interações de leitura (hover)
 
 | Passo | Ação | Resultado esperado | Estado |
 |---|---|---|---|
-| Landing | Abrir a página inicial | Hero (ao vivo ou capa de destaque) + widgets (Tempo, Mercados, Últimas), grelha "bento" e secção filtrável | ✅ |
-| Tempo | Ver o widget de tempo | Temperatura real de Luanda (Open-Meteo); offline → "indisponível" | ✅ |
-| Vídeo in-card | Scroll até um card de vídeo | Vídeo faz autoplay mudo no card e pausa fora de vista | ✅ |
-| Tema | Clicar no ◐ no topo | Alterna claro/escuro; persiste; sem flash ao recarregar | ✅ |
-| Detalhe | Abrir uma notícia | Layout editorial (kicker, título display, hero, leitura) | ✅ |
-| Mobile | Abrir o app Expo | Visual claro editorial; feed com capas (image-forward); detalhe com hero | 🟡 (typecheck+bundle; falta dispositivo) |
+| Zoom de imagem | Passar o rato num card com capa | Imagem faz **zoom suave** (scale-in ~1.05, transição leve), recortada pelo card | ✅ |
+| Vídeo em card | Passar o rato num card de vídeo | Vídeo reproduz **só em hover** (sem autoplay global); pausa e volta ao início ao sair | ✅ |
+
+### 4.9 Modo Dev/Demo — **só ADMIN** (separação técnica)
+
+| Passo | Ação | Resultado esperado | Estado |
+|---|---|---|---|
+| Ativar (admin) | Dropdown (admin) → "Modo Programador" | Painel fixo no canto; SSE liga; eventos do pipeline | ✅ |
+| Compressão | Media → upload de imagem | Painel mostra `Imagem` (WebP/JPEG, rácio+PSNR+ms) e `Huffman` (sem perdas) ao vivo | ✅ |
+| Streaming | Iniciar transmissão simulada | Painel mostra evento `HLS` em tempo real | ✅ |
+| Não-admin | Login `editor`/`leitor` (ou anónimo) | **Não há** toggle de Modo Dev nem painel — opção técnica invisível | ✅ |
+
+### 4.10 Ouvir notícia (TTS), Resumo do dia, Comentários
+
+| Passo | Ação | Resultado esperado | Estado |
+|---|---|---|---|
+| Ouvir (TTS) | No detalhe, "🔊 Ouvir" | Lê título+resumo+corpo em pt-PT (Web Speech API); Ouvir/Pausar/Parar + velocidade | ✅ |
+| Resumo do dia | FAB "🗞️ Resumo do dia" | Top 5 (vistas+recência via `/news/digest`); navegar fecha o painel; "Ouvir" lê o resumo | ✅ |
+| Comentar | No detalhe (com sessão), "Comentar" | Comentário no topo; sem sessão → "Inicia sessão para comentar"; autor/admin eliminam | ✅ |
+
+### 4.11 Clientes Desktop e Mobile (auto-fail: cliente multiplataforma)
+
+| Passo | Ação | Resultado esperado | Estado |
+|---|---|---|---|
+| Desktop dev | `pnpm dev:desktop` | Janela Electron a apontar para o Vite | ✅ |
+| Desktop prod | `pnpm desktop` | Build da Web embrulhada (`app://`) | ✅ |
+| Mobile | `pnpm --filter @isptec/mobile start` + Expo Go | Login, feed, detalhe, **player VOD** (HTTP Range), upload+relatório, comentários, TTS, "Resumo do dia" | 🟡 (typecheck + bundle Metro; falta dispositivo) |
+
+### 4.12 Responsividade
+
+| Passo | Ação | Resultado esperado | Estado |
+|---|---|---|---|
+| Mobile-web | Reduzir a janela a ~375 px | Cabeçalho/nav e grelhas re-organizam-se sem scroll horizontal | ✅ |
 
 ## 5. Critério de aceitação
 
-O projeto considera-se validado quando **todos os fluxos ✅/⏳ desta lista passam** no ambiente do
-avaliador, com destaque para os três auto-fail: **compressão**, **streaming** e **cliente
-multiplataforma**.
+O projeto considera-se validado quando **todos os fluxos ✅ passam** no ambiente do avaliador, com
+destaque para os três **auto-fail**: **compressão** (4.4 + Modo Dev), **streaming** (4.5/4.6) e
+**cliente multiplataforma** (4.11). Os itens 🟡 (Mobile/telemóvel real) dependem de hardware e estão
+verificados por typecheck + bundle; ver `CURRENT_STATE.md` para o estado vivo.

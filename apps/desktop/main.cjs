@@ -74,7 +74,7 @@ function createWindow() {
 
   if (DEV_URL) {
     void win.loadURL(DEV_URL);
-    win.webContents.openDevTools({ mode: 'detach' });
+    // win.webContents.openDevTools({ mode: 'detach' });
   } else if (fs.existsSync(path.join(DIST, 'index.html'))) {
     void win.loadURL('app://bundle/index.html');
   } else {

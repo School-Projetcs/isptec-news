@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
 import { api, mediaUrl } from '../lib/api';
-import { theme } from '../lib/theme';
+import { useTheme, type Palette } from '../lib/theme';
 import type { NewsItem } from '../lib/types';
 import { MediaPlayer } from '../components/MediaPlayer';
 import { ListenButton } from '../components/ListenButton';
@@ -13,6 +13,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'NewsDetail'>;
 
 export function NewsDetailScreen({ route }: Props) {
   const { slug } = route.params;
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [news, setNews] = useState<NewsItem | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -65,7 +67,8 @@ export function NewsDetailScreen({ route }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(theme: Palette) {
+  return StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.bg },
   wrap: { padding: 16 },
   cat: { color: theme.primary, fontSize: 11, fontWeight: '800', letterSpacing: 0.5, textTransform: 'uppercase' },
@@ -77,4 +80,5 @@ const styles = StyleSheet.create({
   h3: { color: theme.text, fontSize: 18, fontWeight: '700', marginBottom: 6 },
   mediaBlock: { marginTop: 22, borderTopColor: theme.border, borderTopWidth: 1, paddingTop: 16 },
   error: { color: theme.bad, textAlign: 'center', marginTop: 40 },
-});
+  });
+}

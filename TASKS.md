@@ -74,6 +74,33 @@ F4.4 (empacotar Desktop), F6.2 (vídeo de demo).
 - [x] **B8 — Comentários** ✅ **verificado** — `GET/POST /news/:slug/comments` (POST autenticado) +
       `DELETE /comments/:id` (autor/admin); UI no detalhe (`components/Comments.tsx`): lista, formulário
       para quem tem sessão, eliminar próprio (ou admin). **Verificado no browser** (criar→aparece→eliminar).
+- [x] **F7.10 — Revisão Final de UX da Home** ✅ **verificado no browser** — (1) **Tema 3 modos**
+      sistema(default)/claro/escuro com `prefers-color-scheme` + persistência (`lib/theme.tsx`,
+      `index.html`, `ThemeToggle`, seletor nas Definições); (2) **hero** com label "Em destaque"
+      reposicionada como kicker discreta; (3) **Últimas notícias** = lista minimalista (sem media);
+      (4) **componente base único** de live `components/LiveCard.tsx` (`useLiveStatus`+`LiveCard`) na
+      Home e em `/ao-vivo` (card nunca desaparece — estado "BREVEMENTE"); (5) **página Ao Vivo** com
+      notícias relacionadas (cards verticais, sem carrossel); (6) Definições minimalistas + dados reais
+      (Tempo/Mercados, sem mocks). Ficheiros: `apps/web/src/{lib/theme.tsx,components/{LiveCard,LiveSection,ThemeToggle}.tsx,pages/{Home,Live,Settings}.tsx,styles.css}`, `index.html`. Web typecheck + build OK.
+- [x] **F7.11 — Paridade de tema no Mobile** ✅ (regra obrigatória §6) — `apps/mobile/src/lib/theme.ts`
+      → **`theme.tsx`** com paletas `light`+`dark` (dark espelha `:root[data-theme="dark"]` da Web),
+      `ThemeProvider`/`useTheme()` que resolve `system` via `useColorScheme()` e persiste a escolha
+      (`system|light|dark`, default `system`) em **AsyncStorage** (`isptec_theme`). Telas/componentes
+      migrados do objeto estático para `useTheme()` + `makeStyles(theme)`; novo `components/ThemeToggle.tsx`
+      (cicla) no cabeçalho do Feed; `App.tsx` no `ThemeProvider` (nav theme + `StatusBar` dinâmicos).
+      `fmtBytes()` mantido. **Verificado:** `tsc --noEmit` + **bundle Metro (811 mód.)**. ⚠️ dark em
+      dispositivo fica no VERIF-M.
+- [x] **F7.12 — Reestruturação Home/Live/Conta** ✅ **verificado no browser** — (1) **Últimas** = máx.
+      2 itens + **"Ver mais"** (scroll suave p/ `#todas-noticias`); (2) **filtro "Todas"** corrigido —
+      mostra sempre todo o acervo, nunca vazio com dados (fallback repõe a lista) [Todas 6→Tecnologia 2→
+      Todas 6]; (3) **`LiveCard`** redesenhado como **player único** (placeholder ▶ offline / HLS ativo,
+      badge AO VIVO/OFF AIR, hover c/ título amigável; preview clicável na Home, player c/ controlos em
+      `/ao-vivo`), sem título "Ao Vivo" nem texto técnico para o utilizador; (4) **Hero só título**; (5)
+      **`UserMenu`** dropdown centraliza Tema+Definições (todos) e Modo Dev+admin (só ADMIN); `ThemeToggle`
+      do cabeçalho removido; (6) **separação técnica** — `DevPanel`/Modo Dev só p/ ADMIN autenticado
+      (verificado: anónimo não vê painel mesmo c/ flag). Ficheiros: `apps/web/src/{components/{UserMenu,LiveCard,
+      LiveSection,Layout}.tsx,pages/{Home,Live,Settings}.tsx,styles.css}` (removido `ThemeToggle.tsx`).
+      `tsc` + build de produção passam.
 
 ---
 
@@ -83,14 +110,16 @@ F4.4 (empacotar Desktop), F6.2 (vídeo de demo).
 
 - [x] **F4.1** — Desktop Electron (`apps/desktop`, dev + prod `app://`). ✅ smoke test OK
 - [x] **F4.2** — Mobile Expo (`apps/mobile`): login, feed, detalhe, player VOD, upload+relatório,
-      offline **+ paridade Fase 7** (TTS, comentários, filtro de categorias, "Resumo do dia").
-      ✅ typecheck + bundle Metro (808 módulos). ⚠️ falta correr em dispositivo (VERIF-M).
+      offline **+ paridade Fase 7** (TTS, comentários, filtro de categorias, "Resumo do dia") **+ tema
+      3 modos** (sistema/claro/escuro, F7.11). ✅ typecheck + bundle Metro (811 módulos).
+      ⚠️ falta correr em dispositivo (VERIF-M).
 - [x] **F4.3** — Clientes leem o URL da API de config (`VITE_API_URL` / `EXPO_PUBLIC_API_URL`).
 - [x] **VERIF** — `selftest-compression.ts` confirma imagem+áudio+vídeo (corrigido `SyntaxError`).
 
 ## 🟡 Média prioridade
 
-- [ ] **VERIF-M** — Correr o Mobile em Expo Go/emulador com `EXPO_PUBLIC_API_URL` no IP LAN.
+- [ ] **VERIF-M** — Correr o Mobile em Expo Go/emulador com `EXPO_PUBLIC_API_URL` no IP LAN
+      (confirmar também o **tema escuro** a renderizar e a persistir — F7.11).
 - [ ] **F4.4** — Empacotar Desktop com `electron-builder` (.exe / .AppImage / .dmg).
 - [x] **F5.1** — `express-rate-limit` (`authLimiter` 20/15min + `apiLimiter` global). ✅ verificado (429 ao #21).
 - [x] **F5.2** — `requireRole` (já existia em `auth.ts`; aplicado em news/users/media).

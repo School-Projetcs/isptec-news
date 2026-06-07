@@ -77,6 +77,55 @@ de instalador bloqueado só por lock do Windows Defender (config correta e stand
 Verificado por typecheck + bundle Metro (808 mód.); falta correr em dispositivo (VERIF-M).
 Pendentes anteriores (opcionais): vídeo de demo (F6.2), VERIF-M, empacotar Desktop (F4.4).
 
+**Revisão Final de UX da Home (2026-06-07):** seis ajustes implementados e **verificados no browser**
+(API+Web a correr, dados reais):
+1. **Tema com 3 modos** — `system` (default, segue `prefers-color-scheme` e reage em tempo real),
+   `light`, `dark`; escolha manual sobrepõe-se e persiste. Refeito `lib/theme.tsx` (`choice`/`theme`/
+   `setChoice`/`cycle`), script de pré-pintura em `index.html`, `ThemeToggle` cicla os 3, e seletor
+   segmentado nas **Definições**. (Verificado: utilizador novo com SO escuro → dark; override Claro
+   persiste; cabeçalho cicla sistema→claro→escuro.)
+2. **Hero** — 1 único card; label "Em destaque" reposicionada como **kicker discreta** no canto sup.
+   esq. (consistente com badges de live/vídeo), removida de cima do título → menos ruído.
+3. **Últimas notícias** — carrossel substituído por **lista minimalista escaneável** (só título + data
+   + snippet curto de 1 linha; sem imagens/vídeos; label discreta).
+4. **Live** — componente **base único** `components/LiveCard.tsx` (`useLiveStatus` + `LiveCard`) usado
+   pela secção da Home **e** pela página `/ao-vivo`; o card nunca desaparece (estado base "BREVEMENTE").
+5. **Página Ao Vivo** — player no topo (LiveCard) → info → **notícias relacionadas** em cards verticais
+   (grelha, sem carrossel).
+6. **Definições** minimalistas (Tema + Modo Dev) e **Mercados/Tempo** confirmados com **dados reais**
+   (sem mocks). Web typecheck + build de produção passam.
+
+**Paridade de Tema no Mobile (2026-06-07):** o cliente Expo passou a ter o **mesmo sistema de 3 modos**
+da Web (regra obrigatória §6). `apps/mobile/src/lib/theme.ts` virou **`theme.tsx`** com paleta `light`
+(valores originais) + paleta `dark` (espelha `:root[data-theme="dark"]` da Web) e um `ThemeProvider` +
+`useTheme()` que resolve `system` via `useColorScheme()` do React Native; a escolha `system|light|dark`
+persiste em **AsyncStorage** (`isptec_theme`, mesmo padrão do `tokenStore`), com `system` como default.
+Todas as telas/componentes que liam o objeto estático `theme` passaram a consumir `useTheme()` (estilos
+via fábrica `makeStyles(theme)`). Novo `components/ThemeToggle.tsx` (cicla sistema→claro→escuro) no
+**cabeçalho do Feed**; `App.tsx` envolve tudo no `ThemeProvider`, deriva o tema do React Navigation e a
+`StatusBar` do tema efetivo. `fmtBytes()` mantido. **Verificado:** `tsc --noEmit` limpo + **bundle Metro
+(811 mód.)** OK; falta confirmar o dark em dispositivo (parte do VERIF-M).
+
+**Reestruturação Home/Live/Conta (2026-06-07):** ronda de UX **verificada no browser** (API+Web,
+dados reais, sessões admin e anónima):
+1. **Últimas notícias** — máx. **2 itens** (texto leve) + link **"Ver mais"** que faz *scroll suave*
+   para a lista completa (`#todas-noticias`).
+2. **Filtro de categorias** — corrigido: **"Todas" mostra sempre todo o acervo** (nunca vazio se houver
+   dados); fallback repõe a lista completa se o filtro não casar nada. (Verificado: Todas=6 → Tecnologia=2
+   → Todas=6.)
+3. **Live** — `LiveCard` redesenhado: parece **sempre um player** (placeholder de vídeo + ▶ quando
+   offline; HLS quando ativo), badge flutuante **AO VIVO / OFF AIR**, overlay de **hover com título
+   amigável** (sem jargão); na Home é *preview clicável* (sem controlos) e em `/ao-vivo` é *player com
+   controlos*. Removido o título de secção "Ao Vivo" e **todo o texto técnico** da área de utilizador.
+4. **Hero** — mostra **só o título** (+ kicker "Em destaque"); removidas descrição/metadata → foco único.
+5. **User dropdown** (`components/UserMenu.tsx`) no canto sup. direito centraliza **Tema (3 modos)** +
+   **Definições** (todos) e, **só para ADMIN**, **Modo Programador** + **Utilizadores e logs** + Entrar/Sair.
+   Removidos o `ThemeToggle` do cabeçalho (apagado) e o link "Definições" da nav.
+6. **Separação técnica** — o `DevPanel` e o toggle de Modo Dev só existem para **ADMIN autenticado**
+   (Layout: `devMode && role==='ADMIN'`); confirmado que utilizador anónimo (mesmo com flag forçada) **não**
+   vê painel/toggle/admin. O lab **Media & Compressão** mantém-se atrás do menu Gestão (editor/admin),
+   pois demonstra a compressão (auto-fail). Web `tsc` + build de produção passam.
+
 > Nota: para obter o seed rico numa BD já populada, basta `pnpm db:seed` — o seed é declarativo
 > (o bloco `update` faz convergir o conteúdo/vistas/capa para o estado de demonstração).
 

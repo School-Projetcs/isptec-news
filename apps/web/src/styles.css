@@ -75,13 +75,43 @@ h3 { margin: 0 0 6px; }
 .navmenu-pop a:hover { background: var(--panel2); text-decoration: none; }
 .navmenu-pop a.active { color: var(--accent); }
 .spacer { flex: 1; }
-.userbox { display: flex; align-items: center; gap: 10px; }
-.themetoggle {
-  background: transparent; border: 1px solid var(--border); color: var(--text);
-  width: 34px; height: 34px; border-radius: 999px; padding: 0; font-size: 1rem; line-height: 1;
-  display: inline-flex; align-items: center; justify-content: center;
+
+/* ── User menu (dropdown de conta/configurações, canto sup. direito) ──────── */
+.usermenu { position: relative; }
+.usermenu-trigger {
+  display: inline-flex; align-items: center; gap: 8px; background: transparent;
+  border: 1px solid var(--border); color: var(--text); padding: 5px 10px 5px 5px;
+  border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 0.88rem;
 }
-.themetoggle:hover { filter: none; border-color: var(--accent); color: var(--accent); }
+.usermenu-trigger:hover { border-color: var(--accent); filter: none; }
+.usermenu-avatar {
+  width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: #fff;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700;
+}
+.usermenu-name { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.usermenu-pop {
+  position: absolute; right: 0; top: 130%; min-width: 248px; z-index: 30;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: var(--shadow-lg); padding: 12px; display: flex; flex-direction: column; gap: 8px;
+}
+.usermenu-section-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight: 700; }
+.usermenu-theme { display: flex; flex-direction: column; gap: 6px; }
+.usermenu-theme .segmented { width: 100%; }
+.usermenu-theme .segmented button { flex: 1; justify-content: center; padding: 6px 4px; font-size: 0.8rem; gap: 4px; }
+.usermenu-divider { height: 1px; background: var(--border); margin: 2px 0; }
+.usermenu-link {
+  display: flex; align-items: center; gap: 8px; color: var(--text); padding: 8px 8px;
+  border-radius: 8px; background: transparent; border: none; font: inherit; font-weight: 500;
+  cursor: pointer; text-align: left; width: 100%;
+}
+.usermenu-link:hover { background: var(--panel2); text-decoration: none; filter: none; }
+.usermenu-link.signout { color: var(--bad); }
+.usermenu-devrow {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 6px 8px; background: transparent; border: none; font: inherit; font-weight: 500;
+  color: var(--text); cursor: pointer; width: 100%; border-radius: 8px;
+}
+.usermenu-devrow:hover { background: var(--panel2); filter: none; }
 
 /* layout */
 .container { max-width: 920px; margin: 0 auto; padding: 28px 24px; }
@@ -202,9 +232,13 @@ button.danger:hover { background: var(--bad); color: #fff; filter: none; }
 .home { display: flex; flex-direction: column; gap: 36px; }
 .section-h { font-size: 1.35rem; margin: 0 0 14px; color: var(--ink); position: relative; padding-left: 12px; }
 .section-h::before { content: ''; position: absolute; left: 0; top: 2px; bottom: 2px; width: 4px; border-radius: 2px; background: var(--accent); }
+/* variante discreta (ex.: "Últimas notícias") — sem barra de destaque, mais sóbria */
+.section-h.subtle { font-size: 1rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; padding-left: 0; }
+.section-h.subtle::before { display: none; }
 .section-head { align-items: flex-end; margin-bottom: 14px; }
 .section-head .section-h { margin: 0; }
 .section-head .catfilter { margin: 0; }
+.seemore { font-weight: 600; font-size: 0.85rem; white-space: nowrap; }
 
 /* hero */
 .hero { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: stretch; }
@@ -217,8 +251,15 @@ button.danger:hover { background: var(--bad); color: #fff; filter: none; }
   position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 22px 18px; color: #fff;
   background: linear-gradient(to top, rgba(0,0,0,0.82), rgba(0,0,0,0.15) 70%, transparent);
 }
-.hero-overlay h2 { color: #fff; margin: 8px 0 6px; font-size: 1.7rem; line-height: 1.15; }
+.hero-overlay h2 { color: #fff; margin: 0 0 6px; font-size: 1.7rem; line-height: 1.15; }
 .hero-overlay p { margin: 0; color: #e7ecf5; max-width: 60ch; }
+/* label de destaque discreta, alinhada ao canto do card (posição consistente com badges de live/vídeo) */
+.hero-kicker {
+  position: absolute; top: 14px; left: 14px; z-index: 2;
+  background: rgba(0,0,0,0.55); color: #fff; backdrop-filter: blur(4px);
+  font-family: var(--font-display); font-weight: 600; font-size: 0.7rem;
+  text-transform: uppercase; letter-spacing: 0.7px; padding: 5px 11px; border-radius: 999px;
+}
 .hero-live-cta { position: absolute; right: 16px; bottom: 14px; z-index: 2; background: rgba(0,0,0,0.6); color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; }
 .hero-empty { padding: 48px; text-align: center; border: 1px dashed var(--border); border-radius: 14px; }
 
@@ -232,21 +273,23 @@ button.danger:hover { background: var(--bad); color: #fff; filter: none; }
 .ticker li { display: flex; justify-content: space-between; font-size: 0.9rem; }
 .ticker-sym { color: var(--muted); }
 .ticker-val { font-variant-numeric: tabular-nums; }
-.latest { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-.latest li { display: flex; flex-direction: column; gap: 2px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+/* "Últimas notícias" — lista minimalista escaneável (sem imagens/vídeos) */
+.latest { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.latest li { border-bottom: 1px solid var(--border); padding: 12px 0; }
+.latest li:first-child { padding-top: 0; }
 .latest li:last-child { border-bottom: 0; padding-bottom: 0; }
-
-/* carrossel horizontal "Últimas" */
-.carousel { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x mandatory; }
-.carousel-item { flex: 0 0 280px; max-width: 280px; scroll-snap-align: start; }
-.carousel-item .newscard { height: 100%; }
-.carousel-item .thumb { aspect-ratio: 16 / 9; }
+.latest-link { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; color: var(--text); }
+.latest-link:hover { text-decoration: none; }
+.latest-link:hover .latest-title { color: var(--accent); }
+.latest-title { font-family: var(--font-display); font-weight: 600; font-size: 1.02rem; line-height: 1.3; }
+.latest-date { flex: 0 0 auto; color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.latest-snippet {
+  margin: 3px 0 0; color: var(--muted); font-size: 0.88rem; line-height: 1.4;
+  display: -webkit-box; -webkit-line-clamp: 1; line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+}
 
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; }
-}
-@media (max-width: 640px) {
-  .carousel-item { flex-basis: 78vw; max-width: 78vw; }
 }
 
 /* ── Detalhe de notícia (repaginado, coluna de leitura) ─────────────────── */
@@ -297,9 +340,37 @@ button.danger:hover { background: var(--bad); color: #fff; filter: none; }
 .livedot { display: inline-block; width: 12px; height: 12px; border-radius: 999px; background: var(--muted); margin-right: 6px; vertical-align: middle; }
 .livedot.on { background: var(--bad); box-shadow: 0 0 0 0 rgba(248,113,113,0.6); animation: livepulse 1.6s infinite; }
 @keyframes livepulse { 70% { box-shadow: 0 0 0 8px rgba(248,113,113,0); } 100% { box-shadow: 0 0 0 0 rgba(248,113,113,0); } }
-.liveframe { position: relative; }
-.livebadge { position: absolute; top: 12px; left: 12px; z-index: 2; background: var(--bad); color: #fff; font-weight: 700; font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px; }
-.liveoffline { padding: 32px; text-align: center; border: 1px dashed var(--border); border-radius: 12px; margin-top: 8px; }
+/* card de live — parece sempre um player/preview de vídeo (o card nunca desaparece) */
+.livecard {
+  position: relative; display: block; width: 100%; aspect-ratio: 16 / 9;
+  border-radius: 14px; overflow: hidden; background: #000; color: #fff; border: 1px solid var(--border);
+}
+a.livecard:hover { text-decoration: none; }
+.livecard-video { width: 100%; height: 100%; object-fit: cover; display: block; background: #000; }
+.livecard-placeholder {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 10px; color: rgba(255,255,255,0.72);
+  background: radial-gradient(circle at 50% 38%, #1c2540, #0a0e1c);
+}
+.livecard-play {
+  width: 56px; height: 56px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5);
+  display: flex; align-items: center; justify-content: center; font-size: 1.3rem; padding-left: 4px;
+}
+.livecard-placeholder-text { font-size: 0.85rem; letter-spacing: 0.3px; }
+.livebadge {
+  position: absolute; top: 12px; left: 12px; z-index: 2; background: var(--bad); color: #fff;
+  font-weight: 700; font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; letter-spacing: 0.5px;
+}
+.livebadge.offair { background: rgba(0,0,0,0.55); color: rgba(255,255,255,0.85); backdrop-filter: blur(4px); }
+/* overlay no hover (modo preview): título amigável + linha curta, sem dados técnicos */
+.livecard-hover {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 30px 16px 14px;
+  display: flex; flex-direction: column; gap: 2px; opacity: 0; transition: opacity 0.18s ease;
+  background: linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.1) 80%, transparent);
+}
+.livecard:hover .livecard-hover, .livecard:focus-visible .livecard-hover { opacity: 1; }
+.livecard-hover strong { font-family: var(--font-display); font-size: 1.05rem; }
+.livecard-hover span { color: #d7deea; font-size: 0.85rem; }
 .obshelp { margin-top: 16px; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
 .obshelp summary { cursor: pointer; color: var(--muted); }
 
@@ -326,6 +397,19 @@ code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; }
 }
 .switch.on { background: var(--good); border-color: var(--good); }
 .switch.on .knob { transform: translateX(22px); background: #fff; }
+/* variante pequena (ex.: linha do Modo Dev no dropdown) */
+.switch.sm { width: 40px; height: 22px; }
+.switch.sm .knob { width: 17px; height: 17px; }
+.switch.sm.on .knob { transform: translateX(18px); }
+
+/* controlo segmentado (ex.: seletor de tema sistema/claro/escuro) */
+.segmented { display: inline-flex; gap: 0; padding: 3px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel2); }
+.segmented button {
+  background: transparent; color: var(--muted); border: none; padding: 7px 14px; border-radius: 7px;
+  font-weight: 600; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+}
+.segmented button:hover { filter: none; color: var(--text); }
+.segmented button.sel { background: var(--panel); color: var(--text); box-shadow: var(--shadow); }
 
 /* indicador "Modo Dev ativo" na navegação */
 .devdot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--good); margin-left: 5px; vertical-align: middle; }

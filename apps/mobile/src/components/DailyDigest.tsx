@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, Text, Pressable, Modal, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import { api } from '../lib/api';
-import { theme } from '../lib/theme';
+import { useTheme, type Palette } from '../lib/theme';
 import { ListenButton } from './ListenButton';
 import type { NewsItem } from '../lib/types';
 
@@ -10,6 +10,8 @@ import type { NewsItem } from '../lib/types';
 // "Ouvir" lê o resumo em voz alta (expo-speech).
 
 export function DailyDigest({ onOpenNews }: { onOpenNews: (slug: string, title: string) => void }) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<NewsItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -90,7 +92,8 @@ export function DailyDigest({ onOpenNews }: { onOpenNews: (slug: string, title: 
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(theme: Palette) {
+  return StyleSheet.create({
   fab: {
     position: 'absolute',
     left: 16,
@@ -133,4 +136,5 @@ const styles = StyleSheet.create({
   itemTitle: { color: theme.text, fontSize: 15, fontWeight: '700' },
   itemSummary: { color: theme.muted, marginTop: 4, lineHeight: 19 },
   itemMeta: { color: theme.muted, fontSize: 12, marginTop: 6 },
-});
+  });
+}

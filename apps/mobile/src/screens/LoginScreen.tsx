@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -10,10 +10,12 @@ import {
   ScrollView,
 } from 'react-native';
 import { useAuth } from '../lib/auth';
-import { theme } from '../lib/theme';
+import { useTheme, type Palette } from '../lib/theme';
 
 export function LoginScreen() {
   const { login, register } = useAuth();
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('admin@isptec.local');
@@ -92,7 +94,8 @@ export function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(theme: Palette) {
+  return StyleSheet.create({
   flex: { flex: 1, backgroundColor: theme.bg },
   wrap: { flexGrow: 1, justifyContent: 'center', padding: 24, gap: 12 },
   logo: { color: theme.text, fontSize: 30, fontWeight: '800', textAlign: 'center' },
@@ -119,4 +122,5 @@ const styles = StyleSheet.create({
   toggle: { color: theme.primary, textAlign: 'center', marginTop: 8 },
   error: { color: theme.bad, textAlign: 'center' },
   hint: { color: theme.muted, textAlign: 'center', fontSize: 12, marginTop: 16 },
-});
+  });
+}

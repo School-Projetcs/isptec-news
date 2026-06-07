@@ -1,9 +1,10 @@
+import { useMemo } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { NavigationContainer, type Theme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthProvider, useAuth } from './lib/auth';
-import { theme } from './lib/theme';
+import { ThemeProvider, useTheme, type Palette, type ThemeName } from './lib/theme';
 import { LoginScreen } from './screens/LoginScreen';
 import { FeedScreen } from './screens/FeedScreen';
 import { NewsDetailScreen } from './screens/NewsDetailScreen';
@@ -18,30 +19,34 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-const navTheme: Theme = {
-  dark: false,
-  colors: {
-    primary: theme.primary,
-    background: theme.bg,
-    card: theme.card,
-    text: theme.ink,
-    border: theme.border,
-    notification: theme.primary,
-  },
-  fonts: {
-    regular: { fontFamily: 'System', fontWeight: '400' },
-    medium: { fontFamily: 'System', fontWeight: '500' },
-    bold: { fontFamily: 'System', fontWeight: '700' },
-    heavy: { fontFamily: 'System', fontWeight: '900' },
-  },
-};
+/** Constrói o tema do React Navigation a partir da paleta efetiva. */
+function buildNavTheme(theme: Palette, name: ThemeName): Theme {
+  return {
+    dark: name === 'dark',
+    colors: {
+      primary: theme.primary,
+      background: theme.bg,
+      card: theme.card,
+      text: theme.ink,
+      border: theme.border,
+      notification: theme.primary,
+    },
+    fonts: {
+      regular: { fontFamily: 'System', fontWeight: '400' },
+      medium: { fontFamily: 'System', fontWeight: '500' },
+      bold: { fontFamily: 'System', fontWeight: '700' },
+      heavy: { fontFamily: 'System', fontWeight: '900' },
+    },
+  };
+}
 
 function Router() {
   const { user, loading } = useAuth();
+  const { theme } = useTheme();
 
   if (loading) {
     return (
-      <View style={styles.center}>
+      <View style={[styles.center, { backgroundColor: theme.bg }]}>
         <ActivityIndicator color={theme.primary} size="large" />
       </View>
     );
@@ -72,17 +77,28 @@ function Router() {
   );
 }
 
+function Shell() {
+  const { theme, name } = useTheme();
+  const navTheme = useMemo(() => buildNavTheme(theme, name), [theme, name]);
+
+  return (
+    <NavigationContainer theme={navTheme}>
+      <StatusBar style={name === 'dark' ? 'light' : 'dark'} />
+      <Router />
+    </NavigationContainer>
+  );
+}
+
 export default function App() {
   return (
-    <AuthProvider>
-      <NavigationContainer theme={navTheme}>
-        <StatusBar style="dark" />
-        <Router />
-      </NavigationContainer>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <Shell />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.bg },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });

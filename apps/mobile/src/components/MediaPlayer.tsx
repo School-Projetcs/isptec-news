@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { View, Text, Image, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
 import { Video, ResizeMode, Audio } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import { mediaUrl } from '../lib/api';
-import { theme } from '../lib/theme';
+import { useTheme, type Palette } from '../lib/theme';
 
 type Props = {
   mediaId: string;
@@ -22,6 +22,8 @@ const DEFAULT_VARIANT: Record<Props['type'], string> = {
  * para o dispositivo e passa a reproduzir a partir do ficheiro local.
  */
 export function MediaPlayer({ mediaId, type }: Props) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const variant = DEFAULT_VARIANT[type];
   const remoteUri = mediaUrl(mediaId, variant);
   const [localUri, setLocalUri] = useState<string | null>(null);
@@ -76,6 +78,8 @@ export function MediaPlayer({ mediaId, type }: Props) {
 }
 
 function AudioControl({ uri }: { uri: string }) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [playing, setPlaying] = useState(false);
 
@@ -106,7 +110,8 @@ function AudioControl({ uri }: { uri: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(theme: Palette) {
+  return StyleSheet.create({
   wrap: { marginVertical: 8 },
   media: {
     width: '100%',
@@ -130,4 +135,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   audioBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
-});
+  });
+}

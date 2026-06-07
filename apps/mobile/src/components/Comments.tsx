@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
-import { theme } from '../lib/theme';
+import { useTheme, type Palette } from '../lib/theme';
 import type { Comment } from '../lib/types';
 
 // Comentários no detalhe (paridade com a Web). No mobile o utilizador está sempre
@@ -20,6 +20,8 @@ function fmt(iso: string): string {
 
 export function Comments({ slug }: { slug: string }) {
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [comments, setComments] = useState<Comment[] | null>(null);
   const [body, setBody] = useState('');
   const [busy, setBusy] = useState(false);
@@ -126,7 +128,8 @@ export function Comments({ slug }: { slug: string }) {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(theme: Palette) {
+  return StyleSheet.create({
   wrap: { marginTop: 24, borderTopColor: theme.border, borderTopWidth: 1, paddingTop: 16 },
   h3: { color: theme.text, fontSize: 18, fontWeight: '700', marginBottom: 12 },
   form: { marginBottom: 16, gap: 8 },
@@ -151,4 +154,5 @@ const styles = StyleSheet.create({
   cDate: { color: theme.muted, fontSize: 12 },
   cBody: { color: theme.text, lineHeight: 20 },
   del: { color: theme.bad, marginTop: 8, fontSize: 13 },
-});
+  });
+}

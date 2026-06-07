@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,11 +14,24 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../App';
 import { api, mediaUrl } from '../lib/api';
 import { useAuth } from '../lib/auth';
-import { theme } from '../lib/theme';
+import { useTheme, type Palette } from '../lib/theme';
 import type { Category, NewsItem } from '../lib/types';
 import { DailyDigest } from '../components/DailyDigest';
+import { ThemeToggle } from '../components/ThemeToggle';
 
-function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+type Styles = ReturnType<typeof makeStyles>;
+
+function Chip({
+  label,
+  active,
+  onPress,
+  styles,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+  styles: Styles;
+}) {
   return (
     <Pressable style={[styles.chip, active && styles.chipActive]} onPress={onPress}>
       <Text style={[styles.chipTxt, active && styles.chipTxtActive]}>{label}</Text>
@@ -30,6 +43,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Feed'>;
 
 export function FeedScreen({ navigation }: Props) {
   const { user, logout } = useAuth();
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [cats, setCats] = useState<Category[]>([]);
   const [cat, setCat] = useState(''); // slug ativo ('' = todas)
@@ -57,6 +72,7 @@ export function FeedScreen({ navigation }: Props) {
 
   useEffect(() => {
     navigation.setOptions({
+      headerLeft: () => <ThemeToggle />,
       headerRight: () => (
         <View style={styles.headerBtns}>
           {canEdit && (
@@ -94,9 +110,15 @@ export function FeedScreen({ navigation }: Props) {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.chips}
             >
-              <Chip label="Todas" active={cat === ''} onPress={() => load('')} />
+              <Chip label="Todas" active={cat === ''} onPress={() => load('')} styles={styles} />
               {cats.map((c) => (
-                <Chip key={c.id} label={c.name} active={cat === c.slug} onPress={() => load(c.slug)} />
+                <Chip
+                  key={c.id}
+                  label={c.name}
+                  active={cat === c.slug}
+                  onPress={() => load(c.slug)}
+                  styles={styles}
+                />
               ))}
             </ScrollView>
           ) : null
@@ -139,7 +161,8 @@ export function FeedScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(theme: Palette) {
+  return StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.bg },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.bg },
   list: { padding: 16, gap: 12 },
@@ -166,4 +189,5 @@ const styles = StyleSheet.create({
   muted: { color: theme.muted, textAlign: 'center', marginTop: 40 },
   headerBtns: { flexDirection: 'row', gap: 16 },
   headerLink: { color: theme.primary, fontWeight: '700', fontSize: 15 },
-});
+  });
+}

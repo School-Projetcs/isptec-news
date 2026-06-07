@@ -21,10 +21,16 @@ sobre uma única API.
   relatório comparativo de compressão por media.
 - **Streaming**: VOD por **HTTP Range** (206) e **live HLS real** — ingestão **RTMP**
   (node-media-server) → **FFmpeg → HLS** + transmissão simulada.
-- **Landing editorial** (estilo Euronews): hero em destaque, widgets de **Tempo** (real) e
-  **Mercados** (real), carrossel de últimas, secção Ao Vivo, todas as notícias filtráveis por categoria.
-- **Tema** claro/escuro, **TTS** ("Ouvir notícia"), **Resumo do dia** (FAB) e **Modo Dev/Demo**
-  (eventos do pipeline em tempo real por SSE).
+- **Landing editorial** (estilo Euronews): **1 hero** em destaque (só título + label discreta),
+  widgets de **Tempo** (real) e **Mercados** (real), **Últimas notícias** (máx. 2 + "Ver mais"),
+  **card de live único** (parece sempre um player), e **todas as notícias** (lista completa filtrável;
+  "Todas" nunca fica vazia se houver dados).
+- **Conta/Definições** num **dropdown único** no topo (perfil): Tema + Definições para todos;
+  **Modo Programador + ferramentas admin só para ADMIN autenticado** (separação utilizador/técnico).
+- **Tema** com **3 modos — sistema (default), claro e escuro**: o default segue a preferência do SO
+  (`prefers-color-scheme`) e reage em tempo real; a escolha manual sobrepõe-se e persiste.
+- **TTS** ("Ouvir notícia"), **Resumo do dia** (FAB) e **Modo Dev/Demo** — painel de eventos do
+  pipeline em tempo real por SSE, **visível apenas para administradores**.
 - **3 clientes**: Web (React+Vite), Desktop (Electron), Mobile (Expo/React Native).
 
 ---

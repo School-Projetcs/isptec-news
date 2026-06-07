@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, StyleSheet } from 'react-native';
 import * as Speech from 'expo-speech';
-import { theme } from '../lib/theme';
+import { useTheme, type Palette } from '../lib/theme';
 
 // "Ouvir notícia" no Mobile — leitura em voz alta via expo-speech (API de áudio
 // padrão da plataforma). pause/resume é só iOS no expo-speech, por isso o
 // controlo é Ouvir/Parar (fiável em Android e iOS).
 
 export function ListenButton({ text }: { text: string }) {
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [speaking, setSpeaking] = useState(false);
 
   // Pára a leitura ao sair do ecrã.
@@ -40,16 +42,18 @@ export function ListenButton({ text }: { text: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  btn: {
-    alignSelf: 'flex-start',
-    marginTop: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: theme.border,
-    backgroundColor: theme.card,
-  },
-  txt: { color: theme.text, fontWeight: '600', fontSize: 14 },
-});
+function makeStyles(theme: Palette) {
+  return StyleSheet.create({
+    btn: {
+      alignSelf: 'flex-start',
+      marginTop: 12,
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.border,
+      backgroundColor: theme.card,
+    },
+    txt: { color: theme.text, fontWeight: '600', fontSize: 14 },
+  });
+}

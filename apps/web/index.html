@@ -5,11 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ISPTEC News</title>
     <script>
-      // Aplica o tema guardado antes da pintura (evita flash). Claro por defeito.
+      // Aplica o tema efetivo antes da pintura (evita flash). Default: "sistema"
+      // (segue prefers-color-scheme do SO). Manter em sincronia com lib/theme.tsx.
       (function () {
         try {
-          if (localStorage.getItem('isptec_theme') === 'dark')
-            document.documentElement.setAttribute('data-theme', 'dark');
+          var c = localStorage.getItem('isptec_theme');
+          var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var dark = c === 'dark' || ((c === 'system' || !c) && systemDark);
+          if (dark) document.documentElement.setAttribute('data-theme', 'dark');
         } catch (e) {}
       })();
     </script>

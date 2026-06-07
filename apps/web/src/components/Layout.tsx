@@ -1,15 +1,16 @@
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { useDevMode } from '../lib/devmode';
 import { DevPanel } from './DevPanel';
 import { DailyDigest } from './DailyDigest';
-import { ThemeToggle } from './ThemeToggle';
 import { ManageMenu } from './ManageMenu';
+import { UserMenu } from './UserMenu';
 
 export function Layout() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { enabled: devMode } = useDevMode();
-  const nav = useNavigate();
+  // O painel técnico (Dev) só existe para ADMIN autenticado — nunca para o leitor.
+  const showDevPanel = devMode && user?.role === 'ADMIN';
 
   return (
     <div>
@@ -19,24 +20,15 @@ export function Layout() {
           <NavLink to="/" end>Notícias</NavLink>
           <NavLink to="/ao-vivo">Ao Vivo</NavLink>
           <ManageMenu />
-          <NavLink to="/definicoes">Definições{devMode && <span className="devdot" title="Modo Dev ativo" />}</NavLink>
         </nav>
         <div className="spacer" />
-        <ThemeToggle />
-        {user ? (
-          <div className="userbox">
-            <span className="muted small">{user.name} · {user.role}</span>
-            <button className="ghost" onClick={() => { logout(); nav('/'); }}>Sair</button>
-          </div>
-        ) : (
-          <Link to="/login" className="btn">Entrar</Link>
-        )}
+        <UserMenu />
       </header>
       <main className="container">
         <Outlet />
       </main>
       <DailyDigest />
-      {devMode && <DevPanel />}
+      {showDevPanel && <DevPanel />}
     </div>
   );
 }

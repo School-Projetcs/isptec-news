@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, Text, Pressable, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { api, uploadForm } from '../lib/api';
-import { theme, fmtBytes } from '../lib/theme';
+import { useTheme, fmtBytes, type Palette } from '../lib/theme';
 import type { CompressionReport, Media } from '../lib/types';
 import { MediaPlayer } from '../components/MediaPlayer';
 
 export function UploadScreen() {
+  const { theme } = useTheme();
+  const styles = useMemo(() => makeStyles(theme), [theme]);
   const [busy, setBusy] = useState(false);
   const [media, setMedia] = useState<Media | null>(null);
   const [report, setReport] = useState<CompressionReport | null>(null);
@@ -97,7 +99,8 @@ export function UploadScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+function makeStyles(theme: Palette) {
+  return StyleSheet.create({
   wrap: { padding: 16 },
   intro: { color: theme.muted, lineHeight: 20, marginBottom: 16 },
   btn: { backgroundColor: theme.primary, paddingVertical: 14, borderRadius: 10, alignItems: 'center' },
@@ -126,4 +129,5 @@ const styles = StyleSheet.create({
   note: { color: theme.muted, fontSize: 12, marginTop: 12, lineHeight: 18 },
   code: { color: theme.good, fontFamily: 'monospace' },
   preview: { marginTop: 20 },
-});
+  });
+}

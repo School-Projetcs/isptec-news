@@ -165,3 +165,12 @@ F5.3 e F6.3 concluídos e verificados no browser. Restantes (todas opcionais / m
 auto-fail já estão cobertos): **F6.2** gravar vídeo de demonstração (5–10 min, guião na secção 6 do
 manual), **VERIF-M** correr o Mobile em Expo Go com `EXPO_PUBLIC_API_URL` no IP LAN, **F4.4**
 empacotar Desktop com electron-builder. Bónus: HLS (F3+), comentários (rotas/UI), deploy.
+
+
+--
+Grupo 26 - Elementos
+Dálcio Garcia	20170796
+Osvaldo Marcolino	20210423
+--
+professor: Bongo Cahisso
+

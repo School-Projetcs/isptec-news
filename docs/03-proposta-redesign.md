@@ -118,3 +118,12 @@ com o mesmo sistema visual.
 3. **Finanças**: *ticker* ilustrativo (recomendado p/ demo) ou ligar a API real com chave?
 
 > Assim que aprovares (ou ajustares) estes 3 pontos, avanço para a implementação pela ordem de §7.
+
+
+--
+Grupo 26 - Elementos
+Dálcio Garcia	20170796
+Osvaldo Marcolino	20210423
+--
+professor: Bongo Cahisso
+

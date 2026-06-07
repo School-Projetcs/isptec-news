@@ -150,3 +150,12 @@ O projeto considera-se validado quando **todos os fluxos ✅ passam** no ambient
 destaque para os três **auto-fail**: **compressão** (4.4 + Modo Dev), **streaming** (4.5/4.6) e
 **cliente multiplataforma** (4.11). Os itens 🟡 (Mobile/telemóvel real) dependem de hardware e estão
 verificados por typecheck + bundle; ver `CURRENT_STATE.md` para o estado vivo.
+
+
+--
+Grupo 26 - Elementos
+Dálcio Garcia	20170796
+Osvaldo Marcolino	20210423
+--
+professor: Bongo Cahisso
+

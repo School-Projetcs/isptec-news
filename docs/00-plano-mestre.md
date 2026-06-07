@@ -361,3 +361,12 @@ erDiagram
 ---
 
 _Próximo passo sugerido: **Fase 0** — `git init` + scaffold do monorepo (API + Prisma + Web), com `/health` a responder._
+
+
+--
+Grupo 26 - Elementos
+Dálcio Garcia	20170796
+Osvaldo Marcolino	20210423
+--
+professor: Bongo Cahisso
+

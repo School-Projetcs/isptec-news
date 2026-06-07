@@ -185,3 +185,12 @@ Mais fácil, **sem Docker**, mas **sem RTMP** (só live simulada) e **disco efé
 
 **Total: 0 €.** Para a defesa, a **demo principal continua local** (`pnpm dev`), onde **todos** os
 auto-fail (compressão, streaming RTMP real, multiplataforma) funcionam sem restrições de free tier.
+
+
+--
+Grupo 26 - Elementos
+Dálcio Garcia	20170796
+Osvaldo Marcolino	20210423
+--
+professor: Bongo Cahisso
+

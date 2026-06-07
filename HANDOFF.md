@@ -135,3 +135,12 @@ pnpm install && pnpm db:up && pnpm db:migrate && pnpm db:seed && pnpm dev
 `apps/api/src/media-engine/serve.ts` + `routes/stream.ts` (streaming) ·
 `apps/api/prisma/schema.prisma` (dados) · `apps/web/src/pages/*` (UI) ·
 `docs/00-plano-mestre.md` (plano) · `CURRENT_STATE.md` · `TASKS.md`.
+
+
+--
+Grupo 26 - Elementos
+Dálcio Garcia	20170796
+Osvaldo Marcolino	20210423
+--
+professor: Bongo Cahisso
+

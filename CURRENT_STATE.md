@@ -198,3 +198,12 @@ Login demo: `admin@isptec.local` / `admin123`.
 - ⚠️ **Porta 3333** (não 3000) — 3000 ocupada por outra app local ("Mirantes 2.0").
 - ⚠️ **Empacotamento Desktop**: `start`/`desktop` abrem a app real, mas instaladores
   (electron-builder) ainda não estão configurados.
+
+
+--
+Grupo 26 - Elementos
+Dálcio Garcia	20170796
+Osvaldo Marcolino	20210423
+--
+professor: Bongo Cahisso
+

@@ -356,3 +356,12 @@ pnpm --filter @isptec/web build                                     # build de p
 >
 > Pendentes (opcionais/bónus): executar o deploy cloud, correr o Mobile em dispositivo (VERIF-M),
 > empacotar o Desktop e gravar o vídeo de demonstração.
+
+
+--
+Grupo 26 - Elementos
+Dálcio Garcia	20170796
+Osvaldo Marcolino	20210423
+--
+professor: Bongo Cahisso
+

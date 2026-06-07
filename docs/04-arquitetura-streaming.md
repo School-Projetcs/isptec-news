@@ -101,3 +101,12 @@ Telemóvel: qualquer app "RTMP/IRL streamer" com os mesmos dados.
 
 - `POST /stream/simulate/*` exige `requireAuth` + `requireRole('EDITOR','ADMIN')`.
 - Chave de stream simples para a demo; em produção, validar a chave no evento `prePublish` do NMS.
+
+
+--
+Grupo 26 - Elementos
+Dálcio Garcia	20170796
+Osvaldo Marcolino	20210423
+--
+professor: Bongo Cahisso
+

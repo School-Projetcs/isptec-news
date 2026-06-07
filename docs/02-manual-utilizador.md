@@ -173,3 +173,12 @@ pnpm typecheck                                            # tipos em todo o mono
 pnpm --filter @isptec/api exec tsx scripts/selftest-compression.ts   # compressão (img+áudio+vídeo)
 pnpm --filter @isptec/web build                          # build de produção da Web
 ```
+
+
+--
+Grupo 26 - Elementos
+Dálcio Garcia	20170796
+Osvaldo Marcolino	20210423
+--
+professor: Bongo Cahisso
+

@@ -68,3 +68,12 @@ streaming (VOD Range **e** live HLS real RTMP→FFmpeg→HLS) e cliente multipla
 **Todo o feedback de produto está implementado, incluindo o redesign single-page (F7.5).** As lacunas
 que restam são apenas de empacotamento/verificação manual (VERIF-M, instaladores Desktop, vídeo de demo)
 e não afetam a conformidade com o enunciado.
+
+
+--
+Grupo 26 - Elementos
+Dálcio Garcia	20170796
+Osvaldo Marcolino	20210423
+--
+professor: Bongo Cahisso
+

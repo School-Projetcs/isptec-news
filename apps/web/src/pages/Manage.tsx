@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import type { NewsItem } from '../types';
 import { ErrorState, Loading } from '../components/States';
+import { useUI, NEWS_CHANGED } from '../lib/ui';
+
+// Gestão centralizada de notícias: criar (modal), iniciar transmissão (modal) e
+// lista com edição rápida (modal) + publicar/eliminar. Sem navegar para páginas.
 
 export function Manage() {
+  const { openNews, openLive } = useUI();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   function load() {
-    setLoading(true);
     setError(null);
     api
       .get<NewsItem[]>('/news/manage/all')
@@ -20,6 +23,9 @@ export function Manage() {
   }
   useEffect(() => {
     load();
+    const onChanged = () => load();
+    window.addEventListener(NEWS_CHANGED, onChanged);
+    return () => window.removeEventListener(NEWS_CHANGED, onChanged);
   }, []);
 
   async function toggle(n: NewsItem) {
@@ -44,14 +50,17 @@ export function Manage() {
     <div>
       <div className="row between">
         <h1>Gerir notícias</h1>
-        <Link to="/gerir/nova" className="btn">+ Nova notícia</Link>
+        <div className="row">
+          <button className="ghost" onClick={openLive}>⏺ Iniciar transmissão</button>
+          <button onClick={() => openNews()}>✚ Adicionar notícia</button>
+        </div>
       </div>
       {loading ? (
         <Loading />
       ) : error ? (
         <ErrorState message={error} onRetry={load} />
       ) : news.length === 0 ? (
-        <p className="muted">Ainda não há notícias. Cria a primeira.</p>
+        <p className="muted">Ainda não há notícias. Carrega em <strong>Adicionar notícia</strong>.</p>
       ) : (
         <table className="table">
           <thead>
@@ -71,7 +80,7 @@ export function Manage() {
                 </td>
                 <td>{n.viewCount}</td>
                 <td className="actions">
-                  <Link to={`/gerir/editar/${n.id}`} className="btn ghostlink">Editar</Link>
+                  <button className="ghost" onClick={() => openNews(n.id)}>Editar</button>
                   <button onClick={() => toggle(n)}>
                     {n.status === 'PUBLISHED' ? 'Despublicar' : 'Publicar'}
                   </button>

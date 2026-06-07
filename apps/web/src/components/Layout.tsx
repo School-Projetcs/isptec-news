@@ -1,9 +1,9 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { useDevMode } from '../lib/devmode';
+import { UIProvider } from '../lib/ui';
 import { DevPanel } from './DevPanel';
 import { DailyDigest } from './DailyDigest';
-import { ManageMenu } from './ManageMenu';
 import { UserMenu } from './UserMenu';
 
 export function Layout() {
@@ -13,13 +13,12 @@ export function Layout() {
   const showDevPanel = devMode && user?.role === 'ADMIN';
 
   return (
-    <div>
+    <UIProvider>
       <header className="nav">
         <Link to="/" className="brand">📰 ISPTEC News</Link>
         <nav className="navlinks">
           <NavLink to="/" end>Notícias</NavLink>
           <NavLink to="/ao-vivo">Ao Vivo</NavLink>
-          <ManageMenu />
         </nav>
         <div className="spacer" />
         <UserMenu />
@@ -29,6 +28,6 @@ export function Layout() {
       </main>
       <DailyDigest />
       {showDevPanel && <DevPanel />}
-    </div>
+    </UIProvider>
   );
 }

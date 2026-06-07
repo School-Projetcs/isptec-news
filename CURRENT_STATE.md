@@ -126,6 +126,31 @@ dados reais, sessões admin e anónima):
    vê painel/toggle/admin. O lab **Media & Compressão** mantém-se atrás do menu Gestão (editor/admin),
    pois demonstra a compressão (auto-fail). Web `tsc` + build de produção passam.
 
+**Centralização admin + modais (2026-06-07):** reestruturação **faseada e verificada no browser** (E2E
+com API+Web, dados reais). Decisões prévias do utilizador: **fonte de live = RTMP+QR (infra atual)** e
+**âmbito = tudo, faseado**.
+1. **Dropdown único** (§1) — removida a página/opção **Definições** (apagada `Settings.tsx`); o
+   `UserMenu` passa a ter header com o nome + **Tema** (tooltips, sem descrições permanentes) +
+   **Notícias** (Adicionar/Gerir/Iniciar transmissão, editor/admin) + **Administração** (Modo Programador,
+   Media&Compressão, Utilizadores — só ADMIN). Removido o `ManageMenu` da nav (apagado). (Verificado.)
+2. **Criação de notícias por modal** (§2/§7) — `components/{Modal,NewsModal}.tsx` + contexto global
+   `lib/ui.tsx` (`UIProvider`/`useUI`, evento `isptec:news-changed`). Campos: título, resumo, categoria,
+   conteúdo, **capa (obrigatória)**, vídeo opcional e **pré-visualização** ao vivo. **Gate**: não publica
+   sem média. `Manage` ganhou **Adicionar/Iniciar transmissão** e edição rápida via modal. **E2E
+   verificado**: injetei capa real → Publicar → notícia PUBLISHED com cover IMAGE comprimida (e limpei-a).
+3. **Transmissão por modal multi-fonte** (§3) — `components/LiveModal.tsx`: escolher fonte (**telemóvel
+   QR**, **webcam/OBS**, **externo**, **simulada**) — **nunca arranca sozinho**. QR (dep nova `qrcode`)
+   codifica `rtmp://<host>:1935/live/isptec`. **Verificado**: 4 fontes, QR data-URL + campos RTMP,
+   simulada **start→AO VIVO→stop**.
+4. **Live card** (§4) — `LiveCard`: estados **LIVE/PREPARAÇÃO/OFF**, **sem autoplay** — o vídeo só
+   reproduz em **hover** (pausa ao sair). Corrigido `HlsPlayer` para preferir **hls.js** (Chrome/Firefox)
+   e cair para HLS nativo só no Safari — fix de reprodução real. (Verificado: sem autoplay; readyState 4.)
+5. **Interações** (§5) — `VideoCard` reproduz só em **hover** (sem IntersectionObserver); imagens dos
+   cards com **zoom suave** (scale 1.05, transição 0.35s) ao hover. (Verificado: regras CSS aplicadas.)
+6. **Media & Compressão** (§6) — reposicionada como **ferramenta de admin** (link só na secção
+   Administração do dropdown). Notas: rotas `/gerir/nova|editar` (Editor) ficam como **gestão avançada**
+   de galeria/áudio (não removidas para não perder capacidade). Web `tsc` + build passam; consola limpa.
+
 > Nota: para obter o seed rico numa BD já populada, basta `pnpm db:seed` — o seed é declarativo
 > (o bloco `update` faz convergir o conteúdo/vistas/capa para o estado de demonstração).
 

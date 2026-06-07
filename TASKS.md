@@ -101,6 +101,18 @@ F4.4 (empacotar Desktop), F6.2 (vídeo de demo).
       (verificado: anónimo não vê painel mesmo c/ flag). Ficheiros: `apps/web/src/{components/{UserMenu,LiveCard,
       LiveSection,Layout}.tsx,pages/{Home,Live,Settings}.tsx,styles.css}` (removido `ThemeToggle.tsx`).
       `tsc` + build de produção passam.
+- [x] **F7.13 — Centralização admin + modais** ✅ **verificado E2E no browser** (decisões do utilizador:
+      live = **RTMP+QR**, âmbito = **tudo, faseado**) — (1) **Dropdown único**: removida página/opção
+      **Definições** (apagada `Settings.tsx`/`ManageMenu.tsx`); `UserMenu` = nome + Tema (tooltips) +
+      Notícias (Adicionar/Gerir/Iniciar transmissão) + Administração (Modo Dev/Media/Utilizadores, só ADMIN);
+      (2) **Modal de notícia** (`components/{Modal,NewsModal}.tsx` + `lib/ui.tsx`): título/conteúdo/categoria/
+      **capa obrigatória**/vídeo/**preview**, **gate** de média, edição rápida no `Manage` — E2E: capa real →
+      Publicar → PUBLISHED c/ cover comprimida; (3) **Modal de transmissão** (`LiveModal.tsx`): fontes
+      **telemóvel-QR / webcam-OBS / externo / simulada**, **sem auto-start**, QR (dep `qrcode`) com
+      `rtmp://host:1935/live/isptec` — simulada start→AO VIVO→stop verificado; (4) **LiveCard** estados
+      LIVE/PREPARAÇÃO/OFF + **hover-to-play** (sem autoplay); **fix `HlsPlayer`** (preferir hls.js);
+      (5) **VideoCard** hover-to-play + **zoom** suave nas imagens dos cards; (6) **Media&Compressão**
+      reposicionada como ferramenta admin (link só no dropdown). `tsc` + build passam; consola limpa.
 
 ---
 

@@ -24,12 +24,10 @@ export function HlsPlayer({ src, className, autoPlay = true, muted = true, contr
 
     let hls: Hls | null = null;
 
-    if (video.canPlayType('application/vnd.apple.mpegurl')) {
-      // Safari / iOS — HLS nativo.
-      video.src = src;
-    } else if (Hls.isSupported()) {
-      // lowLatencyMode desligado: o nosso HLS é clássico (segmentos de 2 s), evita recarregar
-      // o manifesto em excesso.
+    if (Hls.isSupported()) {
+      // Preferimos hls.js (MSE) no Chrome/Firefox — é o caminho fiável. O HLS nativo
+      // do <video> só se usa quando o hls.js não é suportado (Safari/iOS).
+      // lowLatencyMode desligado: o nosso HLS é clássico (segmentos de 2 s).
       hls = new Hls({ liveSyncDurationCount: 3, lowLatencyMode: false });
       hls.loadSource(src);
       hls.attachMedia(video);
@@ -39,6 +37,9 @@ export function HlsPlayer({ src, className, autoPlay = true, muted = true, contr
         else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) hls?.recoverMediaError();
         else { hls?.destroy(); onError?.(); }
       });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Safari / iOS — HLS nativo.
+      video.src = src;
     } else {
       onError?.();
     }

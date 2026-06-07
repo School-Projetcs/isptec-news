@@ -4,6 +4,7 @@ import { api, API_BASE } from '../lib/api';
 import type { Category, Media, NewsItem } from '../types';
 import { ErrorState, Loading } from '../components/States';
 import { fmtDate } from '../lib/format';
+import { NEWS_CHANGED } from '../lib/ui';
 import { WeatherWidget } from '../components/WeatherWidget';
 import { MarketsWidget } from '../components/MarketsWidget';
 import { LiveSection } from '../components/LiveSection';
@@ -58,6 +59,9 @@ export function Home() {
   useEffect(() => {
     load();
     api.get<Category[]>('/categories').then(setCats).catch(() => {});
+    const onChanged = () => load();
+    window.addEventListener(NEWS_CHANGED, onChanged);
+    return () => window.removeEventListener(NEWS_CHANGED, onChanged);
   }, []);
 
   const featured = news?.[0] ?? null;

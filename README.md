@@ -25,8 +25,13 @@ sobre uma única API.
   widgets de **Tempo** (real) e **Mercados** (real), **Últimas notícias** (máx. 2 + "Ver mais"),
   **card de live único** (parece sempre um player), e **todas as notícias** (lista completa filtrável;
   "Todas" nunca fica vazia se houver dados).
-- **Conta/Definições** num **dropdown único** no topo (perfil): Tema + Definições para todos;
-  **Modo Programador + ferramentas admin só para ADMIN autenticado** (separação utilizador/técnico).
+- **Dropdown de conta único** no topo centraliza tudo (sem página de "Definições"): Tema para todos;
+  **Adicionar notícia · Gerir · Iniciar transmissão** (editor/admin); **Modo Programador + ferramentas
+  admin só para ADMIN autenticado** (separação utilizador/técnico).
+- **Criação de notícias por modal** (sem navegar): título, conteúdo, categoria, **capa (obrigatória)**,
+  vídeo opcional e **pré-visualização** ao vivo — não publica sem média estruturada.
+- **Transmissão por modal multi-fonte** (RTMP→HLS): **telemóvel via QR Code** (app RTMP vira câmara),
+  **webcam/OBS**, **stream externo** ou **simulada** — nunca arranca sem escolher a fonte.
 - **Tema** com **3 modos — sistema (default), claro e escuro**: o default segue a preferência do SO
   (`prefers-color-scheme`) e reage em tempo real; a escolha manual sobrepõe-se e persiste.
 - **TTS** ("Ouvir notícia"), **Resumo do dia** (FAB) e **Modo Dev/Demo** — painel de eventos do

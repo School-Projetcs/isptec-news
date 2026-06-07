@@ -10,7 +10,6 @@ import { Editor } from './pages/Editor';
 import { Manage } from './pages/Manage';
 import { MediaLab } from './pages/MediaLab';
 import { Admin } from './pages/Admin';
-import { Settings } from './pages/Settings';
 import { useAuth } from './lib/auth';
 
 function Protected({ roles, children }: { roles?: string[]; children: ReactNode }) {
@@ -30,7 +29,6 @@ export function App() {
         <Route path="/ao-vivo" element={<Live />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registar" element={<Register />} />
-        <Route path="/definicoes" element={<Settings />} />
         <Route
           path="/gerir"
           element={

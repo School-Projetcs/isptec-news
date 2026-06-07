@@ -1,33 +1,19 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { API_BASE } from '../lib/api';
 import type { Media, NewsItem } from '../types';
 
-// Card de notícia cujo media é vídeo: autoplay mudo in-card quando entra em vista
-// (IntersectionObserver) e pausa fora de vista. Respeita políticas de autoplay
-// (muted + playsInline).
+// Card de notícia com vídeo: o vídeo só reproduz em HOVER direto no card (sem
+// autoplay global). Ao sair, pausa e volta ao início (mostra o poster).
 
 export function VideoCard({ item, video }: { item: NewsItem; video: Media }) {
   const ref = useRef<HTMLVideoElement>(null);
 
-  useEffect(() => {
-    const v = ref.current;
-    if (!v) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) void v.play().catch(() => {});
-          else v.pause();
-        }
-      },
-      { threshold: 0.5 },
-    );
-    io.observe(v);
-    return () => io.disconnect();
-  }, []);
+  const play = () => { void ref.current?.play().catch(() => {}); };
+  const stop = () => { const v = ref.current; if (v) { v.pause(); v.currentTime = 0; } };
 
   return (
-    <Link to={`/noticia/${item.slug}`} className="newscard">
+    <Link to={`/noticia/${item.slug}`} className="newscard" onMouseEnter={play} onMouseLeave={stop}>
       <div className="thumbwrap">
         <video
           ref={ref}

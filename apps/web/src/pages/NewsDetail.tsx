@@ -36,14 +36,14 @@ export function NewsDetail() {
   const when = news.publishedAt ?? news.createdAt;
   const mins = readingMinutes(news.body);
   return (
-    <article className="card">
-      <Link to="/" className="muted">← Notícias</Link>
-      <h1>
-        {isRecent(when) && <span className="tag new">Recente</span>} {news.title}
-      </h1>
+    <article className="article">
+      <Link to="/" className="muted backlink">← Notícias</Link>
+      <span className="kicker">
+        {news.category?.name ?? 'Geral'}{isRecent(when) ? ' · Recente' : ''}
+      </span>
+      <h1 className="article-title">{news.title}</h1>
       <p className="meta">
         {metaLine([
-          news.category?.name ?? 'Geral',
           news.author?.name,
           when && `${fmtDate(when)} às ${fmtTime(when)}`,
           mins > 0 && `${mins} min de leitura`,
@@ -53,13 +53,13 @@ export function NewsDetail() {
       <ListenButton text={`${news.title}. ${news.summary ? news.summary + '. ' : ''}${news.body ?? ''}`} />
       {news.cover && (
         <img
-          className="preview hero"
+          className="article-hero"
           src={`${API_BASE}/media/${news.cover.id}/raw?variant=webp-q80`}
           alt={news.title}
         />
       )}
       {news.summary && <p className="lead">{news.summary}</p>}
-      <div className="body">
+      <div className="body article-body">
         {news.body?.split('\n').map((p, i) => (
           <p key={i}>{p}</p>
         ))}

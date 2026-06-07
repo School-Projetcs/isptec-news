@@ -69,11 +69,12 @@ streaming (VOD Range **e** live HLS real RTMP→FFmpeg→HLS) e cliente multipla
 que restam são apenas de empacotamento/verificação manual (VERIF-M, instaladores Desktop, vídeo de demo)
 e não afetam a conformidade com o enunciado.
 
+---
 
---
-Grupo 26 - Elementos
-Dálcio Garcia	20170796
-Osvaldo Marcolino	20210423
---
-professor: Bongo Cahisso
+### Grupo 26 - Elementos
+- **Dálcio Garcia:** 20170796
+- **Osvaldo Marcolino:** 20210423
 
+**Professor:** Bongo Cahisso
+
+---

@@ -186,11 +186,12 @@ Ações de conta e administração estão **centralizadas**; modais substituem p
 > `/gerir/nova` + `/gerir/editar/:id` (**editor avançado** de multimédia — galeria/áudio) ·
 > `/media` (Media & Compressão) · `/admin`. Não há rota `/definicoes` (migrada para o dropdown).
 
+---
 
---
-Grupo 26 - Elementos
-Dálcio Garcia	20170796
-Osvaldo Marcolino	20210423
---
-professor: Bongo Cahisso
+### Grupo 26 - Elementos
+- **Dálcio Garcia:** 20170796
+- **Osvaldo Marcolino:** 20210423
 
+**Professor:** Bongo Cahisso
+
+---

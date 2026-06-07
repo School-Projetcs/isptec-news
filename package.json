@@ -7,10 +7,13 @@
     "node": ">=20"
   },
   "scripts": {
+    "postinstall": "pnpm db:generate",
+    "start:all": "node scripts/start-all.mjs",
     "dev": "pnpm --parallel --filter @isptec/api --filter @isptec/web dev",
     "dev:api": "pnpm --filter @isptec/api dev",
     "dev:web": "pnpm --filter @isptec/web dev",
     "dev:desktop": "pnpm --filter @isptec/desktop dev",
+    "dev:mobile": "node scripts/dev-mobile.mjs",
     "desktop": "pnpm --filter @isptec/web build && pnpm --filter @isptec/desktop start",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",

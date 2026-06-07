@@ -161,11 +161,12 @@ não são limitados. Em produção (atrás de proxy) definir `app.set('trust pro
 - `Comment` existe no modelo de dados mas ainda sem rotas/UI.
 - Deploy em produção (Render/Fly + PostgreSQL gerido) é bónus; a demo principal é local.
 
+---
 
---
-Grupo 26 - Elementos
-Dálcio Garcia	20170796
-Osvaldo Marcolino	20210423
---
-professor: Bongo Cahisso
+### Grupo 26 - Elementos
+- **Dálcio Garcia:** 20170796
+- **Osvaldo Marcolino:** 20210423
 
+**Professor:** Bongo Cahisso
+
+---

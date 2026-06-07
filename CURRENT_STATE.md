@@ -199,11 +199,12 @@ Login demo: `admin@isptec.local` / `admin123`.
 - ⚠️ **Empacotamento Desktop**: `start`/`desktop` abrem a app real, mas instaladores
   (electron-builder) ainda não estão configurados.
 
+---
 
---
-Grupo 26 - Elementos
-Dálcio Garcia	20170796
-Osvaldo Marcolino	20210423
---
-professor: Bongo Cahisso
+### Grupo 26 - Elementos
+- **Dálcio Garcia:** 20170796
+- **Osvaldo Marcolino:** 20210423
 
+**Professor:** Bongo Cahisso
+
+---

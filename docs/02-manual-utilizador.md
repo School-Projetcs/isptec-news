@@ -174,11 +174,12 @@ pnpm --filter @isptec/api exec tsx scripts/selftest-compression.ts   # compress�
 pnpm --filter @isptec/web build                          # build de produção da Web
 ```
 
+---
 
---
-Grupo 26 - Elementos
-Dálcio Garcia	20170796
-Osvaldo Marcolino	20210423
---
-professor: Bongo Cahisso
+### Grupo 26 - Elementos
+- **Dálcio Garcia:** 20170796
+- **Osvaldo Marcolino:** 20210423
 
+**Professor:** Bongo Cahisso
+
+---

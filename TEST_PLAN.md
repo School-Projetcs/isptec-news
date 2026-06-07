@@ -151,11 +151,12 @@ destaque para os três **auto-fail**: **compressão** (4.4 + Modo Dev), **stream
 **cliente multiplataforma** (4.11). Os itens 🟡 (Mobile/telemóvel real) dependem de hardware e estão
 verificados por typecheck + bundle; ver `CURRENT_STATE.md` para o estado vivo.
 
+---
 
---
-Grupo 26 - Elementos
-Dálcio Garcia	20170796
-Osvaldo Marcolino	20210423
---
-professor: Bongo Cahisso
+### Grupo 26 - Elementos
+- **Dálcio Garcia:** 20170796
+- **Osvaldo Marcolino:** 20210423
 
+**Professor:** Bongo Cahisso
+
+---

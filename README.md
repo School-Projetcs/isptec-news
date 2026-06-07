@@ -60,7 +60,6 @@ Toda a documentação relevante do repositório, num só sítio.
 | [`docs/00-plano-mestre.md`](docs/00-plano-mestre.md) | **Plano completo** do projeto (referência de avaliação) |
 | [`docs/01-relatorio-tecnico.md`](docs/01-relatorio-tecnico.md) | **Relatório técnico** — arquitetura, compressão e métricas |
 | [`docs/02-manual-utilizador.md`](docs/02-manual-utilizador.md) | **Manual do utilizador** — instalar, executar, demonstrar, troubleshooting |
-| [`docs/03-proposta-redesign.md`](docs/03-proposta-redesign.md) | **Proposta de redesign** editorial (implementada) |
 | [`docs/04-arquitetura-streaming.md`](docs/04-arquitetura-streaming.md) | **Arquitetura de streaming** — fluxo RTMP → FFmpeg → HLS |
 | [`docs/05-auditoria-conformidade.md`](docs/05-auditoria-conformidade.md) | **Auditoria de conformidade** por critério de avaliação (pesos) |
 | [`docs/06-deploy-zero-cost.md`](docs/06-deploy-zero-cost.md) | **Guia de deploy grátis** (Neon + Fly.io/Render + Vercel) |
@@ -162,9 +161,13 @@ Após o clone, copia os `.env.example` para `.env` (os valores de exemplo funcio
 
 - **Node.js ≥ 20** e **pnpm ≥ 9** (`npm i -g pnpm`)
 - **Docker Desktop** (PostgreSQL em contentor)
+  > **Guia Rápido de Instalação do Docker:**
+  > 1. Acede a [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
+  > 2. Descarrega e instala para o teu sistema (Windows/Mac). No Windows, aceita usar o WSL 2 (recomendado).
+  > 3. Abre o **Docker Desktop** pelo menos uma vez após instalar. O nosso comando `start:all` saberá abrir o Docker se ele estiver fechado no futuro!
 - **FFmpeg**: incluído via `ffmpeg-static`/`ffprobe-static` (não é preciso instalar à parte)
 - Portas livres: **3333** (API), **5173** (Web), **8080** (Adminer), **1935** (RTMP), **8081** (Metro/Expo)
-- (Mobile) app **Expo Go** no telemóvel, na mesma rede do computador
+- (Mobile) app **Expo Go** (versão mais recente) no telemóvel, na mesma rede do computador
 
 ### 3.2 Instalação
 
@@ -217,19 +220,15 @@ pnpm dev:api      # apenas a API
 pnpm dev:web      # apenas a Web
 ```
 
-### 4.3 Projeto completo local (todos os clientes)
+### 4.3 Projeto completo local (Setup Zero-Fricção)
+
+Temos um comando unificado que automatiza tudo de uma vez. Ele inicia o Docker, faz a migração, popula a base de dados e lança todos os clientes (API, Web, Desktop e Mobile), abrindo os terminais extra que forem necessários!
 
 ```bash
-# 1) BD + API + Web
-pnpm db:up && pnpm db:migrate && pnpm db:seed && pnpm dev
-
-# 2) Desktop (Electron) — noutro terminal, com a Web a correr
-pnpm dev:desktop
-
-# 3) Mobile (Expo) — noutro terminal; usa o IP LAN da máquina
-EXPO_PUBLIC_API_URL=http://<IP-LAN>:3333 pnpm --filter @isptec/mobile start
-# abrir no Expo Go: ler o QR ou inserir exp://<IP-LAN>:8081
+pnpm start:all
 ```
+
+*(Nota: O Desktop e o Mobile irão abrir-se automaticamente em novas janelas do terminal. Para aceder ao mobile, lê o QR code no Expo Go).*
 
 | Serviço | URL |
 |---|---|
@@ -319,6 +318,7 @@ restrições de free tier, segue o guia dedicado:
 
 | Comando | Ação |
 |---|---|
+| `pnpm start:all` | **Setup Zero-Fricção**: Liga a BD, migra e lança API, Web, Desktop e Mobile |
 | `pnpm dev` | API + Web em paralelo |
 | `pnpm dev:api` / `pnpm dev:web` / `pnpm dev:desktop` | Arrancar um cliente |
 | `pnpm desktop` | Build da Web + Electron (produção local) |
@@ -326,7 +326,7 @@ restrições de free tier, segue o guia dedicado:
 | `pnpm typecheck` | Verificação de tipos em todo o monorepo |
 | `pnpm db:up` / `pnpm db:down` | Liga/desliga PostgreSQL (Docker) |
 | `pnpm db:migrate` / `pnpm db:seed` / `pnpm db:studio` | Esquema · dados · Prisma Studio |
-| `pnpm --filter @isptec/mobile start` | Expo (Metro :8081) |
+| `pnpm dev:mobile` | Expo (Metro :8081) com IP LAN auto-configurado |
 | `pnpm --filter @isptec/desktop dist` | Instalador desktop (requer electron-builder) |
 
 ---
@@ -357,11 +357,12 @@ pnpm --filter @isptec/web build                                     # build de p
 > Pendentes (opcionais/bónus): executar o deploy cloud, correr o Mobile em dispositivo (VERIF-M),
 > empacotar o Desktop e gravar o vídeo de demonstração.
 
+---
 
---
-Grupo 26 - Elementos
-Dálcio Garcia	20170796
-Osvaldo Marcolino	20210423
---
-professor: Bongo Cahisso
+### Grupo 26 - Elementos
+- **Dálcio Garcia:** 20170796
+- **Osvaldo Marcolino:** 20210423
 
+**Professor:** Bongo Cahisso
+
+---

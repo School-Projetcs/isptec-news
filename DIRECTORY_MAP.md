@@ -130,11 +130,12 @@ isptec-news/
 | Tema (system/light/dark) | `apps/web/src/lib/theme.tsx` + `apps/web/index.html` |
 | Tipos partilhados | `packages/shared/src/index.ts` |
 
+---
 
---
-Grupo 26 - Elementos
-Dálcio Garcia	20170796
-Osvaldo Marcolino	20210423
---
-professor: Bongo Cahisso
+### Grupo 26 - Elementos
+- **Dálcio Garcia:** 20170796
+- **Osvaldo Marcolino:** 20210423
 
+**Professor:** Bongo Cahisso
+
+---

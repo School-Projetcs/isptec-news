@@ -1,7 +1,7 @@
 # CURRENT_STATE — ISPTEC News
 
 > Estado operacional atual (fonte de verdade para `status`, `continue`, `resume-work`).
-> Atualizado: **2026-06-06** · branch `main` · **Fase 7 committada em `678e4cf`**.
+> Atualizado: **2026-06-07** · branch `main` · **Fase 7 COMPLETA (incl. redesign F7.5), committada até `fd8e87c`**.
 
 ## Resumo (3–5 linhas)
 

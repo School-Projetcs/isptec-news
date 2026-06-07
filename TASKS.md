@@ -1,7 +1,7 @@
 # TASKS — ISPTEC News
 
 > Backlog operacional (fonte de verdade para `tasks`, `next`, `continue`).
-> Atualizado: **2026-06-06** · último commit `678e4cf` (Fase 7 + B8).
+> Atualizado: **2026-06-07** · último commit `fd8e87c` (Fase 7 completa, incl. redesign F7.5).
 > Legenda: `[x]` feito · `[~]` em curso · `[ ]` por fazer.
 
 ## Progresso global

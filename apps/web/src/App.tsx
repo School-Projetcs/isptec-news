@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import type { ReactNode } from 'react';
 import { Layout } from './components/Layout';
-import { Feed } from './pages/Feed';
+import { Home } from './pages/Home';
 import { NewsDetail } from './pages/NewsDetail';
 import { Live } from './pages/Live';
 import { Login } from './pages/Login';
@@ -25,7 +25,7 @@ export function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route index element={<Feed />} />
+        <Route index element={<Home />} />
         <Route path="/noticia/:slug" element={<NewsDetail />} />
         <Route path="/ao-vivo" element={<Live />} />
         <Route path="/login" element={<Login />} />

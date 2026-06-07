@@ -31,6 +31,7 @@ newsRouter.get(
         author: { select: { name: true } },
         category: true,
         cover: { include: { variants: true } },
+        media: { select: { id: true, type: true } }, // p/ a landing detetar vídeos
       },
     });
     res.json({ ok: true, data: news });

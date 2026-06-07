@@ -55,9 +55,25 @@ h3 { margin: 0 0 6px; }
   border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10;
 }
 .brand { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; color: var(--ink); }
-.navlinks { display: flex; gap: 14px; flex-wrap: wrap; }
+.navlinks { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
 .navlinks a { color: var(--muted); padding: 4px 2px; }
 .navlinks a.active { color: var(--text); border-bottom: 2px solid var(--accent); }
+
+/* menu de gestão (agrupa Gerir/Media/Admin) */
+.navmenu { position: relative; display: inline-block; }
+.navmenu-btn {
+  background: transparent; border: none; color: var(--muted); padding: 4px 2px;
+  font: inherit; font-weight: 400; cursor: pointer;
+}
+.navmenu-btn:hover { color: var(--text); filter: none; }
+.navmenu-pop {
+  position: absolute; top: 150%; left: 0; min-width: 190px; z-index: 20;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: var(--shadow-lg); padding: 6px; display: flex; flex-direction: column;
+}
+.navmenu-pop a { color: var(--text); padding: 8px 10px; border-radius: 6px; }
+.navmenu-pop a:hover { background: var(--panel2); text-decoration: none; }
+.navmenu-pop a.active { color: var(--accent); }
 .spacer { flex: 1; }
 .userbox { display: flex; align-items: center; gap: 10px; }
 .themetoggle {
@@ -220,13 +236,17 @@ button.danger:hover { background: var(--bad); color: #fff; filter: none; }
 .latest li { display: flex; flex-direction: column; gap: 2px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
 .latest li:last-child { border-bottom: 0; padding-bottom: 0; }
 
-/* grelha bento (1 card de destaque a toda a largura + restantes) */
-.bento { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
-.bento > :first-child { grid-column: 1 / -1; }
-.bento > :first-child .thumb { max-height: 420px; }
+/* carrossel horizontal "Últimas" */
+.carousel { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x mandatory; }
+.carousel-item { flex: 0 0 280px; max-width: 280px; scroll-snap-align: start; }
+.carousel-item .newscard { height: 100%; }
+.carousel-item .thumb { aspect-ratio: 16 / 9; }
 
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .carousel-item { flex-basis: 78vw; max-width: 78vw; }
 }
 
 /* ── Detalhe de notícia (repaginado, coluna de leitura) ─────────────────── */

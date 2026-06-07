@@ -4,12 +4,12 @@ import { useDevMode } from '../lib/devmode';
 import { DevPanel } from './DevPanel';
 import { DailyDigest } from './DailyDigest';
 import { ThemeToggle } from './ThemeToggle';
+import { ManageMenu } from './ManageMenu';
 
 export function Layout() {
   const { user, logout } = useAuth();
   const { enabled: devMode } = useDevMode();
   const nav = useNavigate();
-  const canEdit = user && (user.role === 'EDITOR' || user.role === 'ADMIN');
 
   return (
     <div>
@@ -18,9 +18,7 @@ export function Layout() {
         <nav className="navlinks">
           <NavLink to="/" end>Notícias</NavLink>
           <NavLink to="/ao-vivo">Ao Vivo</NavLink>
-          {canEdit && <NavLink to="/gerir">Gerir</NavLink>}
-          {canEdit && <NavLink to="/media">Media</NavLink>}
-          {user?.role === 'ADMIN' && <NavLink to="/admin">Admin</NavLink>}
+          <ManageMenu />
           <NavLink to="/definicoes">Definições{devMode && <span className="devdot" title="Modo Dev ativo" />}</NavLink>
         </nav>
         <div className="spacer" />

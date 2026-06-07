@@ -15,7 +15,11 @@ const path = require('node:path');
 const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
 
-const DIST = path.join(__dirname, '..', 'web', 'dist');
+// Localização do build da Web: empacotado (electron-builder copia para
+// resources/web via extraResources) ou, em dev/prod-local, apps/web/dist.
+const DIST = app.isPackaged
+  ? path.join(process.resourcesPath, 'web')
+  : path.join(__dirname, '..', 'web', 'dist');
 
 // URL de desenvolvimento: passado como argumento (`electron . http://...`) ou via env.
 const DEV_URL =

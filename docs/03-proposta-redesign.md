@@ -86,9 +86,9 @@ com o mesmo sistema visual.
 ## 5. Dados dos widgets
 
 - **Tempo:** [Open-Meteo](https://open-meteo.com/) — gratuito, **sem chave**, lat/lon de Luanda. Dados reais.
-- **Mercados/Finanças:** sem fonte gratuita fiável sem chave. Proposta: **ticker ilustrativo**
-  (câmbios AOA/USD/EUR + um índice fictício "BVDA"), com **rótulo "dados ilustrativos"** visível no
-  **Modo Dev**. Alternativa: integrar uma API gratuita com chave, se preferires dados reais.
+- **Mercados/Finanças:** ✅ **implementado com dados REAIS sem chave** — câmbios **USD/AOA** e
+  **EUR/AOA** via [open.er-api.com](https://www.exchangerate-api.com/) + **BTC/USD** (variação 24 h)
+  via [CoinGecko](https://www.coingecko.com/). Sem mocks; degrada para "indisponível" se offline.
 - **Resumo do dia (FAB):** `GET /news/digest` devolve as notícias publicadas ordenadas por
   **importância = vistas + recência** (top N, ≥3). O "resumo" usa o campo `summary` editorial de
   cada notícia (sem necessidade de LLM); o botão "ouvir" concatena os resumos e lê-os via TTS.

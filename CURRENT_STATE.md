@@ -64,6 +64,14 @@ responsivo (sem overflow a 375px). A **F7.7** atualizou o TEST_PLAN e reescreveu
 conformidade ([docs/05](docs/05-auditoria-conformidade.md)) com um mapa de prontidão por critério/peso.
 **Fase 7 completa, incluindo o redesign (F7.5).** Implementado também o bónus **B8 comentários**
 (rotas + UI no detalhe nas duas plataformas).
+
+**Revisão de fluxos da Home (2026-06-07):** landing reestruturada para hierarquia clara e sem
+duplicação — Hero (1 destaque + widgets) → **Últimas (carrossel)** → **Ao Vivo** (secção própria,
+fonte única `/stream/live/status`) → **Todas as notícias** (consolidadas, filtráveis); grelha bento
+removida. **Mercados com dados REAIS** (open.er-api.com + CoinGecko; sem mocks). Navegação agrupada
+(menu **Gestão**). **README** reescrito (autossuficiente: setup→run→build→instalador→arquitetura).
+**electron-builder** configurado em `apps/desktop` (instalar a pedido; `dist`/`dist:dir`) — build local
+de instalador bloqueado só por lock do Windows Defender (config correta e standard).
 **Paridade do Mobile (Expo):** o app passou a ter **comentários, filtro de categorias e "Resumo do dia"**
 (além do TTS já existente) — só o Modo Dev fica de fora (painel SSE de bastidores, sem sentido no telemóvel).
 Verificado por typecheck + bundle Metro (808 mód.); falta correr em dispositivo (VERIF-M).

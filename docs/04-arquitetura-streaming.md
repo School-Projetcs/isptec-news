@@ -81,7 +81,7 @@ Telemóvel: qualquer app "RTMP/IRL streamer" com os mesmos dados.
 
 - **Web/Desktop:** `hls.js` (Safari usa HLS nativo). `<video autoplay muted playsInline>` no hero,
   badge "● AO VIVO", botão "ativar som". Fallback "offline" quando o `.m3u8` não existe/!fresco.
-- **Mobile (Expo):** `expo-av` reproduz HLS nativamente (iOS/Android) — só muda a fonte para o `.m3u8`.
+- **Mobile (Expo SDK 54):** `expo-video` reproduz HLS nativamente (iOS/Android) — só muda a fonte para o `.m3u8`.
 
 ## 8. Estado & eventos (liga ao Modo Dev — req. 5)
 

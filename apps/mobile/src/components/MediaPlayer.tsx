@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, Text, Image, Pressable, ActivityIndicator, StyleSheet } from 'react-native';
-import { Video, ResizeMode, Audio } from 'expo-av';
-import * as FileSystem from 'expo-file-system';
+import { useVideoPlayer, VideoView } from 'expo-video';
+import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import * as FileSystem from 'expo-file-system/legacy';
 import { mediaUrl } from '../lib/api';
 import { useTheme, type Palette } from '../lib/theme';
 
@@ -20,6 +21,10 @@ const DEFAULT_VARIANT: Record<Props['type'], string> = {
  * Reprodução por STREAMING (VOD): o URL aponta para /media/:id/raw, servido com
  * HTTP Range — o leitor faz seek real. Botão "Guardar offline" descarrega a variante
  * para o dispositivo e passa a reproduzir a partir do ficheiro local.
+ *
+ * SDK 54: vídeo via `expo-video` (useVideoPlayer/VideoView), áudio via `expo-audio`
+ * (useAudioPlayer) — o antigo `expo-av` foi removido. Download offline usa a API
+ * legacy de `expo-file-system` (documentDirectory/downloadAsync).
  */
 export function MediaPlayer({ mediaId, type }: Props) {
   const { theme } = useTheme();
@@ -47,18 +52,7 @@ export function MediaPlayer({ mediaId, type }: Props) {
   return (
     <View style={styles.wrap}>
       {type === 'IMAGE' && <Image source={{ uri }} style={styles.media} resizeMode="contain" />}
-
-      {type === 'VIDEO' && (
-        <Video
-          source={{ uri }}
-          style={styles.media}
-          useNativeControls
-          resizeMode={ResizeMode.CONTAIN}
-          usePoster
-          posterSource={{ uri: mediaUrl(mediaId, 'thumbnail') }}
-        />
-      )}
-
+      {type === 'VIDEO' && <VideoControl uri={uri} style={styles.media} />}
       {type === 'AUDIO' && <AudioControl uri={uri} />}
 
       <View style={styles.row}>
@@ -77,30 +71,23 @@ export function MediaPlayer({ mediaId, type }: Props) {
   );
 }
 
+function VideoControl({ uri, style }: { uri: string; style: object }) {
+  const player = useVideoPlayer(uri, (p) => {
+    p.loop = false;
+  });
+  return <VideoView style={style} player={player} contentFit="contain" nativeControls allowsFullscreen />;
+}
+
 function AudioControl({ uri }: { uri: string }) {
   const { theme } = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
-  const [playing, setPlaying] = useState(false);
+  const player = useAudioPlayer(uri);
+  const status = useAudioPlayerStatus(player);
+  const playing = status.playing;
 
-  useEffect(() => {
-    return () => {
-      if (sound) void sound.unloadAsync();
-    };
-  }, [sound]);
-
-  async function toggle() {
-    if (!sound) {
-      const { sound: s } = await Audio.Sound.createAsync({ uri }, { shouldPlay: true });
-      s.setOnPlaybackStatusUpdate((st) => {
-        if (st.isLoaded) setPlaying(st.isPlaying);
-      });
-      setSound(s);
-      setPlaying(true);
-      return;
-    }
-    if (playing) await sound.pauseAsync();
-    else await sound.playAsync();
+  function toggle() {
+    if (playing) player.pause();
+    else player.play();
   }
 
   return (
@@ -112,28 +99,28 @@ function AudioControl({ uri }: { uri: string }) {
 
 function makeStyles(theme: Palette) {
   return StyleSheet.create({
-  wrap: { marginVertical: 8 },
-  media: {
-    width: '100%',
-    aspectRatio: 16 / 9,
-    backgroundColor: '#000',
-    borderRadius: 10,
-  },
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 },
-  tag: { color: theme.muted, fontSize: 12 },
-  btn: {
-    backgroundColor: theme.border,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  btnText: { color: theme.text, fontSize: 12, fontWeight: '600' },
-  audioBtn: {
-    backgroundColor: theme.primary,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  audioBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+    wrap: { marginVertical: 8 },
+    media: {
+      width: '100%',
+      aspectRatio: 16 / 9,
+      backgroundColor: '#000',
+      borderRadius: 10,
+    },
+    row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 },
+    tag: { color: theme.muted, fontSize: 12 },
+    btn: {
+      backgroundColor: theme.border,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 8,
+    },
+    btnText: { color: theme.text, fontSize: 12, fontWeight: '600' },
+    audioBtn: {
+      backgroundColor: theme.primary,
+      paddingVertical: 14,
+      borderRadius: 10,
+      alignItems: 'center',
+    },
+    audioBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
   });
 }

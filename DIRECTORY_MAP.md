@@ -79,7 +79,7 @@ isptec-news/
 │     └─ src/
 │        ├─ App.tsx                #   navegação (React Navigation) + gate de auth
 │        ├─ lib/                   #   api, auth, types, theme
-│        ├─ components/MediaPlayer #   reprodução VOD (expo-av) + offline (expo-file-system)
+│        ├─ components/MediaPlayer #   reprodução VOD (expo-video/expo-audio) + offline (expo-file-system)
 │        └─ screens/               #   Login, Feed, NewsDetail, Upload(+relatório)
 │
 ├─ packages/

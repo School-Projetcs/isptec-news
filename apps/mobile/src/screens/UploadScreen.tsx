@@ -17,7 +17,7 @@ export function UploadScreen() {
   async function pickAndUpload() {
     setError(null);
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ['images', 'videos'], // SDK 54: MediaTypeOptions foi removido
       quality: 1,
     });
     if (result.canceled || result.assets.length === 0) return;

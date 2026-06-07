@@ -20,8 +20,9 @@ Resta apenas o **vídeo de demonstração (F6.2)** — manual.
 - **Web** (`apps/web`): feed, detalhe, live, login/registo, gestão, editor, MediaLab, admin.
   `API_BASE` configurável (`lib/api.ts`) + `.env.production`.
 - **Desktop** (`apps/desktop`): Electron (`main.cjs`) — dev (Vite) e prod (`app://` + SPA fallback).
-- **Mobile** (`apps/mobile`): Expo/RN + React Navigation — login, feed, detalhe, player VOD
-  (expo-av), upload+relatório (expo-image-picker), offline (expo-file-system). Metro monorepo
+- **Mobile** (`apps/mobile`): Expo **SDK 54** (React 19/RN 0.81) + React Navigation — login, feed,
+  detalhe, player VOD (**expo-video** + **expo-audio**), upload+relatório (expo-image-picker), offline
+  (expo-file-system `/legacy`). Metro monorepo
   config + `@babel/runtime` direto (fix pnpm). Verificado: typecheck + bundle Metro.
 - **shared** (`packages/shared`): tipos + schemas zod.
 - **Segurança** (Fase 5): `middleware/rateLimit.ts` — `apiLimiter` global (ignora streaming/health)
@@ -83,8 +84,8 @@ evento HLS ao vivo; filtros por canal e contadores corretos; SSE exige sessão (
 **F7.8 Ouvir notícia (TTS) ✅ feito** — leitura em voz alta com APIs de áudio padrão. **Web/Desktop:**
 `apps/web/src/lib/tts.ts` (`useTts` sobre `speechSynthesis`, voz pt-PT, texto dividido em frases numa
 fila de utterances → pausa fiável e sem corte ~15 s do Chrome) + `components/ListenButton.tsx`
-(Ouvir/Pausar/Retomar/Parar + velocidade), ligado em `pages/NewsDetail.tsx`. **Mobile:** `expo-speech@13.0.1`
-(SDK 52) + `apps/mobile/src/components/ListenButton.tsx` (Ouvir/Parar — pause/resume é só iOS), ligado em
+(Ouvir/Pausar/Retomar/Parar + velocidade), ligado em `pages/NewsDetail.tsx`. **Mobile:** `expo-speech`
+(SDK 54) + `apps/mobile/src/components/ListenButton.tsx` (Ouvir/Parar — pause/resume é só iOS), ligado em
 `screens/NewsDetailScreen.tsx`. **Verificado:** Web no browser (Ouvir→Pausar→Retomar→Parar, 6 vozes);
 Mobile typecheck + bundle Metro (808 módulos). Reutilizável no "Resumo do dia" (F7.9).
 

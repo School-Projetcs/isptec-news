@@ -167,6 +167,23 @@ continua tema claro-único e sem os modais admin (cliente leitor/upload). **Falt
 executar o deploy, VERIF-M (Mobile em dispositivo), empacotar Desktop (F4.4, config pronta), vídeo de
 demo (F6.2).
 
+**Upgrade Mobile Expo SDK 52 → 54 (2026-06-07):** o Expo Go (iOS) só suporta o SDK mais recente, pelo
+que a app (SDK 52) deixou de abrir. **Atualizada para SDK 54** (React 19.1, React Native 0.81.5).
+Versões alinhadas por `expo install --fix` (escritas à mão por causa do lock do prisma generate no
+`postinstall`; instalado com `pnpm install --ignore-scripts`). **Migração de código** (breaking changes
+do SDK 54): `expo-av` **removido** → `expo-video` (`useVideoPlayer`/`VideoView`) + `expo-audio`
+(`useAudioPlayer`) em `MediaPlayer.tsx`; `expo-file-system` → import `/legacy` (documentDirectory/
+downloadAsync); `ImagePicker.MediaTypeOptions.All` → `mediaTypes: ['images','videos']`; removido o
+plugin `expo-av` do `app.json`. **Verificado:** `tsc --noEmit` (Mobile **e** Web) OK + **bundle Metro
+(iOS, 865 módulos)** OK.
+⚠️ **`@types/react` do Mobile fica em `^18.3.18`** (não 19) **de propósito**: a Web usa React 18 e, num
+monorepo pnpm, ter `@types/react@19` como dep **direta** do Mobile faz o tipo 19 vazar para o typecheck
+da Web (erro "Routes cannot be used as a JSX component"). Com o Mobile a declarar 18, o 19 fica só como
+peer **transitivo** do react-native 0.81 (ignorado por `skipLibCheck`) e ambos os typechecks passam.
+**Não voltar a pôr `@types/react@19` no Mobile.**
+⚠️ O `postinstall` (`prisma generate`) falha com **EPERM** (lock do Windows Defender) se houver um
+processo Node a usar o engine — fechar a API/Defender e repetir, ou usar `pnpm install --ignore-scripts`.
+
 > Nota: para obter o seed rico numa BD já populada, basta `pnpm db:seed` — o seed é declarativo
 > (o bloco `update` faz convergir o conteúdo/vistas/capa para o estado de demonstração).
 

@@ -83,8 +83,9 @@ Streaming **real**, não simulado.
 
 - **VOD (sob demanda):** `GET /media/:id/raw` usa
   [`serveWithRange()`](../apps/api/src/media-engine/serve.ts) — responde `206 Partial Content`
-  com `Accept-Ranges: bytes`. Os elementos HTML5 `<video>`/`<audio>` (Web/Desktop) e `expo-av`
-  (Mobile) fazem **seek/pause/play reais**, cumprindo todos os controlos de reprodução exigidos.
+  com `Accept-Ranges: bytes`. Os elementos HTML5 `<video>`/`<audio>` (Web/Desktop) e
+  `expo-video`/`expo-audio` (Mobile, SDK 54) fazem **seek/pause/play reais**, cumprindo todos os
+  controlos de reprodução exigidos.
 - **Tempo real (Live):** `GET /stream/live` ([`routes/stream.ts`](../apps/api/src/routes/stream.ts))
   emite **MJPEG** (`multipart/x-mixed-replace`): o servidor gera e empurra frames JPEG (via `sharp`)
   a cada 500 ms; o cliente mostra-os num `<img>`. É transmissão ao vivo genuína, sem libs de cliente.

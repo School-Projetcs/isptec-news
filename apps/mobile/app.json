@@ -21,7 +21,6 @@
       "permissions": ["READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE", "INTERNET"]
     },
     "plugins": [
-      "expo-av",
       [
         "expo-image-picker",
         {

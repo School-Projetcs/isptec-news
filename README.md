@@ -167,7 +167,8 @@ Após o clone, copia os `.env.example` para `.env` (os valores de exemplo funcio
   > 3. Abre o **Docker Desktop** pelo menos uma vez após instalar. O nosso comando `start:all` saberá abrir o Docker se ele estiver fechado no futuro!
 - **FFmpeg**: incluído via `ffmpeg-static`/`ffprobe-static` (não é preciso instalar à parte)
 - Portas livres: **3333** (API), **5173** (Web), **8080** (Adminer), **1935** (RTMP), **8081** (Metro/Expo)
-- (Mobile) app **Expo Go** (versão mais recente) no telemóvel, na mesma rede do computador
+- (Mobile) app **Expo Go** (versão mais recente — o projeto usa **Expo SDK 54**) no telemóvel, na mesma
+  rede do computador. *Se o Expo Go acusar "incompatible version", confirma que tens a app atualizada.*
 
 ### 3.2 Instalação e Execução (Setup Zero-Fricção)
 

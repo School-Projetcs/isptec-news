@@ -130,8 +130,13 @@ F4.4 (empacotar Desktop), F6.2 (vídeo de demo).
 
 ## 🟡 Média prioridade
 
-- [ ] **VERIF-M** — Correr o Mobile em Expo Go/emulador com `EXPO_PUBLIC_API_URL` no IP LAN
-      (confirmar também o **tema escuro** a renderizar e a persistir — F7.11).
+- [x] **F-SDK54 — Upgrade Mobile Expo SDK 52 → 54** ✅ **verificado (tsc + bundle Metro iOS, 865 mód.)** —
+      o Expo Go (iOS) só corre o SDK mais recente. Atualizado para **SDK 54** (React 19.1, RN 0.81.5);
+      breaking changes migrados: `expo-av`→`expo-video`+`expo-audio` (`MediaPlayer.tsx`),
+      `expo-file-system`→`/legacy`, `MediaTypeOptions.All`→`['images','videos']` (`UploadScreen.tsx`),
+      plugin `expo-av` removido do `app.json`. README/manual/CURRENT_STATE atualizados.
+- [ ] **VERIF-M** — Correr o Mobile **(SDK 54)** em Expo Go com `EXPO_PUBLIC_API_URL` no IP LAN — agora
+      abre na versão atual do Expo Go (confirmar também o **tema escuro** a renderizar e a persistir).
 - [ ] **F4.4** — Empacotar Desktop com `electron-builder` (.exe / .AppImage / .dmg).
 - [x] **F5.1** — `express-rate-limit` (`authLimiter` 20/15min + `apiLimiter` global). ✅ verificado (429 ao #21).
 - [x] **F5.2** — `requireRole` (já existia em `auth.ts`; aplicado em news/users/media).

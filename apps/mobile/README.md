@@ -1,7 +1,8 @@
 # @isptec/mobile (Fase 4)
 
-Cliente **Mobile** (Expo / React Native + TypeScript).
-Satisfaz o requisito de **cliente multiplataforma** (Android/iOS).
+Cliente **Mobile** (Expo / React Native + TypeScript) — **Expo SDK 54** (React Native 0.81, React 19).
+Satisfaz o requisito de **cliente multiplataforma** (Android/iOS). Compatível com a versão mais recente
+do **Expo Go** (que no iOS só suporta o SDK mais recente).
 Reutiliza os **tipos** de `@isptec/shared` (imports `type`, como na Web) e o mesmo
 contrato/envelope da API REST.
 
@@ -10,7 +11,7 @@ contrato/envelope da API REST.
 - **Login / Registo** (JWT, token guardado em AsyncStorage).
 - **Feed** de notícias publicadas (pull-to-refresh) → **detalhe** do artigo.
 - **Reprodução por streaming (VOD)**: imagem/áudio/vídeo servidos por `/media/:id/raw`
-  (HTTP Range) via `expo-av`.
+  (HTTP Range) via `expo-video` (vídeo) e `expo-audio` (áudio) — o antigo `expo-av` foi removido no SDK 54.
 - **Upload** de media (`expo-image-picker`) → compressão automática na API →
   **relatório comparativo** (tamanho, taxa, poupança).
 - **Offline**: botão "Guardar offline" (`expo-file-system`) que descarrega a variante e

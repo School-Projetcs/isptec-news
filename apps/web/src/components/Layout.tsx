@@ -3,6 +3,7 @@ import { useAuth } from '../lib/auth';
 import { useDevMode } from '../lib/devmode';
 import { DevPanel } from './DevPanel';
 import { DailyDigest } from './DailyDigest';
+import { ThemeToggle } from './ThemeToggle';
 
 export function Layout() {
   const { user, logout } = useAuth();
@@ -23,6 +24,7 @@ export function Layout() {
           <NavLink to="/definicoes">Definições{devMode && <span className="devdot" title="Modo Dev ativo" />}</NavLink>
         </nav>
         <div className="spacer" />
+        <ThemeToggle />
         {user ? (
           <div className="userbox">
             <span className="muted small">{user.name} · {user.role}</span>

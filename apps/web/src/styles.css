@@ -516,4 +516,35 @@ code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; }
 .rtmp-fields { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 12px 0; }
 .rtmp-fields dt { color: var(--muted); font-size: 0.85rem; }
 .rtmp-fields dd { margin: 0; }
+code.break { word-break: break-all; white-space: normal; }
 @media (max-width: 560px) { .sourcegrid { grid-template-columns: 1fr; } }
+
+/* pré-visualização de transmissão (webcam/ficheiro/telemóvel) */
+.broadcast-preview {
+  position: relative; aspect-ratio: 16 / 9; width: 100%; border-radius: 10px;
+  overflow: hidden; background: #000; border: 1px solid var(--border);
+}
+.broadcast-preview.tall { aspect-ratio: 9 / 16; max-height: 60vh; margin: 0 auto; }
+.broadcast-video { width: 100%; height: 100%; object-fit: cover; display: block; background: #000; }
+
+/* dropzone de ficheiro de vídeo */
+.dropzone {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+  padding: 32px 20px; border: 2px dashed var(--border); border-radius: 12px; cursor: pointer;
+  background: var(--panel2); transition: border-color 0.2s, background 0.2s;
+}
+.dropzone:hover, .dropzone.over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, var(--panel2)); }
+.dropzone-ic { font-size: 1.8rem; }
+.dropzone strong { font-family: var(--font-display); }
+.skeleton { background: linear-gradient(90deg, var(--panel2), var(--border), var(--panel2)); border-radius: 10px; }
+
+/* página pública do telemóvel (/transmitir) */
+.broadcast-page {
+  min-height: 100dvh; display: flex; flex-direction: column; gap: 14px;
+  padding: 16px; max-width: 560px; margin: 0 auto; background: var(--bg); color: var(--text);
+}
+.broadcast-head { display: flex; align-items: center; justify-content: space-between; }
+.broadcast-head strong { font-family: var(--font-display); color: var(--ink); font-size: 1.1rem; }
+.broadcast-actions { display: flex; justify-content: center; }
+button.big { padding: 14px 28px; font-size: 1.05rem; border-radius: 12px; width: 100%; max-width: 360px; }
+.broadcast-msg { text-align: center; }

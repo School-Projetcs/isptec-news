@@ -9,11 +9,13 @@
   "scripts": {
     "postinstall": "pnpm db:generate",
     "start:all": "node scripts/start-all.mjs",
+    "start:all:tunnel": "node scripts/start-all.mjs --tunnel",
     "dev": "pnpm --parallel --filter @isptec/api --filter @isptec/web dev",
     "dev:api": "pnpm --filter @isptec/api dev",
     "dev:web": "pnpm --filter @isptec/web dev",
     "dev:desktop": "pnpm --filter @isptec/desktop dev",
     "dev:mobile": "node scripts/dev-mobile.mjs",
+    "dev:tunnel": "node scripts/dev-tunnel.mjs",
     "desktop": "pnpm --filter @isptec/web build && pnpm --filter @isptec/desktop start",
     "build": "pnpm -r build",
     "typecheck": "pnpm -r typecheck",
@@ -26,6 +28,7 @@
     "db:studio": "pnpm --filter @isptec/api db:studio"
   },
   "devDependencies": {
+    "cloudflared": "^0.7.1",
     "typescript": "^5.7.2"
   },
   "pnpm": {

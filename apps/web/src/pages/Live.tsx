@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import { useUI } from '../lib/ui';
 import { LiveCard, useLiveStatus } from '../components/LiveCard';
 import { NewsCard } from '../components/NewsCard';
 import type { NewsItem } from '../types';
 
 // Página dedicada de transmissão. Estrutura: player no topo → informações da
-// transmissão → notícias relacionadas (cards verticais simples, sem carrossel).
-// O player deriva do componente base único (LiveCard) — consistência com a Home.
+// transmissão → notícias relacionadas. O arranque é SEMPRE via modal (escolha de
+// fonte + confirmação) — o botão aqui apenas abre esse modal, nunca transmite só.
 
 export function Live() {
   const { user } = useAuth();
+  const { openLive } = useUI();
   const canBroadcast = user && (user.role === 'EDITOR' || user.role === 'ADMIN');
 
   const { status, refresh } = useLiveStatus(4000);
@@ -22,28 +24,11 @@ export function Live() {
     api.get<NewsItem[]>('/news').then((n) => setRelated(n.slice(0, 6))).catch(() => {});
   }, []);
 
-  async function start() {
-    setBusy(true);
-    setError(null);
-    try {
-      await api.post('/stream/simulate/start');
-      // Poll rápido até os primeiros segmentos aparecerem.
-      for (let i = 0; i < 8; i++) {
-        await new Promise((r) => setTimeout(r, 1000));
-        await refresh();
-      }
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function stop() {
     setBusy(true);
     setError(null);
     try {
-      await api.post('/stream/simulate/stop');
+      await api.post('/stream/stop');
       await refresh();
     } catch (e) {
       setError((e as Error).message);
@@ -65,7 +50,7 @@ export function Live() {
             (live ? (
               <button className="danger" disabled={busy} onClick={stop}>Parar transmissão</button>
             ) : (
-              <button disabled={busy} onClick={start}>{busy ? 'A iniciar…' : 'Iniciar transmissão'}</button>
+              <button onClick={openLive}>Iniciar transmissão</button>
             ))}
         </div>
 
@@ -80,24 +65,10 @@ export function Live() {
         <LiveCard status={status} />
 
         {!live && canBroadcast && (
-          <p className="meta">Clica em “Iniciar transmissão” para uma demonstração simulada.</p>
-        )}
-
-        {canBroadcast && (
-          <details className="obshelp">
-            <summary>Transmitir de uma câmara real (OBS / telemóvel)</summary>
-            <p className="muted small">
-              Configura o OBS com <strong>Serviço: Personalizado</strong>,{' '}
-              <strong>Servidor: <code>rtmp://localhost:1935/live</code></strong> e{' '}
-              <strong>Chave: <code>isptec</code></strong>. Ao iniciar a transmissão no OBS, o vídeo
-              aparece aqui automaticamente.
-            </p>
-            <p className="muted small">
-              Detalhe técnico: o servidor recebe a fonte <strong>RTMP</strong> (ou uma transmissão
-              simulada) e segmenta-a com FFmpeg em <strong>HLS</strong>; o player reproduz com{' '}
-              <code>hls.js</code>.
-            </p>
-          </details>
+          <p className="meta">
+            Clica em “Iniciar transmissão” para escolher a fonte (telemóvel, webcam ou ficheiro de vídeo)
+            e entrar no ar.
+          </p>
         )}
       </div>
 

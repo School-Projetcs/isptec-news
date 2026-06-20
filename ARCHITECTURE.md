@@ -2,7 +2,8 @@
 
 > Visão de arquitetura **operacional** (fonte de verdade para o comando `architecture`).
 > Planeamento detalhado e justificações: [`docs/00-plano-mestre.md`](docs/00-plano-mestre.md).
-> Última sincronização com o código: **2026-06-07** (Fase 7 + reestruturação UI: dropdown, modais, live RTMP→HLS).
+> Última sincronização com o código: **2026-06-20** (refactor do início de transmissão: modal 3 fontes
+> Telemóvel/Webcam/Ficheiro com captura no browser MediaRecorder→WS→FFmpeg→HLS; túnel Cloudflare p/ dev).
 
 ---
 
@@ -81,12 +82,17 @@ Montagem em [`apps/api/src/app.ts`](apps/api/src/app.ts). `🔒` = `requireAuth`
 | GET | `/media/:id/raw` | — | **Streaming VOD** (HTTP Range / 206) |
 | GET | `/media/:id/download` | — | Download (offline) |
 | DELETE | `/media/:id` | 🔒 | Apagar media + variantes |
-| GET | `/stream/live/status` | — | Estado da transmissão (live/mode/key/hlsUrl) |
+| GET | `/stream/live/status` | — | Estado da transmissão (`LiveStatus`: live/mode/key/source/hlsUrl) |
 | GET | `/stream/hls/:key/:file` | — | **Distribuição HLS** (manifesto `.m3u8` + segmentos `.ts`) |
-| POST | `/stream/simulate/start` | 🔒 | Iniciar **transmissão simulada** (FFmpeg→HLS) |
+| (WS) | `/stream/ingest?key&source&token` | 🔒\* | **Ingestão de vídeo do browser** (MediaRecorder→FFmpeg→HLS) |
+| POST | `/stream/broadcast-token` | 🔒 | Emite token de broadcast (autoriza a página `/transmitir` do telemóvel) |
+| POST | `/stream/stop` | 🔒 | Termina a transmissão por browser (e qualquer simulada) |
+| POST | `/stream/simulate/start` | 🔒 | Iniciar **transmissão simulada** (FFmpeg→HLS, demo sem dispositivo) |
 | POST | `/stream/simulate/stop` | 🔒 | Parar transmissão simulada |
 | GET | `/stream/live` | — | Live MJPEG legacy (pré-visualização) |
-| (RTMP) | `rtmp://:1935/live/<chave>` | — | **Ingestão RTMP** (OBS/telemóvel) via node-media-server |
+| (RTMP) | `rtmp://:1935/live/<chave>` | — | **Ingestão RTMP** legacy/opcional (OBS) via node-media-server |
+
+`🔒\*` = o upgrade WS autoriza com token de broadcast (escopo `broadcast`) **ou** JWT de EDITOR/ADMIN.
 
 ---
 
@@ -113,12 +119,18 @@ Cada variante grava em `MediaVariant`: `size`, `compressionRatio`, `processingMs
 
 - **VOD (sob demanda):** `GET /media/:id/raw` → `serveWithRange()` responde `206 Partial Content`
   com `Accept-Ranges: bytes`. O `<video>`/`<audio>` HTML5 faz seek/pause/play reais.
-- **Live (RTMP→HLS, implementado · F7.1):** `node-media-server` v4 recebe a publicação **RTMP**
-  em `:1935/live/<chave>`; em cada publicação, o **FFmpeg** lê o RTMP e gera **HLS**
-  (`MEDIA/live/<chave>/index.m3u8`), servido por `GET /stream/hls/:key/:file`; o cliente reproduz
-  com `hls.js`. Há ainda **transmissão simulada** (`POST /stream/simulate/start|stop` → FFmpeg→HLS)
-  para a demo sem câmara. Módulos: `src/live/hls.ts` (HLS+simulada) e `src/live/rtmp.ts` (NMS).
-  Fluxo de dados em [`docs/04-arquitetura-streaming.md`](docs/04-arquitetura-streaming.md).
+- **Live — browser (principal, sem apps externas):** o cliente captura (`getUserMedia` p/ câmara,
+  `video.captureStream()` p/ ficheiro), grava com **MediaRecorder** e envia chunks por **WebSocket**
+  (`/stream/ingest`); o servidor escreve-os no **stdin de um FFmpeg** que gera **HLS**. Cobre as 3 fontes
+  do modal (telemóvel/webcam/ficheiro). O telemóvel usa a página pública `/transmitir` (QR + token de
+  broadcast). Módulos: `src/live/ingest.ts` (servidor `ws`) + `src/live/hls.ts` (FFmpeg→HLS+estado);
+  cliente `apps/web/src/lib/useBroadcast.ts`.
+- **Live — RTMP (legacy/opcional, fora do modal):** `node-media-server` v4 recebe **RTMP** em
+  `:1935/live/<chave>`; o FFmpeg lê e gera HLS. Para encoders externos (OBS); preserva o encadeamento
+  clássico RTMP+FFmpeg+HLS. Módulo: `src/live/rtmp.ts`.
+- **Live — simulada:** `POST /stream/simulate/start|stop` (FFmpeg→HLS de demo/`testsrc`) para demo sem dispositivo.
+- **Distribuição (única para todas as vias):** `GET /stream/hls/:key/:file` → `hls.js` no `LiveCard`.
+  Decisão técnica (MediaRecorder+WS vs WebRTC) e fluxo em [`docs/04-arquitetura-streaming.md`](docs/04-arquitetura-streaming.md).
 - **Live (legacy):** `GET /stream/live` → MJPEG sintético, mantido como pré-visualização instantânea.
 - **Offline:** `GET /media/:id/download` entrega a variante processada para guardar localmente.
 
@@ -159,11 +171,14 @@ Definido em [`apps/api/prisma/schema.prisma`](apps/api/prisma/schema.prisma).
 | `JWT_SECRET` | `apps/api/.env` | — |
 | `PORT` | `apps/api/.env` | **3333** (3000 ocupada por outra app local) |
 | RTMP `:1935` | node-media-server (fixo) | ingestão RTMP do streaming ao vivo |
-| `CORS_ORIGIN` | `apps/api/.env` | `*` ou lista |
+| `CORS_ORIGIN` | `apps/api/.env` | `*` (dev; restringir em prod) |
 | `MEDIA_DIR` | `apps/api/.env` | `./media` |
-| `VITE_API_URL` | `apps/web/.env` | `http://localhost:3333` |
+| `VITE_API_URL` | `apps/web/.env` | vazio em dev (usa proxy `/api`); URL absoluto em prod |
+| `API_PROXY_TARGET` | ambiente do Vite | `http://127.0.0.1:3333` (alvo do proxy `/api`) |
 
-Trocar dev↔produção = mudar `DATABASE_URL` (API) e `VITE_API_URL` (clientes).
+Trocar dev↔produção = mudar `DATABASE_URL` (API) e `VITE_API_URL` (clientes). O servidor escuta em
+`0.0.0.0` (LAN/túnel). Para testar noutros dispositivos: `pnpm dev:tunnel` (Cloudflare → URL HTTPS público;
+necessário para a câmara do telemóvel, que exige contexto seguro).
 
 ---
 
@@ -177,14 +192,17 @@ Ações de conta e administração estão **centralizadas**; modais substituem p
 | **UIProvider** | `lib/ui.tsx` | Contexto global (`useUI`): abre os modais de **notícia** e **transmissão** de qualquer sítio; evento `isptec:news-changed` refresca as listas |
 | **UserMenu** | `components/UserMenu.tsx` | **Dropdown único** (sem página "Definições"): Tema (3 modos) + Notícias (Adicionar/Gerir/Iniciar transmissão, editor/admin) + Administração (Modo Dev/Media/Utilizadores, **só admin**) |
 | **NewsModal** | `components/{Modal,NewsModal}.tsx` | Criar/editar notícia (capa obrigatória + vídeo + preview); **gate** de média; link p/ gestão avançada (galeria/áudio) na página `/gerir/editar/:id` |
-| **LiveModal** | `components/LiveModal.tsx` | Escolher fonte (telemóvel-QR / webcam-OBS / externo / simulada); **nunca arranca sem fonte**; QR (`qrcode`) com o URL RTMP |
+| **LiveModal** | `components/LiveModal.tsx` | Escolher fonte (**Telemóvel / Webcam / Ficheiro de Vídeo**); **nunca arranca sem confirmar**; preview + captura no browser (`useBroadcast`); QR (`qrcode`) com `window.location.origin/transmitir` |
+| **Broadcast** | `pages/Broadcast.tsx` (`/transmitir`) | Página **pública** do telemóvel (fora do Layout): permissões câmara/mic, preview, iniciar/parar; autoriza-se por token de broadcast no URL |
+| **useBroadcast** | `lib/useBroadcast.ts` | Hook único de captura→envio (MediaRecorder→WS) reutilizado por webcam, ficheiro e telemóvel |
 | **LiveCard** | `components/LiveCard.tsx` | Componente **base único** da emissão (Home + `/ao-vivo`); estados LIVE/PREPARAÇÃO/OFF; na Home só reproduz em hover |
 | **Tema** | `lib/theme.tsx` | `system`(default)/`light`/`dark`; segue `prefers-color-scheme`; persiste; pré-pintura em `index.html` |
 | **Modo Dev** | `lib/devmode.tsx` + `components/DevPanel.tsx` | Toggle (localStorage) + painel SSE; **só renderiza p/ ADMIN** |
 
-> Rotas (`App.tsx`): `/` · `/noticia/:slug` · `/ao-vivo` · `/login` · `/registar` · `/gerir` (lista) ·
-> `/gerir/nova` + `/gerir/editar/:id` (**editor avançado** de multimédia — galeria/áudio) ·
-> `/media` (Media & Compressão) · `/admin`. Não há rota `/definicoes` (migrada para o dropdown).
+> Rotas (`App.tsx`): `/` · `/noticia/:slug` · `/ao-vivo` · `/transmitir` (**página pública do telemóvel**,
+> fora do Layout) · `/login` · `/registar` · `/gerir` (lista) · `/gerir/nova` + `/gerir/editar/:id`
+> (**editor avançado** de multimédia — galeria/áudio) · `/media` (Media & Compressão) · `/admin`.
+> Não há rota `/definicoes` (migrada para o dropdown).
 
 ---
 

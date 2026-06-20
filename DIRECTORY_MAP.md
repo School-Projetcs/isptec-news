@@ -1,7 +1,8 @@
 # DIRECTORY_MAP — ISPTEC News
 
 > Mapa de módulos e diretórios (fonte de verdade para o comando `files`).
-> Sincronizado com o código em **2026-06-07** (Fase 7 + reestruturação UI: dropdown, modais, live RTMP→HLS).
+> Sincronizado com o código em **2026-06-20** (refactor do início de transmissão: modal 3 fontes +
+> ingestão por browser MediaRecorder→WS→FFmpeg→HLS + página `/transmitir` + túnel Cloudflare).
 
 ```text
 isptec-news/
@@ -20,6 +21,10 @@ isptec-news/
 │  │     ├─ lib/                   # prisma, logger, logService, jwt, slug, asyncHandler
 │  │     ├─ middleware/            # auth, validate, error, requestLogger
 │  │     ├─ routes/                # auth, news, categories, users, logs, media, stream, health
+│  │     ├─ live/                  # streaming ao vivo
+│  │     │  ├─ ingest.ts           #   servidor WebSocket de ingestão (browser→FFmpeg→HLS)
+│  │     │  ├─ hls.ts              #   FFmpeg→HLS + estado (browser/simulada/RTMP) + liveStatus()
+│  │     │  └─ rtmp.ts             #   node-media-server (RTMP legacy/opcional)
 │  │     └─ media-engine/          # ★ NÚCLEO MULTIMÉDIA
 │  │        ├─ process.ts          #   orquestra o pipeline
 │  │        ├─ image.ts            #   sharp → webp/jpeg/png
@@ -38,7 +43,8 @@ isptec-news/
 │  │     ├─ styles.css             # estilos globais
 │  │     ├─ types.ts               # tipos do cliente
 │  │     ├─ lib/
-│  │     │  ├─ api.ts              # cliente fetch + uploadForm + API_BASE
+│  │     │  ├─ api.ts              # cliente fetch + uploadForm + API_BASE + WS_BASE
+│     │  ├─ useBroadcast.ts     # captura→envio (MediaRecorder→WS) p/ webcam/ficheiro/telemóvel
 │  │     │  ├─ auth.tsx            # contexto de autenticação (JWT)
 │  │     │  ├─ theme.tsx           # tema system(default)/light/dark
 │  │     │  ├─ devmode.tsx         # toggle Modo Programador (admin)
@@ -50,7 +56,7 @@ isptec-news/
 │  │     │  ├─ UserMenu.tsx        # dropdown único (conta/tema/admin)
 │  │     │  ├─ Modal.tsx           # shell de modal reutilizável
 │  │     │  ├─ NewsModal.tsx       # criar/editar notícia (modal, capa+vídeo+preview)
-│  │     │  ├─ LiveModal.tsx       # iniciar transmissão (fontes + QR RTMP)
+│  │     │  ├─ LiveModal.tsx       # iniciar transmissão (Telemóvel/Webcam/Ficheiro; preview + confirmar)
 │  │     │  ├─ LiveCard.tsx        # base única de live (estados; hover-to-play)
 │  │     │  ├─ LiveSection.tsx     # secção de live na Home (usa LiveCard)
 │  │     │  ├─ HlsPlayer.tsx       # player HLS (hls.js, fallback nativo)
@@ -62,7 +68,8 @@ isptec-news/
 │  │     └─ pages/
 │  │        ├─ Home.tsx            # landing (hero + últimas + live + todas)
 │  │        ├─ NewsDetail.tsx      # detalhe + player + TTS + comentários
-│  │        ├─ Live.tsx            # página de transmissão (HLS) + relacionadas
+│  │        ├─ Live.tsx            # página de transmissão (HLS) + relacionadas (botão abre o LiveModal)
+│        ├─ Broadcast.tsx       # /transmitir — página pública do telemóvel (câmara→WS), fora do Layout
 │  │        ├─ Login.tsx / Register.tsx
 │  │        ├─ Manage.tsx          # gestão (modal add/edit + iniciar transmissão)
 │  │        ├─ Editor.tsx          # editor avançado de multimédia (galeria/áudio)
@@ -120,11 +127,14 @@ isptec-news/
 | Ver/alterar endpoints | `apps/api/src/routes/*` + `apps/api/src/app.ts` |
 | Mexer na compressão | `apps/api/src/media-engine/*` |
 | Mexer no streaming VOD | `apps/api/src/media-engine/serve.ts` + `routes/media.ts` |
-| Mexer no live | `apps/api/src/routes/stream.ts` |
+| Mexer no live (rotas/estado) | `apps/api/src/routes/stream.ts` + `live/hls.ts` |
+| Ingestão de vídeo do browser (WS) | `apps/api/src/live/ingest.ts` (servidor) + `apps/web/src/lib/useBroadcast.ts` (cliente) |
+| Túnel de dev (telemóvel/HTTPS) | `scripts/dev-tunnel.mjs` (`pnpm dev:tunnel`) |
 | Modelo de dados | `apps/api/prisma/schema.prisma` |
 | UI / páginas | `apps/web/src/pages/*` |
 | Modal criar/editar notícia | `apps/web/src/components/NewsModal.tsx` + `lib/ui.tsx` |
-| Modal iniciar transmissão (QR) | `apps/web/src/components/LiveModal.tsx` |
+| Modal iniciar transmissão (3 fontes) | `apps/web/src/components/LiveModal.tsx` |
+| Página do telemóvel (QR → câmara) | `apps/web/src/pages/Broadcast.tsx` (rota `/transmitir`) |
 | Dropdown de conta/tema | `apps/web/src/components/UserMenu.tsx` |
 | Card/estados de live | `apps/web/src/components/LiveCard.tsx` |
 | Tema (system/light/dark) | `apps/web/src/lib/theme.tsx` + `apps/web/index.html` |

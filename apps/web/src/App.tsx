@@ -4,6 +4,7 @@ import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import { NewsDetail } from './pages/NewsDetail';
 import { Live } from './pages/Live';
+import { Broadcast } from './pages/Broadcast';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Editor } from './pages/Editor';
@@ -23,6 +24,8 @@ function Protected({ roles, children }: { roles?: string[]; children: ReactNode 
 export function App() {
   return (
     <Routes>
+      {/* Página de transmissão do telemóvel — pública e sem o cabeçalho/nav (aberta via QR). */}
+      <Route path="/transmitir" element={<Broadcast />} />
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="/noticia/:slug" element={<NewsDetail />} />

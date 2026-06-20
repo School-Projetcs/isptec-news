@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import type { LiveStatus } from '@isptec/shared';
 import { api, API_BASE } from '../lib/api';
 import { HlsPlayer } from './HlsPlayer';
+
+export type { LiveStatus };
 
 // Componente base ÚNICO da transmissão — parece sempre um player. Só o estado muda;
 // o card nunca desaparece. 100% utilizador final (sem textos técnicos/logs).
@@ -9,15 +12,6 @@ import { HlsPlayer } from './HlsPlayer';
 //     HOVER no centro do card (sem autoplay); overlay mostra título + estado.
 //   • completo (sem ctaTo, ex.: /ao-vivo): player com controlos.
 // Estado: LIVE (no ar) · PREPARAÇÃO (a arrancar) · OFF (sem emissão).
-
-export type LiveStatus = {
-  live: boolean;
-  mode: 'simulated' | 'rtmp' | 'offline';
-  source: string | null;
-  hlsUrl: string;
-  key?: string;
-  startedAt?: number | null;
-};
 
 export function useLiveStatus(intervalMs = 6000) {
   const [status, setStatus] = useState<LiveStatus | null>(null);

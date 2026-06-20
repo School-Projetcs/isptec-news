@@ -1,233 +1,79 @@
 # ISPTEC News — Plataforma de Notícias Multimédia
 
-Projeto Final de **Multimédia 2026** · **Grupo 26**.
-Plataforma distribuída (cliente-servidor) para **criar, comprimir, transmitir (streaming) e
-consumir** notícias com **texto, imagem, áudio e vídeo**, em **três clientes** (Web, Desktop e Mobile)
-sobre uma única API REST.
+Projeto Final de **Multimédia 2026 · Grupo 26**.
+Plataforma cliente-servidor para **criar, comprimir, transmitir (streaming) e consumir** notícias com
+**texto, imagem, áudio e vídeo**, em **três clientes** (Web, Desktop e Mobile) sobre uma única API REST.
 
-> Este README é **autossuficiente** e o **ponto central de navegação** do projeto: seguindo-o,
-> qualquer programador consegue clonar, configurar, executar, gerar o build de produção, **criar o
-> instalador desktop** e correr a versão final — e encontrar **toda** a documentação a partir daqui.
+| Equipa | Nº |
+|---|---|
+| Dálcio Garcia | 20170796 |
+| Osvaldo Marcolino | 20210423 |
+
+**Professor:** Bongo Cahisso · Idioma do projeto: **português**.
 
 ---
 
-## Equipa — Grupo 26
+## 1. Arranque rápido
 
-| Integrante | Nº de Estudante |
-|---|---|
-| **Dálcio Garcia** | 20170796 |
-| **Osvaldo Marcolino** | 20210423 |
-
-> Avaliação de referência: `teacher-documentation.pdf` (raiz). Idioma do projeto: **português**.
-
----
-
-## Índice
-
-- [📚 Documentação (índice central)](#-documentação-índice-central)
-- [1. Funcionalidades](#1-funcionalidades)
-- [2. Arquitetura](#2-arquitetura)
-- [3. Setup completo](#3-setup-completo)
-- [4. Execução (desenvolvimento)](#4-execução-desenvolvimento)
-- [5. Build e produção](#5-build-e-produção)
-- [6. Aplicação Desktop (empacotamento)](#6-aplicação-desktop-empacotamento-e-instaladores)
-- [7. Deploy zero-cost](#7-deploy-zero-cost-grátis)
-- [8. Scripts úteis](#8-scripts-úteis-raiz)
-- [9. Testes e validação](#9-testes-e-validação)
-- [10. Estado do projeto](#10-estado-do-projeto)
-
----
-
-## 📚 Documentação (índice central)
-
-Toda a documentação relevante do repositório, num só sítio.
-
-### Guias operacionais (raiz) — estado vivo do projeto
-
-| Documento | Descrição |
-|---|---|
-| [`CURRENT_STATE.md`](CURRENT_STATE.md) | **Estado operacional atual** — o que está feito e o próximo passo |
-| [`TASKS.md`](TASKS.md) | **Backlog / roadmap** por fases (feito · em curso · por fazer) |
-| [`ARCHITECTURE.md`](ARCHITECTURE.md) | **Arquitetura operacional** — superfície REST, media-engine, streaming e UI da Web |
-| [`DIRECTORY_MAP.md`](DIRECTORY_MAP.md) | **Mapa de pastas/módulos** do monorepo + pontos de entrada rápidos |
-| [`TEST_PLAN.md`](TEST_PLAN.md) | **Plano de testes** ponta-a-ponta (fluxos + resultado esperado) |
-| [`HANDOFF.md`](HANDOFF.md) | **Transferência de contexto** entre sessões de trabalho |
-
-### Documentação técnica (`docs/`)
-
-| Documento | Descrição |
-|---|---|
-| [`docs/00-plano-mestre.md`](docs/00-plano-mestre.md) | **Plano completo** do projeto (referência de avaliação) |
-| [`docs/01-relatorio-tecnico.md`](docs/01-relatorio-tecnico.md) | **Relatório técnico** — arquitetura, compressão e métricas |
-| [`docs/02-manual-utilizador.md`](docs/02-manual-utilizador.md) | **Manual do utilizador** — instalar, executar, demonstrar, troubleshooting |
-| [`docs/04-arquitetura-streaming.md`](docs/04-arquitetura-streaming.md) | **Arquitetura de streaming** — fluxo RTMP → FFmpeg → HLS |
-| [`docs/05-auditoria-conformidade.md`](docs/05-auditoria-conformidade.md) | **Auditoria de conformidade** por critério de avaliação (pesos) |
-| [`docs/06-deploy-zero-cost.md`](docs/06-deploy-zero-cost.md) | **Guia de deploy grátis** (Neon + Fly.io/Render + Vercel) |
-
-### Documentação por cliente
-
-| Documento | Descrição |
-|---|---|
-| [`apps/desktop/README.md`](apps/desktop/README.md) | Cliente **Desktop** (Electron) — dev, produção e empacotamento |
-| [`apps/mobile/README.md`](apps/mobile/README.md) | Cliente **Mobile** (Expo/React Native) — feed, VOD, upload, offline |
-
-### Configuração (modelos de ambiente)
-
-Após o clone, copia os `.env.example` para `.env` (os valores de exemplo funcionam em dev local):
-
-| Ficheiro modelo | Para |
-|---|---|
-| [`.env.example`](.env.example) | Credenciais do PostgreSQL (Docker, raiz) |
-| [`apps/api/.env.example`](apps/api/.env.example) | API (`DATABASE_URL`, `JWT_SECRET`, `PORT`, `CORS_ORIGIN`, `MEDIA_DIR`) |
-| [`apps/web/.env.example`](apps/web/.env.example) | Web (`VITE_API_URL`) |
-| [`apps/mobile/.env.example`](apps/mobile/.env.example) | Mobile (`EXPO_PUBLIC_API_URL`) |
-
----
-
-## 1. Funcionalidades
-
-- **Autenticação** JWT + roles (`ADMIN`/`EDITOR`/`READER`), rate-limiting e validação (zod).
-- **CMS** de notícias multi-formato **por modal**: criar/editar/publicar, **capa obrigatória** +
-  galeria (imagem/áudio/vídeo), categorias, comentários e **pré-visualização** ao vivo.
-- **Compressão** (motor próprio): WebP/JPEG, MP3/AAC/OGG, H.264/H.265/VP9 + **Huffman** de raiz;
-  relatório comparativo de compressão por media.
-- **Streaming**: VOD por **HTTP Range** (206) e **live HLS real** — ingestão **RTMP**
-  (node-media-server) → **FFmpeg → HLS** + transmissão simulada. Iniciar transmissão por **modal**
-  multi-fonte (**telemóvel via QR**, webcam/OBS, stream externo ou simulada).
-- **Landing editorial**: **1 hero** em destaque (só título), widgets de **Tempo** e **Mercados**
-  (dados reais, sem mocks), **Últimas notícias** (máx. 2 + "Ver mais"), **card de live único** e
-  **todas as notícias** (lista completa filtrável; "Todas" nunca fica vazia se houver dados).
-- **Dropdown de conta único** centraliza tudo (sem página "Definições"): Tema para todos;
-  **Adicionar notícia · Gerir · Iniciar transmissão** (editor/admin); **Modo Programador + ferramentas
-  admin só para ADMIN autenticado** (separação utilizador/técnico).
-- **Tema** com **3 modos — sistema (default), claro e escuro**: o default segue a preferência do SO
-  (`prefers-color-scheme`) e reage em tempo real; a escolha manual sobrepõe-se e persiste.
-- **TTS** ("Ouvir notícia"), **Resumo do dia** (FAB) e **Modo Dev/Demo** — painel de eventos do
-  pipeline em tempo real por SSE, **visível apenas para administradores**.
-- **3 clientes**: Web (React+Vite), Desktop (Electron), Mobile (Expo/React Native).
-
----
-
-## 2. Arquitetura
-
-> Visão completa em [`ARCHITECTURE.md`](ARCHITECTURE.md) · mapa de ficheiros em
-> [`DIRECTORY_MAP.md`](DIRECTORY_MAP.md) · streaming em
-> [`docs/04-arquitetura-streaming.md`](docs/04-arquitetura-streaming.md).
-
-### 2.1 Estrutura de pastas (monorepo pnpm)
-
-| Pasta | Conteúdo |
-|---|---|
-| `apps/api` | API REST — Node + Express + Prisma (TypeScript). Auth, notícias, media-engine, streaming, logs. |
-| `apps/web` | Cliente Web — React + Vite. Landing, detalhe, gestão/CMS (modais), Media & Compressão, Live, dropdown de conta. |
-| `apps/desktop` | Cliente Desktop — Electron (`main.cjs`) que embrulha o build da Web. |
-| `apps/mobile` | Cliente Mobile — Expo/React Native (feed, detalhe, player VOD, upload, comentários, TTS). |
-| `packages/shared` | `@isptec/shared` — tipos + schemas de validação (zod) partilhados por toda a stack. |
-| `docs` | Plano-mestre, relatório técnico, manual, redesign, arquitetura de streaming, conformidade, deploy. |
-| (raiz) | `CURRENT_STATE.md`, `TASKS.md`, `HANDOFF.md`, `ARCHITECTURE.md`, `DIRECTORY_MAP.md`, `TEST_PLAN.md`. |
-
-### 2.2 Fluxos principais
-
-- **Publicar notícia:** modal **"Adicionar notícia"** → `POST /news` (rascunho) → anexar media
-  (`POST /media`, comprimida no upload) → definir capa (`PUT /news/:id`) → publicar (`POST /news/:id/publish`).
-- **Compressão:** upload → `media-engine/process.ts` gera variantes (sharp/FFmpeg) + Huffman próprio
-  → métricas em `MediaVariant` → `GET /media/:id/report`.
-- **VOD:** `GET /media/:id/raw?variant=…` com **HTTP Range** (206) → player reproduz/seek.
-- **Live:** OBS/telemóvel → **RTMP** `rtmp://<host>:1935/live/<chave>` → node-media-server →
-  **FFmpeg → HLS** → `GET /stream/hls/:key/index.m3u8` → `hls.js`. Estado em `GET /stream/live/status`
-  (fonte única, usada pela landing e pela página Ao Vivo).
-- **Modo Dev:** o pipeline emite eventos para um barramento em memória → **SSE**
-  `GET /stream/dev/events` → painel na Web (só admin).
-
-### 2.3 Integrações externas (dados reais, sem chave)
-
-| Widget | Fonte | Notas |
-|---|---|---|
-| Tempo (Luanda) | [Open-Meteo](https://open-meteo.com/) | Gratuito, sem chave. Degrada para "indisponível" se offline. |
-| Mercados | [open.er-api.com](https://www.exchangerate-api.com/) (USD/AOA, EUR/AOA) + [CoinGecko](https://www.coingecko.com/) (BTC, 24 h) | Gratuitos, sem chave. **Sem mocks.** |
-
-### 2.4 Estado da aplicação
-
-- **Servidor:** PostgreSQL (via Prisma) é a fonte de verdade dos dados; ficheiros de media em
-  `MEDIA_DIR` (disco controlado pela API). Estado de live em memória no processo da API.
-- **Clientes:** sessão (JWT) em `localStorage`/`AsyncStorage`; preferências (tema, Modo Dev) em
-  `localStorage`; restante estado vem da API por `fetch`.
-
----
-
-## 3. Setup completo
-
-### 3.1 Pré-requisitos
-
-- **Node.js ≥ 20** e **pnpm ≥ 9** (`npm i -g pnpm`)
-- **Docker Desktop** (PostgreSQL em contentor)
-  > **Guia Rápido de Instalação do Docker:**
-  > 1. Acede a [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
-  > 2. Descarrega e instala para o teu sistema (Windows/Mac). No Windows, aceita usar o WSL 2 (recomendado).
-  > 3. Abre o **Docker Desktop** pelo menos uma vez após instalar. O nosso comando `start:all` saberá abrir o Docker se ele estiver fechado no futuro!
-- **FFmpeg**: incluído via `ffmpeg-static`/`ffprobe-static` (não é preciso instalar à parte)
-- Portas livres: **3333** (API), **5173** (Web), **8080** (Adminer), **1935** (RTMP), **8081** (Metro/Expo)
-- (Mobile) app **Expo Go** (versão mais recente — o projeto usa **Expo SDK 54**) no telemóvel, na mesma
-  rede do computador. *Se o Expo Go acusar "incompatible version", confirma que tens a app atualizada.*
-
-### 3.2 Instalação e Execução (Setup Zero-Fricção)
-
-Graças ao nosso script inteligente de **zero-fricção**, basta clonares o repositório e correres dois comandos. Ele tratará de iniciar a base de dados (Docker), as migrações, a API, a Web, o Desktop e o Mobile de uma só vez (injetando automaticamente o teu IP local para o Mobile)!
+Precisas de **Node ≥ 20**, **pnpm ≥ 9** (`npm i -g pnpm`) e **Docker Desktop** instalado (abre-o uma vez
+depois de instalar). O FFmpeg já vem incluído (`ffmpeg-static`), não precisas de instalar nada à parte.
 
 ```bash
 git clone https://github.com/School-Projetcs/isptec-news.git && cd isptec-news
 pnpm install
+cp .env.example .env && cp apps/api/.env.example apps/api/.env   # 1ª vez: cria os .env (valores de dev já funcionam)
 pnpm start:all
 ```
 
-*(Nota: O Desktop e o Mobile irão abrir-se automaticamente em novas janelas do terminal. Para aceder à app mobile, lê o QR code gerado no ecrã com a tua app Expo Go).*
+> No primeiro arranque copia os `.env` (os valores de exemplo funcionam em dev local). Se já existirem,
+> salta esse passo. Em produção, aponta a `DATABASE_URL` para um PostgreSQL online — ver
+> [`docs/06-deploy-zero-cost.md`](docs/06-deploy-zero-cost.md).
 
-### 3.3 Configuração Manual (Modo Avançado / Produção)
-
-Se os ficheiros `.env` não existirem, os mesmos podem ser copiados manualmente a partir dos modelos `.env.example`:
-
-```bash
-cp .env.example .env
-cp apps/api/.env.example apps/api/.env
-cp apps/web/.env.example apps/web/.env
-cp apps/mobile/.env.example apps/mobile/.env
-```
-
-Atenção especial ao Mobile: se não usares o nosso atalho `pnpm dev:mobile`, precisarás de definir a `EXPO_PUBLIC_API_URL` com o **IP da tua máquina** na rede local.
-
-Em produção, define a `DATABASE_URL` para um PostgreSQL online — ver [guia de deploy](docs/06-deploy-zero-cost.md).
+O `start:all` faz **tudo sozinho**: liga a base de dados (Docker), aplica migrações, popula dados de
+demonstração e lança os três clientes. Detalhe dos terminais que abrem ⬇️.
 
 ---
 
-## 4. Execução Manual (Passo-a-passo)
+## 2. O que o `start:all` abre (terminais)
 
-Se preferires arrancar as coisas separadamente (em vez de usares o `pnpm start:all`), faz o seguinte:
+> ⚠️ Não fecho nada por ti. Cada cliente corre na sua própria janela. **A app não abre o browser
+> sozinha** — a Web abres tu em http://localhost:5173.
 
-### 4.1 Base de Dados (Docker)
-```bash
-pnpm db:up        # Inicia o PostgreSQL
-pnpm db:migrate   # Aplica o esquema
-pnpm db:seed      # Insere as notícias de demonstração
-```
+### `pnpm start:all`
 
-### 4.2 Clientes
-```bash
-pnpm dev          # Lança a API e a Web juntas
-pnpm dev:api      # (Lança só a API)
-pnpm dev:web      # (Lança só a Web)
-pnpm dev:desktop  # Lança o cliente Desktop (Electron) num terminal à parte
-pnpm dev:mobile   # Lança o cliente Mobile (Expo) injetando o teu IP LAN
-```
+| Janela | O que corre lá | O que fazes |
+|---|---|---|
+| **Terminal principal** *(onde escreveste o comando)* | Setup (Docker + BD) e depois a **API** (`:3333`) **+ Web** (`:5173`). É o coração — se o fechares, tudo pára. | Mantém-no aberto. Abre a **app Web** no browser em **http://localhost:5173**. |
+| **"ISPTEC News - Desktop"** *(abre sozinho)* | Cliente **Desktop** (Electron) — `pnpm dev:desktop`. | Nada: a **janela da app Desktop abre automaticamente** (mostra a mesma UI da Web). |
+| **"ISPTEC News - Mobile"** *(abre sozinho)* | Cliente **Mobile** (Expo / Metro `:8081`) — já com o teu IP da rede injetado. | **Lê o QR Code** dessa janela com a app **Expo Go** no telemóvel (mesma rede Wi-Fi). |
+
+Ou seja: **a app que usas no computador é a Web** (browser, `localhost:5173`) e/ou a **Desktop** (janela
+do Electron que abre sozinha). A **Mobile** abre no telemóvel via Expo Go.
+
+### `pnpm start:all:tunnel`
+
+Igual ao anterior **+ uma janela extra**, necessária quando queres **transmitir a partir do telemóvel**
+(a câmara do telemóvel exige HTTPS):
+
+| Janela | O que corre lá | O que fazes |
+|---|---|---|
+| **"ISPTEC News - Túnel"** *(abre sozinho)* | Túnel público **HTTPS** (Cloudflare) que expõe a Web num URL temporário e o regista na API. | Nada: o **QR de "Iniciar transmissão → Telemóvel"** passa a apontar para esse URL e funciona fora do computador. |
+
+Sem o túnel, o QR de transmissão aponta para `localhost` e o telemóvel não o consegue abrir.
+
+---
+
+## 3. Aceder à aplicação
 
 | Serviço | URL |
 |---|---|
-| API | http://localhost:3333 · health http://localhost:3333/health |
-| Web | http://localhost:5173 |
-| Adminer (BD) | http://localhost:8080 |
+| **Web** (app principal) | http://localhost:5173 |
+| API · health-check | http://localhost:3333 · http://localhost:3333/health |
+| Adminer (ver a BD) | http://localhost:8080 |
 
-**Credenciais de demonstração**
+**Contas de demonstração**
 
-| Role | Email | Password |
+| Papel | Email | Password |
 |---|---|---|
 | Admin | `admin@isptec.local` | `admin123` |
 | Editor | `editor@isptec.local` | `editor123` |
@@ -235,123 +81,57 @@ pnpm dev:mobile   # Lança o cliente Mobile (Expo) injetando o teu IP LAN
 
 ---
 
-## 5. Build e produção
+## 4. Arrancar à mão (alternativa ao `start:all`)
 
 ```bash
-# Build de todo o monorepo (shared + api + web)
-pnpm build
+# Base de dados (Docker)
+pnpm db:up        # liga o PostgreSQL
+pnpm db:migrate   # aplica o esquema
+pnpm db:seed      # insere as notícias de demonstração
 
-# Validar o build (typecheck de toda a stack)
-pnpm typecheck
-
-# Executar o build da Web localmente (pré-visualização do bundle de produção)
-pnpm --filter @isptec/web build
-pnpm --filter @isptec/web preview     # serve o dist/ em http://localhost:4173
-
-# Desktop em modo produção (carrega o build estático via protocolo app://)
-pnpm desktop      # = build da Web + electron . (sem servidor Vite)
+# Clientes (cada um no seu terminal)
+pnpm dev          # API + Web juntas
+pnpm dev:desktop  # cliente Desktop (Electron)
+pnpm dev:mobile   # cliente Mobile (Expo) com o IP da LAN auto-configurado
+pnpm dev:tunnel   # túnel público HTTPS (para transmitir do telemóvel)
 ```
 
 ---
 
-## 6. Aplicação Desktop (empacotamento e instaladores)
-
-> Detalhes específicos do cliente: [`apps/desktop/README.md`](apps/desktop/README.md).
-
-O Desktop (Electron) embrulha o build da Web. Para **gerar instaladores** usa-se o
-[`electron-builder`](https://www.electron.build/) — já configurado em `apps/desktop/package.json`
-(secção `build`): copia `apps/web/dist` para os recursos do pacote (`extraResources`) e o `main.cjs`
-serve-os via `app://` quando empacotado.
-
-### 6.1 Gerar a versão desktop / criar instaladores
-
-```bash
-# (uma vez) instalar a ferramenta de empacotamento
-pnpm --filter @isptec/desktop add -D electron-builder
-
-# gerar o build da Web + o instalador do SO atual → apps/desktop/release/
-pnpm --filter @isptec/desktop dist
-
-# apenas empacotar (app desempacotada, sem instalador — mais rápido para testar)
-pnpm --filter @isptec/desktop dist:dir
-```
-
-Alvos por sistema (definidos em `build`): **Windows** → NSIS (`.exe`), **macOS** → `.dmg`,
-**Linux** → `AppImage`.
-
-### 6.2 Testar o instalador
-
-1. Abre `apps/desktop/release/` e corre o instalador gerado (ex.: `ISPTEC News Setup x.y.z.exe`).
-2. Instala e abre a app — deve carregar a Web empacotada (via `app://`) sem precisar do Vite.
-3. Para a app falar com a API, garante que a API está acessível e que o build da Web foi feito com
-   `VITE_API_URL` a apontar para ela (ou usa o proxy em dev).
-
-> **Nota Windows:** se o `pnpm` falhar a instalar o `electron-builder` com `EPERM (rename …)`, é o
-> **Windows Defender** a bloquear ficheiros durante a extração. Solução: adicionar a pasta do projeto
-> às exclusões do Defender (*Segurança do Windows → Proteção contra vírus → Exclusões*) **ou** pausar
-> a proteção em tempo real durante a instalação, e repetir o comando.
-
----
-
-## 7. Deploy zero-cost (grátis)
-
-A demonstração principal é **local** ("máquina como host"). Para publicar online **sem custos**
-(DB **Neon** + API **Fly.io/Render** + Web **Vercel**), incluindo `Dockerfile`/`fly.toml` prontos e as
-restrições de free tier, segue o guia dedicado:
-
-➡️ **[`docs/06-deploy-zero-cost.md`](docs/06-deploy-zero-cost.md)**
-
----
-
-## 8. Scripts úteis (raiz)
+## 5. Scripts úteis
 
 | Comando | Ação |
 |---|---|
-| `pnpm start:all` | **Setup Zero-Fricção**: Liga a BD, migra e lança API, Web, Desktop e Mobile |
-| `pnpm dev` | API + Web em paralelo |
-| `pnpm dev:api` / `pnpm dev:web` / `pnpm dev:desktop` | Arrancar um cliente |
-| `pnpm desktop` | Build da Web + Electron (produção local) |
-| `pnpm build` | Build de todo o monorepo |
-| `pnpm typecheck` | Verificação de tipos em todo o monorepo |
-| `pnpm db:up` / `pnpm db:down` | Liga/desliga PostgreSQL (Docker) |
-| `pnpm db:migrate` / `pnpm db:seed` / `pnpm db:studio` | Esquema · dados · Prisma Studio |
-| `pnpm dev:mobile` | Expo (Metro :8081) com IP LAN auto-configurado |
-| `pnpm --filter @isptec/desktop dist` | Instalador desktop (requer electron-builder) |
+| `pnpm start:all` | Liga BD + lança API, Web, Desktop e Mobile |
+| `pnpm start:all:tunnel` | Igual + abre o túnel público HTTPS (transmissão por telemóvel) |
+| `pnpm dev` · `pnpm dev:api` · `pnpm dev:web` | API+Web · só API · só Web |
+| `pnpm build` · `pnpm typecheck` | Build / verificação de tipos de todo o monorepo |
+| `pnpm desktop` | Build da Web + Electron (modo produção local) |
+| `pnpm db:up` · `pnpm db:down` · `pnpm db:studio` | Liga / desliga BD · abre o Prisma Studio |
+
+Empacotar o Desktop (instalador) e detalhes do cliente: [`apps/desktop/README.md`](apps/desktop/README.md).
 
 ---
 
-## 9. Testes e validação
+## 6. Estrutura (monorepo pnpm)
 
-Guia completo de fluxos e resultados esperados: **[`TEST_PLAN.md`](TEST_PLAN.md)**.
-
-```bash
-pnpm typecheck                                                       # tipos em todo o monorepo
-pnpm --filter @isptec/api exec tsx scripts/selftest-compression.ts  # compressão (imagem+áudio+vídeo)
-pnpm --filter @isptec/web build                                     # build de produção da Web
-```
-
----
-
-## 10. Estado do projeto
-
-- [x] **Fases 0–4** — Fundação, Auth+Notícias, Compressão, Streaming, Multiplataforma *(auto-fail cobertos)*
-- [x] **Fase 5** — Segurança (rate-limit, roles) + polish de UX
-- [x] **Fase 6** — Entregáveis ([relatório](docs/01-relatorio-tecnico.md), [manual](docs/02-manual-utilizador.md))
-- [x] **Fase 7** — Feedback de produto (streaming real, CMS multi-formato, metadados, Modo Dev, TTS,
-  Resumo do dia, redesign, **dropdown + modais**) + comentários
-
-> **Estado vivo e backlog:** [`CURRENT_STATE.md`](CURRENT_STATE.md) · [`TASKS.md`](TASKS.md).
-> **Conformidade** (por critério/peso): [`docs/05-auditoria-conformidade.md`](docs/05-auditoria-conformidade.md).
->
-> Pendentes (opcionais/bónus): executar o deploy cloud, correr o Mobile em dispositivo (VERIF-M),
-> empacotar o Desktop e gravar o vídeo de demonstração.
+| Pasta | Conteúdo |
+|---|---|
+| `apps/api` | API REST — Node + Express + Prisma. Auth, notícias, compressão (media-engine) e streaming. |
+| `apps/web` | Cliente **Web** — React + Vite (app principal). |
+| `apps/desktop` | Cliente **Desktop** — Electron a embrulhar o build da Web. |
+| `apps/mobile` | Cliente **Mobile** — Expo / React Native. |
+| `packages/shared` | Tipos + schemas (zod) partilhados por toda a stack. |
 
 ---
 
-### Grupo 26 - Elementos
-- **Dálcio Garcia:** 20170796
-- **Osvaldo Marcolino:** 20210423
+## 7. Documentação
 
-**Professor:** Bongo Cahisso
-
----
+| Documento | Para quê |
+|---|---|
+| [`docs/02-manual-utilizador.md`](docs/02-manual-utilizador.md) | Manual do utilizador — instalar, usar, demonstrar, troubleshooting |
+| [`docs/01-relatorio-tecnico.md`](docs/01-relatorio-tecnico.md) | Relatório técnico — arquitetura, compressão e métricas |
+| [`docs/04-arquitetura-streaming.md`](docs/04-arquitetura-streaming.md) | Streaming ao vivo (RTMP/WebSocket → FFmpeg → HLS) |
+| [`docs/06-deploy-zero-cost.md`](docs/06-deploy-zero-cost.md) | Deploy online grátis (Neon + Fly.io/Render + Vercel) |
+| [`ARCHITECTURE.md`](ARCHITECTURE.md) · [`DIRECTORY_MAP.md`](DIRECTORY_MAP.md) | Arquitetura operacional · mapa de pastas |
+| [`CURRENT_STATE.md`](CURRENT_STATE.md) · [`TASKS.md`](TASKS.md) | Estado atual · backlog/roadmap |

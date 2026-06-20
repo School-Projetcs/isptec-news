@@ -7,6 +7,10 @@ console.log('🚀 Iniciando Setup (Zero Fricção)...\n');
 const isWindows = os.platform() === 'win32';
 const isMac = os.platform() === 'darwin';
 
+// --tunnel (ou WITH_TUNNEL=1): além de tudo, abre o túnel público HTTPS para o QR do
+// telemóvel funcionar (câmara exige HTTPS). O túnel regista-se na API automaticamente.
+const withTunnel = process.argv.includes('--tunnel') || process.env.WITH_TUNNEL === '1';
+
 // 0. Verificar e iniciar o Docker automaticamente
 try {
   console.log('🐳 A verificar o estado do Docker...');
@@ -77,6 +81,14 @@ try {
 
   console.log('🌐 A iniciar API e Web (React) neste terminal...\n');
   spawn('pnpm', ['dev'], { stdio: 'inherit', shell: true });
+
+  if (withTunnel) {
+    // Dá um instante à Web (Vite :5173) e à API para arrancarem antes de abrir o túnel.
+    console.log('\n🔌 A preparar o túnel público (HTTPS) para o telemóvel...');
+    await setTimeout(5000);
+    console.log('🌍 A abrir o túnel Cloudflare num novo terminal...');
+    runInNewTerminal('pnpm dev:tunnel', 'ISPTEC News - Túnel');
+  }
 
 } catch (error) {
   console.error('\n❌ Erro durante o setup da base de dados ou aplicações.', error.message);

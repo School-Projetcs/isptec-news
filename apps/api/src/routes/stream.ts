@@ -1,15 +1,74 @@
-import { Router } from 'express';
+import { Router, type Request } from 'express';
 import { existsSync } from 'node:fs';
 import { extname } from 'node:path';
 import sharp from 'sharp';
 import { ah } from '../lib/asyncHandler';
 import { requireAuth, requireRole } from '../middleware/auth';
 import { livePath } from '../media-engine/storage';
-import { startSimulated, stopSimulated, liveStatus } from '../live/hls';
-import { verifyToken } from '../lib/jwt';
+import { startSimulated, stopSimulated, liveStatus, stopWsIngest } from '../live/hls';
+import { verifyToken, signBroadcastToken, BROADCAST_TTL_SECONDS } from '../lib/jwt';
 import { recentDevEvents, subscribeDev } from '../lib/devbus';
+import type { BroadcastTokenResponse, PublicBaseResponse } from '@isptec/shared';
 
 export const streamRouter = Router();
+
+/** Chave lógica única da emissão (browser/RTMP partilham este canal). */
+const LIVE_KEY = 'isptec';
+
+// ── Base pública (URL do túnel) para os QR Codes de transmissão ─────────────────
+//
+// A página do telemóvel (/transmitir) exige HTTPS (getUserMedia só funciona em
+// contexto seguro). Quando o editor abre a app em http://localhost, o QR derivado
+// de window.location.origin apontaria para localhost — inacessível no telemóvel e
+// sem câmara. O helper `pnpm dev:tunnel` regista aqui o URL público HTTPS e a Web
+// lê-o para gerar o QR a apontar para o túnel, mesmo com a app aberta em localhost.
+
+let publicBaseUrl: string | null = null;
+
+/** Domínios de túnel aceites (espelha `allowedHosts` do vite.config). */
+const TUNNEL_HOST_SUFFIXES = ['.trycloudflare.com', '.ngrok-free.app', '.ngrok.io'];
+
+/** Só aceita registo a partir da própria máquina (o túnel corre localmente). */
+function isLoopback(req: Request): boolean {
+  const ip = req.socket.remoteAddress ?? '';
+  return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+}
+
+/** URL público (túnel HTTPS) atualmente registado para os QR Codes. */
+streamRouter.get('/public-base', (_req, res) => {
+  const data: PublicBaseResponse = { url: publicBaseUrl };
+  res.json({ ok: true, data });
+});
+
+/**
+ * Regista (ou limpa, com url vazio) o URL público do túnel. Chamado por `pnpm dev:tunnel`
+ * na própria máquina — restrito a loopback e a domínios de túnel conhecidos para que um
+ * pedido remoto (via proxy) não possa redirecionar o QR para um host arbitrário.
+ */
+streamRouter.post('/public-base', (req, res) => {
+  if (!isLoopback(req)) {
+    return res.status(403).json({ ok: false, error: 'Apenas a partir da máquina local' });
+  }
+  const raw = typeof req.body?.url === 'string' ? req.body.url.trim() : '';
+  if (raw === '') {
+    publicBaseUrl = null;
+    return res.json({ ok: true, data: { url: null } satisfies PublicBaseResponse });
+  }
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    return res.status(400).json({ ok: false, error: 'URL inválido' });
+  }
+  if (parsed.protocol !== 'https:') {
+    return res.status(400).json({ ok: false, error: 'O URL do túnel tem de ser HTTPS' });
+  }
+  if (!TUNNEL_HOST_SUFFIXES.some((s) => parsed.hostname.endsWith(s))) {
+    return res.status(400).json({ ok: false, error: 'Host de túnel não permitido' });
+  }
+  publicBaseUrl = parsed.origin;
+  res.json({ ok: true, data: { url: publicBaseUrl } satisfies PublicBaseResponse });
+});
 
 // ── Modo Dev/Demo — eventos do pipeline em tempo real (SSE) ─────────────────────
 
@@ -80,6 +139,34 @@ streamRouter.post(
   ah(async (req, res) => {
     const data = await stopSimulated(req.user!.id);
     res.json({ ok: true, data });
+  }),
+);
+
+/**
+ * Emite um token de transmissão (escopo "broadcast", curta duração) para autorizar
+ * a página do telemóvel (`/transmitir`) a ligar-se à ingestão WS sem fazer login.
+ */
+streamRouter.post(
+  '/broadcast-token',
+  requireAuth,
+  requireRole('EDITOR', 'ADMIN'),
+  ah(async (req, res) => {
+    const token = signBroadcastToken(LIVE_KEY, req.user!.id);
+    const data: BroadcastTokenResponse = { token, key: LIVE_KEY, expiresIn: BROADCAST_TTL_SECONDS };
+    res.json({ ok: true, data });
+  }),
+);
+
+/** Termina a transmissão por browser (webcam/telemóvel/ficheiro) e qualquer simulada. */
+streamRouter.post(
+  '/stop',
+  requireAuth,
+  requireRole('EDITOR', 'ADMIN'),
+  ah(async (req, res) => {
+    const key = typeof req.body?.key === 'string' && /^[a-z0-9_-]+$/i.test(req.body.key) ? req.body.key : LIVE_KEY;
+    stopWsIngest(key, req.user!.id);
+    await stopSimulated(req.user!.id);
+    res.json({ ok: true, data: liveStatus() });
   }),
 );
 

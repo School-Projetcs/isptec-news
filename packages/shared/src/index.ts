@@ -107,6 +107,46 @@ export const createCommentSchema = z.object({
 });
 export type CreateCommentInput = z.infer<typeof createCommentSchema>;
 
+/* ------------------------------------------------------------------ *
+ * Transmissão ao vivo (streaming)
+ * Fonte única dos tipos partilhados entre a API (estado/ingestão) e os
+ * clientes (player/painel). O vídeo do browser é capturado com MediaRecorder
+ * e enviado por WebSocket → FFmpeg → HLS (ver docs/04-arquitetura-streaming.md).
+ * ------------------------------------------------------------------ */
+
+/** Modo da emissão atualmente no ar (ou 'offline'). */
+export type LiveMode = 'camera' | 'file' | 'simulated' | 'rtmp' | 'offline';
+
+/** Estado da transmissão, consumido pela UI e pelo Modo Dev. */
+export type LiveStatus = {
+  live: boolean;
+  key: string;
+  mode: LiveMode;
+  source: string | null;
+  startedAt: number | null;
+  hlsUrl: string;
+};
+
+/** Origem da ingestão por browser (WebSocket → FFmpeg → HLS). */
+export const IngestSource = { CAMERA: 'camera', FILE: 'file' } as const;
+export type IngestSource = (typeof IngestSource)[keyof typeof IngestSource];
+
+/** Resposta de `POST /stream/broadcast-token` — autoriza a página do telemóvel. */
+export type BroadcastTokenResponse = {
+  token: string; // JWT de escopo "broadcast", curta duração
+  key: string; // chave lógica da emissão (ex.: "isptec")
+  expiresIn: number; // segundos até expirar
+};
+
+/**
+ * Resposta de `GET /stream/public-base` — URL público HTTPS (túnel) que `pnpm dev:tunnel`
+ * regista para os QR Codes de transmissão apontarem para fora de localhost. `null` quando
+ * não há túnel ativo (a Web usa então a própria origem).
+ */
+export type PublicBaseResponse = {
+  url: string | null; // ex.: "https://abc.trycloudflare.com"
+};
+
 export const updateNewsSchema = z.object({
   title: z.string().min(3).max(200).optional(),
   summary: z.string().max(500).optional(),

@@ -1,7 +1,36 @@
 # CURRENT_STATE — ISPTEC News
 
 > Estado operacional atual (fonte de verdade para `status`, `continue`, `resume-work`).
-> Atualizado: **2026-06-07** · branch `main` · **Fase 7 COMPLETA (incl. redesign F7.5), committada até `fd8e87c`**.
+> Atualizado: **2026-06-20** · branch `main` · **Fase 7 COMPLETA + refactor do início de transmissão**.
+
+## ⭐ Refactor do início de transmissão (2026-06-20) — verificado em runtime
+
+Reescrita completa do fluxo "Iniciar transmissão" para **simplicidade e zero apps externas**.
+
+- **Bug corrigido:** a página `/ao-vivo` arrancava a transmissão automaticamente ao clicar; agora o
+  botão **abre o `LiveModal`** (ponto de entrada único) e **nada arranca sem o utilizador confirmar**.
+- **Modal com 3 fontes** (`components/LiveModal.tsx`), todas no browser, **sem instalar nada**:
+  1. **Telemóvel** — QR (`window.location.origin/transmitir?key&t`) abre a página pública
+     `pages/Broadcast.tsx`; pede câmara/mic, preview, iniciar/parar; autoriza-se com **token de broadcast**.
+  2. **Webcam** — `getUserMedia` direto, preview + confirmar.
+  3. **Ficheiro de Vídeo** (substitui "Transmissão Simulada" no modal) — drag&drop + seleção, validação
+     de formato, preview, `video.captureStream()` como fonte.
+- **Decisão técnica:** ingestão **MediaRecorder → WebSocket (`/stream/ingest`) → FFmpeg (`pipe:0`) → HLS**
+  (preferida a WebRTC — ver [docs/04](docs/04-arquitetura-streaming.md) §2). Hook único `lib/useBroadcast.ts`
+  reutilizado pelas 3 fontes. **RTMP** (`live/rtmp.ts`) **mantido como via legacy/opcional**, fora do modal.
+- **Backend:** `live/ingest.ts` (servidor `ws`), `live/hls.ts` (FFmpeg→HLS + estado WS), `index.ts`
+  (`http.Server` + `attachIngest`, bind `0.0.0.0`); rotas `POST /stream/broadcast-token` e `POST /stream/stop`;
+  token de broadcast no `lib/jwt.ts`. Tipos `LiveStatus`/`LiveMode`/`IngestSource` em `@isptec/shared`.
+- **Sem localhost hardcoded:** `WS_BASE` derivado em `lib/api.ts`; `vite.config.ts` com `API_PROXY_TARGET`
+  por env, `ws:true`, `host:true`, `allowedHosts` (túnel). CORS de dev = `*`.
+- **Exposição pública (dev):** `pnpm dev:tunnel` → **Cloudflare Quick Tunnel** (`scripts/dev-tunnel.mjs`,
+  dep `cloudflared`): URL HTTPS efémero (necessário para a câmara do telemóvel = contexto seguro) + WSS.
+- **Verificação:** typecheck API+Web+Mobile ✅, build Web ✅, e **smoke test em runtime** ✅
+  (`/stream/live/status` nova forma; `/broadcast-token` autenticado emite token; upgrade WS 401/400 sem auth
+  e **abre + arranca FFmpeg** com token válido). ⚠️ Falta validar o **vídeo ponta-a-ponta no browser**
+  (webcam/telemóvel reais) — recomendado antes da defesa.
+- **Limitação conhecida:** iOS Safari tem `MediaRecorder` limitado → fonte Telemóvel robusta em
+  **Android + desktop** (feature-detection + mensagem).
 
 ## Resumo (3–5 linhas)
 

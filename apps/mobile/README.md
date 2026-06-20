@@ -8,8 +8,18 @@ contrato/envelope da API REST.
 
 ## Funcionalidades
 
+- **Navegação por separadores** (bottom tabs): **Feed · Ao Vivo · Conta**; o detalhe do artigo
+  e o Upload abrem em stack por cima das tabs.
 - **Login / Registo** (JWT, token guardado em AsyncStorage).
-- **Feed** de notícias publicadas (pull-to-refresh) → **detalhe** do artigo.
+- **Feed** de notícias publicadas (pull-to-refresh) → **detalhe** do artigo. Mostra um **card de
+  "live"** no topo quando há emissão (toca para ir ao separador Ao Vivo).
+- **Ao Vivo**: visualização da emissão **HLS** (`/stream/hls/:key/index.m3u8`) com `expo-video`
+  (suporte HLS nativo), selo **AO VIVO** e cronómetro "no ar há…"; estado vazio claro quando não há
+  emissão. **Só assistir** — transmitir do telemóvel faz-se pelo browser (página `/transmitir`, via QR).
+- **Conta**: perfil (nome/email/papel), escolha de **tema** (Sistema/Claro/Escuro), atalho
+  **Media · Compressão** (editor/admin) e **terminar sessão**.
+- **Detalhe do artigo**: corpo, galeria multimédia, **TTS "Ouvir notícia"** (`expo-speech`) e
+  **comentários**; **Resumo do dia** (FAB) no Feed.
 - **Reprodução por streaming (VOD)**: imagem/áudio/vídeo servidos por `/media/:id/raw`
   (HTTP Range) via `expo-video` (vídeo) e `expo-audio` (áudio) — o antigo `expo-av` foi removido no SDK 54.
 - **Upload** de media (`expo-image-picker`) → compressão automática na API →
@@ -48,8 +58,11 @@ pnpm dev:mobile
 
 ## Notas
 
-- **Live MJPEG** não está no mobile (o `<Image>` nativo não consome
-  `multipart/x-mixed-replace`); o tempo-real é demonstrado na Web/Desktop.
+- **Ao Vivo é só de visualização**: a emissão chega por **HLS** (`expo-video`). A captura/ingestão
+  a partir do telemóvel continua a fazer-se no **browser** (página `/transmitir`, aberta por QR no
+  painel da web) — evita reimplementar captura nativa e usa o mesmo pipeline WS → FFmpeg → HLS.
+- **Navegação**: `@react-navigation/bottom-tabs` (tabs) dentro de um `native-stack` (root). O estado
+  da emissão é sondado por `lib/useLiveStatus.ts` (usado pelo separador Ao Vivo e pelo card do Feed).
 - Monorepo pnpm: `metro.config.js` observa a raiz do workspace e resolve `node_modules`
   da app e da raiz (necessário para o symlink de `@isptec/shared`).
 

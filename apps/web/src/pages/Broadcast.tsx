@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useBroadcast } from '../lib/useBroadcast';
+import { useCameraPreview } from '../lib/useCameraPreview';
+import { useCountdown, DurationPicker, CountdownOverlay, QuickSettings } from '../components/GoLive';
 
 // Página pública de transmissão a partir do telemóvel (aberta via QR Code do modal).
 // Funciona no próprio navegador, sem instalar nada: pede câmara/microfone, mostra
@@ -13,48 +15,34 @@ export function Broadcast() {
   const token = params.get('t') ?? '';
 
   const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const [ready, setReady] = useState(false);
-  const [permError, setPermError] = useState<string | null>(null);
+  const [delay, setDelay] = useState(0);
   const { state, error, start, stop } = useBroadcast();
 
   const insecure = typeof window !== 'undefined' && !window.isSecureContext &&
     window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
   const missingParams = !key || !token;
 
-  useEffect(() => {
-    if (insecure || missingParams) return;
-    let stream: MediaStream | null = null;
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }, audio: true })
-      .then((s) => {
-        stream = s;
-        streamRef.current = s;
-        if (videoRef.current) { videoRef.current.srcObject = s; videoRef.current.play().catch(() => {}); }
-        setReady(true);
-      })
-      .catch((e: DOMException) => {
-        setPermError(
-          e.name === 'NotAllowedError' ? 'Permissão de câmara/microfone recusada. Permite o acesso e recarrega.' :
-          e.name === 'NotFoundError' ? 'Não foi encontrada nenhuma câmara neste dispositivo.' :
-          `Não foi possível aceder à câmara (${e.name}).`,
-        );
-      });
-    return () => { stream?.getTracks().forEach((t) => t.stop()); streamRef.current = null; };
-  }, [insecure, missingParams]);
+  // Pré-visualização + configurações rápidas (microfone, trocar câmara). No telemóvel
+  // preferimos a câmara traseira ('environment').
+  const cam = useCameraPreview({ videoRef, enabled: !insecure && !missingParams, preferredFacing: 'environment' });
+
+  // Arranque real, só quando o temporizador chega a zero (MediaRecorder → WS → HLS).
+  const countdown = useCountdown(() => {
+    if (cam.stream) start(cam.stream, { source: 'camera', key, token });
+  });
 
   const live = state === 'live' || state === 'connecting';
+  const counting = countdown.running;
+  const ready = cam.ready;
 
-  function begin() {
-    if (streamRef.current) start(streamRef.current, { source: 'camera', key, token });
-  }
+  function begin() { countdown.begin(delay); }
 
   return (
     <div className="broadcast-page">
       <header className="broadcast-head">
         <strong>ISPTEC News</strong>
         <span className={`livebadge ${live ? '' : 'offair'}`} style={{ position: 'static' }}>
-          {live ? '● AO VIVO' : '○ Pronto'}
+          {live ? '● AO VIVO' : counting ? '● A começar…' : '○ Pronto'}
         </span>
       </header>
 
@@ -68,16 +56,32 @@ export function Broadcast() {
         <>
           <div className="broadcast-preview tall">
             <video ref={videoRef} muted playsInline autoPlay className="broadcast-video" />
+            <CountdownOverlay phase={countdown.phase} onCancel={countdown.cancel} />
           </div>
 
-          {(permError || error) && <p className="bad broadcast-msg">⚠️ {permError || error}</p>}
+          {(cam.error || error) && <p className="bad broadcast-msg">⚠️ {cam.error || error}</p>}
+
+          {!live && !counting && ready && (
+            <>
+              <QuickSettings
+                micOn={cam.micOn}
+                onToggleMic={cam.toggleMic}
+                onSwitchCamera={cam.switchCamera}
+                canSwitch={cam.canSwitch}
+                switching={cam.switching}
+              />
+              <DurationPicker value={delay} onChange={setDelay} />
+            </>
+          )}
 
           <div className="broadcast-actions">
             {live ? (
               <button className="danger big" onClick={stop}>Parar transmissão</button>
+            ) : counting ? (
+              <button className="danger big" onClick={countdown.cancel}>Cancelar</button>
             ) : (
-              <button className="big" disabled={!ready} onClick={begin}>
-                {ready ? 'Iniciar transmissão' : 'A preparar a câmara…'}
+              <button className="big golive" disabled={!ready} onClick={begin}>
+                {ready ? '● Entrar ao Vivo' : 'A preparar a câmara…'}
               </button>
             )}
           </div>

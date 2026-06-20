@@ -548,3 +548,85 @@ code.break { word-break: break-all; white-space: normal; }
 .broadcast-actions { display: flex; justify-content: center; }
 button.big { padding: 14px 28px; font-size: 1.05rem; border-radius: 12px; width: 100%; max-width: 360px; }
 .broadcast-msg { text-align: center; }
+
+/* ── Entrar ao Vivo: configurações rápidas + temporizador + contador ──────── */
+.quickset { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 12px 0 0; }
+.quickset-btn {
+  display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 999px;
+  border: 1px solid var(--border); background: var(--panel2); color: var(--text); font-weight: 600;
+  font-size: 0.9rem; cursor: pointer; transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.quickset-btn:hover:not(:disabled) { border-color: var(--accent); filter: none; }
+.quickset-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.quickset-btn.off { border-color: var(--bad); color: var(--bad); background: color-mix(in srgb, var(--bad) 8%, transparent); }
+
+.delaypicker { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 12px 0 4px; }
+.delaypicker-label { color: var(--muted); font-size: 0.9rem; font-weight: 600; }
+.delaypicker-opts { display: flex; gap: 8px; flex-wrap: wrap; }
+.delaychip {
+  padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border);
+  background: var(--panel2); color: var(--text); font-weight: 600; font-size: 0.9rem;
+  cursor: pointer; transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.delaychip:hover:not(:disabled) { border-color: var(--accent); filter: none; }
+.delaychip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.delaychip:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* botão vermelho "Entrar ao Vivo" */
+button.golive { background: var(--bad); border: 1px solid var(--bad); color: #fff; font-weight: 700; }
+button.golive:hover:not(:disabled) { filter: brightness(1.08); }
+button.golive:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* contador grande sobre a pré-visualização */
+.countdown-overlay {
+  position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px; text-align: center;
+  background: radial-gradient(circle, rgba(0,0,0,0.45), rgba(0,0,0,0.78));
+  animation: countdown-fade 0.25s ease;
+}
+@keyframes countdown-fade { from { opacity: 0; } to { opacity: 1; } }
+.countdown-hint {
+  color: rgba(255,255,255,0.92); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase; background: rgba(0,0,0,0.4); padding: 5px 12px; border-radius: 999px;
+}
+.countdown-num {
+  font-family: var(--font-display, inherit); font-weight: 800; color: #fff; line-height: 1;
+  font-size: clamp(4.5rem, 28vw, 11rem); text-shadow: 0 4px 24px rgba(0,0,0,0.6);
+  animation: countdown-pop 0.95s ease;
+}
+.countdown-num.islive {
+  font-size: clamp(2.2rem, 12vw, 4.5rem); letter-spacing: 1px;
+  display: inline-flex; align-items: center; gap: 14px;
+  animation: golive-pop 0.6s cubic-bezier(0.2, 1.1, 0.3, 1);
+}
+.countdown-num.islive::before {
+  content: ''; width: 0.55em; height: 0.55em; border-radius: 50%; background: var(--bad);
+  box-shadow: 0 0 0 0 rgba(229,57,53,0.7); animation: live-pulse 1.2s ease-out infinite;
+}
+@keyframes countdown-pop {
+  0% { opacity: 0; transform: scale(0.4); }
+  30% { opacity: 1; transform: scale(1.12); }
+  60% { transform: scale(1); }
+  100% { opacity: 0.85; transform: scale(0.9); }
+}
+@keyframes golive-pop {
+  0% { opacity: 0; transform: scale(0.6); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes live-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(229,57,53,0.7); }
+  100% { box-shadow: 0 0 0 16px rgba(229,57,53,0); }
+}
+.countdown-cancel {
+  background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.5); color: #fff;
+  padding: 9px 22px; border-radius: 999px; font-weight: 600; cursor: pointer; backdrop-filter: blur(4px);
+}
+.countdown-cancel:hover { background: rgba(255,255,255,0.26); filter: none; }
+
+/* entrada suave do selo ao mudar de estado (pré-visualização → AO VIVO) */
+.livebadge.floating { animation: golive-pop 0.45s cubic-bezier(0.2, 1.1, 0.3, 1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .countdown-overlay, .countdown-num, .countdown-num.islive, .livebadge.floating { animation: none; }
+  .countdown-num.islive::before { animation: none; }
+}

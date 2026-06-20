@@ -10,14 +10,16 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import type { CompositeScreenProps } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '../App';
+import type { RootStackParamList, TabParamList } from '../App';
 import { api, mediaUrl } from '../lib/api';
-import { useAuth } from '../lib/auth';
 import { useTheme, type Palette } from '../lib/theme';
+import { useLiveStatus } from '../lib/useLiveStatus';
 import type { Category, NewsItem } from '../lib/types';
 import { DailyDigest } from '../components/DailyDigest';
-import { ThemeToggle } from '../components/ThemeToggle';
+import { LiveBadge } from '../components/LiveBadge';
 
 type Styles = ReturnType<typeof makeStyles>;
 
@@ -39,12 +41,16 @@ function Chip({
   );
 }
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Feed'>;
+type Props = CompositeScreenProps<
+  BottomTabScreenProps<TabParamList, 'Feed'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
 
 export function FeedScreen({ navigation }: Props) {
-  const { user, logout } = useAuth();
   const { theme } = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
+  const status = useLiveStatus(8000);
+  const live = !!status?.live;
   const [news, setNews] = useState<NewsItem[]>([]);
   const [cats, setCats] = useState<Category[]>([]);
   const [cat, setCat] = useState(''); // slug ativo ('' = todas)
@@ -68,26 +74,6 @@ export function FeedScreen({ navigation }: Props) {
     api.get<Category[]>('/categories').then(setCats).catch(() => {});
   }, [load]);
 
-  const canEdit = user?.role === 'EDITOR' || user?.role === 'ADMIN';
-
-  useEffect(() => {
-    navigation.setOptions({
-      headerLeft: () => <ThemeToggle />,
-      headerRight: () => (
-        <View style={styles.headerBtns}>
-          {canEdit && (
-            <Pressable onPress={() => navigation.navigate('Upload')} hitSlop={8}>
-              <Text style={styles.headerLink}>＋ Media</Text>
-            </Pressable>
-          )}
-          <Pressable onPress={() => void logout()} hitSlop={8}>
-            <Text style={styles.headerLink}>Sair</Text>
-          </Pressable>
-        </View>
-      ),
-    });
-  }, [navigation, canEdit, logout]);
-
   if (loading) {
     return (
       <View style={styles.center}>
@@ -104,24 +90,36 @@ export function FeedScreen({ navigation }: Props) {
         contentContainerStyle={styles.list}
         refreshControl={<RefreshControl refreshing={false} onRefresh={() => load(cat)} tintColor={theme.text} />}
         ListHeaderComponent={
-          cats.length > 0 ? (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.chips}
-            >
-              <Chip label="Todas" active={cat === ''} onPress={() => load('')} styles={styles} />
-              {cats.map((c) => (
-                <Chip
-                  key={c.id}
-                  label={c.name}
-                  active={cat === c.slug}
-                  onPress={() => load(c.slug)}
-                  styles={styles}
-                />
-              ))}
-            </ScrollView>
-          ) : null
+          <>
+            {live && (
+              <Pressable style={styles.liveCard} onPress={() => navigation.navigate('AoVivo')}>
+                <LiveBadge />
+                <View style={styles.liveBody}>
+                  <Text style={styles.liveTitle}>Emissão ao vivo agora</Text>
+                  <Text style={styles.liveSub}>Toca para assistir à transmissão</Text>
+                </View>
+                <Text style={styles.liveChevron}>›</Text>
+              </Pressable>
+            )}
+            {cats.length > 0 && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.chips}
+              >
+                <Chip label="Todas" active={cat === ''} onPress={() => load('')} styles={styles} />
+                {cats.map((c) => (
+                  <Chip
+                    key={c.id}
+                    label={c.name}
+                    active={cat === c.slug}
+                    onPress={() => load(c.slug)}
+                    styles={styles}
+                  />
+                ))}
+              </ScrollView>
+            )}
+          </>
         }
         ListEmptyComponent={
           <Text style={styles.muted}>
@@ -166,6 +164,14 @@ function makeStyles(theme: Palette) {
   container: { flex: 1, backgroundColor: theme.bg },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: theme.bg },
   list: { padding: 16, gap: 12 },
+  liveCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12,
+    backgroundColor: theme.card, borderColor: theme.live, borderWidth: 1, borderRadius: 14, padding: 14,
+  },
+  liveBody: { flex: 1 },
+  liveTitle: { color: theme.ink, fontSize: 15, fontWeight: '800', marginTop: 2 },
+  liveSub: { color: theme.muted, fontSize: 12, marginTop: 2 },
+  liveChevron: { color: theme.live, fontSize: 24, fontWeight: '800' },
   chips: { flexDirection: 'row', gap: 8, paddingBottom: 12 },
   chip: { borderColor: theme.border, borderWidth: 1, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 14, backgroundColor: theme.surface },
   chipActive: { borderColor: theme.primary, backgroundColor: theme.primary },
@@ -187,7 +193,5 @@ function makeStyles(theme: Palette) {
   summary: { color: theme.muted, marginTop: 6, lineHeight: 20 },
   meta: { color: theme.muted, fontSize: 12, marginTop: 10 },
   muted: { color: theme.muted, textAlign: 'center', marginTop: 40 },
-  headerBtns: { flexDirection: 'row', gap: 16 },
-  headerLink: { color: theme.primary, fontWeight: '700', fontSize: 15 },
   });
 }

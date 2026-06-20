@@ -84,10 +84,10 @@ isptec-news/
 │     ├─ app.json / metro.config.js#   config Expo + Metro (monorepo-aware)
 │     ├─ index.ts                  #   registerRootComponent
 │     └─ src/
-│        ├─ App.tsx                #   navegação (React Navigation) + gate de auth
-│        ├─ lib/                   #   api, auth, types, theme
-│        ├─ components/MediaPlayer #   reprodução VOD (expo-video/expo-audio) + offline (expo-file-system)
-│        └─ screens/               #   Login, Feed, NewsDetail, Upload(+relatório)
+│        ├─ App.tsx                #   tabs inferiores (Feed · Ao Vivo · Conta) + stack (Detalhe/Upload) + auth
+│        ├─ lib/                   #   api, auth, types, theme, useLiveStatus (polling de /stream/live/status)
+│        ├─ components/            #   MediaPlayer (VOD), LiveBadge, ThemeToggle, Comments, DailyDigest, ListenButton
+│        └─ screens/               #   Login, Feed, Ao Vivo (HLS via expo-video), Conta, NewsDetail, Upload(+relatório)
 │
 ├─ packages/
 │  └─ shared/                      # @isptec/shared — tipos + schemas zod partilhados

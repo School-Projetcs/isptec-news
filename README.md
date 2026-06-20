@@ -129,6 +129,8 @@ Empacotar o Desktop (instalador) e detalhes do cliente: [`apps/desktop/README.md
 
 | Documento | Para quê |
 |---|---|
+| [`docs/07-key-points.md`](docs/07-key-points.md) | **Key Points** — cábula de defesa: o essencial, o que dizer e onde está a prova |
+| [`docs/08-guia-video-demonstracao.md`](docs/08-guia-video-demonstracao.md) | **Guia do vídeo** — como gravar a demo (preparar conteúdos, guião cena a cena, pós-produção) |
 | [`docs/02-manual-utilizador.md`](docs/02-manual-utilizador.md) | Manual do utilizador — instalar, usar, demonstrar, troubleshooting |
 | [`docs/01-relatorio-tecnico.md`](docs/01-relatorio-tecnico.md) | Relatório técnico — arquitetura, compressão e métricas |
 | [`docs/04-arquitetura-streaming.md`](docs/04-arquitetura-streaming.md) | Streaming ao vivo (RTMP/WebSocket → FFmpeg → HLS) |

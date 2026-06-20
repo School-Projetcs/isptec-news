@@ -4,6 +4,8 @@ import type { BroadcastTokenResponse, PublicBaseResponse } from '@isptec/shared'
 import { api, tokenStore } from '../lib/api';
 import { useBroadcast, LIVE_KEY } from '../lib/useBroadcast';
 import { useLiveStatus } from './LiveCard';
+import { useCountdown, DurationPicker, CountdownOverlay, QuickSettings } from './GoLive';
+import { useCameraPreview } from '../lib/useCameraPreview';
 import { Modal } from './Modal';
 
 // Modal de início de transmissão. NUNCA arranca sozinho: abre no ecrã de escolha
@@ -148,40 +150,32 @@ function PhoneBroadcast({ onClose, onBack }: { onClose: () => void; onBack: () =
 
 function WebcamBroadcast({ onClose, onBack }: { onClose: () => void; onBack: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const [ready, setReady] = useState(false);
-  const [permError, setPermError] = useState<string | null>(null);
+  const [startError, setStartError] = useState<string | null>(null);
+  const [delay, setDelay] = useState(0);
   const { state, error, start, stop } = useBroadcast();
   const insecure = insecureForCamera();
 
-  // Pede a câmara/microfone e mostra a pré-visualização.
-  useEffect(() => {
-    let stream: MediaStream | null = null;
-    if (insecure) { setPermError('A câmara exige HTTPS. Abre a aplicação pelo URL do túnel (pnpm dev:tunnel).'); return; }
-    navigator.mediaDevices
-      .getUserMedia({ video: { width: { ideal: 1280 } }, audio: true })
-      .then((s) => {
-        stream = s;
-        streamRef.current = s;
-        if (videoRef.current) { videoRef.current.srcObject = s; videoRef.current.play().catch(() => {}); }
-        setReady(true);
-      })
-      .catch((e: DOMException) => {
-        setPermError(
-          e.name === 'NotAllowedError' ? 'Permissão de câmara/microfone recusada.' :
-          e.name === 'NotFoundError' ? 'Não foi encontrada nenhuma câmara.' :
-          `Não foi possível aceder à câmara (${e.name}).`,
-        );
-      });
-    return () => { stream?.getTracks().forEach((t) => t.stop()); streamRef.current = null; };
-  }, [insecure]);
+  // Pré-visualização + configurações rápidas (microfone, trocar câmara). Sem facingMode
+  // preferido no computador — a troca cicla os dispositivos de vídeo disponíveis.
+  const cam = useCameraPreview({ videoRef, enabled: !insecure });
+
+  // Arranque real, só quando o temporizador chega a zero: liga MediaRecorder → WS → HLS.
+  const countdown = useCountdown(() => {
+    const token = tokenStore.get();
+    if (!token) { setStartError('Sessão expirada — volta a entrar.'); return; }
+    if (cam.stream) start(cam.stream, { source: 'camera', key: LIVE_KEY, token });
+  });
 
   const live = state === 'live' || state === 'connecting';
+  const counting = countdown.running;
+  const ready = cam.ready;
+  const displayError = insecure
+    ? 'A câmara exige HTTPS. Abre a aplicação pelo URL do túnel (pnpm dev:tunnel).'
+    : startError || cam.error || error;
 
   function begin() {
-    const token = tokenStore.get();
-    if (!token) { setPermError('Sessão expirada — volta a entrar.'); return; }
-    if (streamRef.current) start(streamRef.current, { source: 'camera', key: LIVE_KEY, token });
+    setStartError(null);
+    countdown.begin(delay);
   }
 
   return (
@@ -190,24 +184,45 @@ function WebcamBroadcast({ onClose, onBack }: { onClose: () => void; onBack: () 
       onClose={onClose}
       footer={
         <>
-          <button className="ghost" onClick={onBack} disabled={live}>← Mudar fonte</button>
+          <button className="ghost" onClick={onBack} disabled={live || counting}>← Mudar fonte</button>
           {live ? (
             <button className="danger" style={{ marginLeft: 'auto' }} onClick={stop}>Terminar transmissão</button>
+          ) : counting ? (
+            <button className="danger" style={{ marginLeft: 'auto' }} onClick={countdown.cancel}>Cancelar</button>
           ) : (
-            <button style={{ marginLeft: 'auto' }} disabled={!ready} onClick={begin}>Iniciar transmissão</button>
+            <button className="golive" style={{ marginLeft: 'auto' }} disabled={!ready} onClick={begin}>● Entrar ao Vivo</button>
           )}
         </>
       }
     >
-      {(permError || error) && <p className="bad">⚠️ {permError || error}</p>}
+      {displayError && <p className="bad">⚠️ {displayError}</p>}
       <div className="broadcast-preview">
         <video ref={videoRef} muted playsInline autoPlay className="broadcast-video" />
-        {live && <span className="livebadge floating">● AO VIVO</span>}
+        {live ? (
+          <span className="livebadge floating">● AO VIVO</span>
+        ) : !counting ? (
+          <span className="livebadge floating offair">○ Pré-visualização</span>
+        ) : null}
+        <CountdownOverlay phase={countdown.phase} onCancel={countdown.cancel} />
       </div>
+      {!live && !counting && ready && (
+        <>
+          <QuickSettings
+            micOn={cam.micOn}
+            onToggleMic={cam.toggleMic}
+            onSwitchCamera={cam.switchCamera}
+            canSwitch={cam.canSwitch}
+            switching={cam.switching}
+          />
+          <DurationPicker value={delay} onChange={setDelay} />
+        </>
+      )}
       <p className="muted small">
         {live
           ? 'A transmitir a webcam. Fecha esta janela apenas quando quiseres terminar — a captura é local.'
-          : 'Pré-visualização da câmara. Carrega em “Iniciar transmissão” para entrares no ar.'}
+          : counting
+            ? 'A preparar… a transmissão começa quando o contador chegar a zero.'
+            : 'Pré-visualização da câmara. Escolhe o temporizador e carrega em “Entrar ao Vivo”.'}
       </p>
     </Modal>
   );

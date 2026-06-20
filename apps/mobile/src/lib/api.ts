@@ -52,6 +52,9 @@ export const api = {
   del: <T>(p: string) => request<T>(p, { method: 'DELETE' }),
 };
 
+/** Torna absoluto um caminho da API (ex.: o hlsUrl relativo do estado da emissão). */
+export const streamUrl = (path: string) => (/^https?:\/\//i.test(path) ? path : `${API_BASE}${path}`);
+
 /** URL de streaming/entrega de uma variante de media (VOD por HTTP Range). */
 export const mediaUrl = (id: string, variant?: string) =>
   `${API_BASE}/media/${id}/raw${variant ? `?variant=${encodeURIComponent(variant)}` : ''}`;

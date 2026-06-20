@@ -34,9 +34,13 @@ function isLoopback(req: Request): boolean {
   return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
 }
 
-/** URL público (túnel HTTPS) atualmente registado para os QR Codes. */
+/**
+ * URL público para QR Codes de transmissão E links de partilha de notícias.
+ * Prioridade: túnel ativo (dev) > `PUBLIC_WEB_URL` (deploy/produção) > null (só localhost).
+ */
 streamRouter.get('/public-base', (_req, res) => {
-  const data: PublicBaseResponse = { url: publicBaseUrl };
+  const envBase = process.env.PUBLIC_WEB_URL?.trim().replace(/\/$/, '') || null;
+  const data: PublicBaseResponse = { url: publicBaseUrl ?? envBase };
   res.json({ ok: true, data });
 });
 

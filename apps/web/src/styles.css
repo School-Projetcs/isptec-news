@@ -196,6 +196,26 @@ button.danger:hover { background: var(--bad); color: #fff; filter: none; }
 .thumbwrap { position: relative; }
 .cardmeta-top { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
 
+/* ações rápidas nos cards (partilhar/guardar) — sobrepostas no canto sup. direito */
+.newscard { position: relative; }
+.cardactions { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; z-index: 4; }
+.cardaction {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; padding: 0; border-radius: 999px;
+  border: 1px solid var(--border); background: color-mix(in srgb, var(--bg) 80%, transparent);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  cursor: pointer; font-size: 14px; line-height: 1; color: var(--text);
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+}
+.cardaction:hover { transform: translateY(-1px) scale(1.06); background: var(--bg); }
+.cardaction.on { background: var(--accent); border-color: var(--accent); filter: saturate(1.1); }
+.cardactions-msg {
+  position: absolute; top: 38px; right: 0; white-space: nowrap;
+  background: var(--ink); color: var(--bg); font-size: 11px; padding: 3px 7px;
+  border-radius: 6px; pointer-events: none;
+}
+.ghost.saved-on { border-color: var(--accent); color: var(--accent); }
+
 /* ouvir notícia (TTS) */
 .tts { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 12px 0 4px; }
 .tts-rate { display: flex; align-items: center; gap: 6px; }

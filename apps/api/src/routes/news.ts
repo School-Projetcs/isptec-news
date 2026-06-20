@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { Prisma } from '@prisma/client';
-import { createNewsSchema, updateNewsSchema, createCommentSchema } from '@isptec/shared';
+import { createNewsSchema, updateNewsSchema, createCommentSchema, type SavedIdsResponse } from '@isptec/shared';
 import { prisma } from '../lib/prisma';
 import { ah } from '../lib/asyncHandler';
 import { requireAuth, requireRole } from '../middleware/auth';
@@ -65,6 +65,44 @@ newsRouter.get(
       .sort((a, b) => b.score - a.score)
       .slice(0, 5);
     res.json({ ok: true, data: scored });
+  }),
+);
+
+// Autenticado — IDs das notícias guardadas (para marcar os cards no feed).
+// Registado ANTES de `/:slug` para não ser capturado como slug.
+newsRouter.get(
+  '/saved/ids',
+  requireAuth,
+  ah(async (req, res) => {
+    const rows = await prisma.savedNews.findMany({
+      where: { userId: req.user!.id },
+      select: { newsId: true },
+    });
+    const data: SavedIdsResponse = { ids: rows.map((r) => r.newsId) };
+    res.json({ ok: true, data });
+  }),
+);
+
+// Autenticado — notícias guardadas (publicadas), mais recentes primeiro. Para a vista "Guardadas".
+newsRouter.get(
+  '/saved',
+  requireAuth,
+  ah(async (req, res) => {
+    const rows = await prisma.savedNews.findMany({
+      where: { userId: req.user!.id, news: { status: 'PUBLISHED' } },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        news: {
+          include: {
+            author: { select: { name: true } },
+            category: true,
+            cover: { include: { variants: true } },
+            media: { select: { id: true, type: true } },
+          },
+        },
+      },
+    });
+    res.json({ ok: true, data: rows.map((r) => r.news) });
   }),
 );
 
@@ -160,6 +198,36 @@ newsRouter.post(
     });
     await writeLog({ action: 'comment.create', userId: req.user!.id, message: newsId });
     res.status(201).json({ ok: true, data: comment });
+  }),
+);
+
+// ── Guardar notícias ("Guardadas") ──────────────────────────────────────────
+
+// Autenticado — guardar uma notícia (idempotente: guardar de novo não duplica).
+newsRouter.post(
+  '/:slug/save',
+  requireAuth,
+  ah(async (req, res) => {
+    const newsId = await publishedNewsIdBySlug(req.params.slug);
+    if (!newsId) return res.status(404).json({ ok: false, error: 'Notícia não encontrada' });
+    await prisma.savedNews.upsert({
+      where: { userId_newsId: { userId: req.user!.id, newsId } },
+      create: { userId: req.user!.id, newsId },
+      update: {},
+    });
+    res.status(201).json({ ok: true, data: { saved: true } });
+  }),
+);
+
+// Autenticado — remover das guardadas (idempotente).
+newsRouter.delete(
+  '/:slug/save',
+  requireAuth,
+  ah(async (req, res) => {
+    const newsId = await publishedNewsIdBySlug(req.params.slug);
+    if (!newsId) return res.status(404).json({ ok: false, error: 'Notícia não encontrada' });
+    await prisma.savedNews.deleteMany({ where: { userId: req.user!.id, newsId } });
+    res.json({ ok: true, data: { saved: false } });
   }),
 );
 

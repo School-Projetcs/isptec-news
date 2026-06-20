@@ -17,6 +17,8 @@ import type { RootStackParamList, TabParamList } from '../App';
 import { api, mediaUrl } from '../lib/api';
 import { useTheme, type Palette } from '../lib/theme';
 import { useLiveStatus } from '../lib/useLiveStatus';
+import { useSaved } from '../lib/saved';
+import { shareNews } from '../lib/share';
 import type { Category, NewsItem } from '../lib/types';
 import { DailyDigest } from '../components/DailyDigest';
 import { LiveBadge } from '../components/LiveBadge';
@@ -51,6 +53,7 @@ export function FeedScreen({ navigation }: Props) {
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const status = useLiveStatus(8000);
   const live = !!status?.live;
+  const { isSaved, toggle } = useSaved();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [cats, setCats] = useState<Category[]>([]);
   const [cat, setCat] = useState(''); // slug ativo ('' = todas)
@@ -149,6 +152,16 @@ export function FeedScreen({ navigation }: Props) {
                 <Text style={styles.meta}>
                   {item.author?.name ?? '—'} · {item.viewCount} visualizações
                 </Text>
+                <View style={styles.cardActions}>
+                  <Pressable hitSlop={6} style={styles.cardActionBtn} onPress={() => { void shareNews(item); }}>
+                    <Text style={styles.cardActionTxt}>🔗 Partilhar</Text>
+                  </Pressable>
+                  <Pressable hitSlop={6} style={styles.cardActionBtn} onPress={() => { void toggle(item); }}>
+                    <Text style={[styles.cardActionTxt, isSaved(item.id) && styles.cardActionOn]}>
+                      {isSaved(item.id) ? '🔖 Guardado' : '🔖 Guardar'}
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
             </Pressable>
           );
@@ -192,6 +205,10 @@ function makeStyles(theme: Palette) {
   titleFeatured: { fontSize: 22, lineHeight: 27 },
   summary: { color: theme.muted, marginTop: 6, lineHeight: 20 },
   meta: { color: theme.muted, fontSize: 12, marginTop: 10 },
+  cardActions: { flexDirection: 'row', gap: 10, marginTop: 12, borderTopColor: theme.border, borderTopWidth: 1, paddingTop: 10 },
+  cardActionBtn: { paddingVertical: 4, paddingHorizontal: 4 },
+  cardActionTxt: { color: theme.text, fontSize: 13, fontWeight: '600' },
+  cardActionOn: { color: theme.primary, fontWeight: '800' },
   muted: { color: theme.muted, textAlign: 'center', marginTop: 40 },
   });
 }

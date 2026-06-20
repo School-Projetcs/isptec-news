@@ -4,6 +4,8 @@ import { api, API_BASE } from '../lib/api';
 import type { Media, NewsItem } from '../types';
 import { ErrorState, Loading } from '../components/States';
 import { ListenButton } from '../components/ListenButton';
+import { ShareButton } from '../components/ShareButton';
+import { SaveButton } from '../components/SaveButton';
 import { Comments } from '../components/Comments';
 import { fmtDate, fmtTime, isRecent, metaLine, readingMinutes } from '../lib/format';
 
@@ -50,7 +52,11 @@ export function NewsDetail() {
           `${news.viewCount} visualizações`,
         ])}
       </p>
-      <ListenButton text={`${news.title}. ${news.summary ? news.summary + '. ' : ''}${news.body ?? ''}`} />
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '0.5rem' }}>
+        <ListenButton text={`${news.title}. ${news.summary ? news.summary + '. ' : ''}${news.body ?? ''}`} />
+        <ShareButton news={news} />
+        <SaveButton news={news} />
+      </div>
       {news.cover && (
         <img
           className="article-hero"

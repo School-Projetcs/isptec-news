@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { API_BASE } from '../lib/api';
 import type { Media, NewsItem } from '../types';
+import { CardActions } from './CardActions';
 
 // Card de notícia com vídeo: o vídeo só reproduz em HOVER direto no card (sem
 // autoplay global). Ao sair, pausa e volta ao início (mostra o poster).
@@ -14,6 +15,7 @@ export function VideoCard({ item, video }: { item: NewsItem; video: Media }) {
 
   return (
     <Link to={`/noticia/${item.slug}`} className="newscard" onMouseEnter={play} onMouseLeave={stop}>
+      <CardActions news={item} />
       <div className="thumbwrap">
         <video
           ref={ref}

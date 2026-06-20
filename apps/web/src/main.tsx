@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { App } from './App';
 import { AuthProvider } from './lib/auth';
+import { SavedProvider } from './lib/saved';
 import { DevModeProvider } from './lib/devmode';
 import { ThemeProvider } from './lib/theme';
 import './styles.css';
@@ -12,9 +13,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
-          <DevModeProvider>
-            <App />
-          </DevModeProvider>
+          <SavedProvider>
+            <DevModeProvider>
+              <App />
+            </DevModeProvider>
+          </SavedProvider>
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

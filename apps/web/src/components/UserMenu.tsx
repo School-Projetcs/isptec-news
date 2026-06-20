@@ -55,6 +55,12 @@ export function UserMenu() {
         <div className="usermenu-pop" role="menu">
           {user && <div className="usermenu-header">{user.name} <span className="muted small">· {user.role}</span></div>}
 
+          {user && (
+            <Link className="usermenu-link" to="/guardadas" role="menuitem" title="As notícias que guardaste" onClick={() => setOpen(false)}>
+              🔖 Guardadas
+            </Link>
+          )}
+
           <div className="usermenu-theme">
             <span className="usermenu-section-label">Tema</span>
             <div className="segmented" role="group" aria-label="Tema">

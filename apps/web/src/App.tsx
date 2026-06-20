@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { Layout } from './components/Layout';
 import { Home } from './pages/Home';
 import { NewsDetail } from './pages/NewsDetail';
+import { Saved } from './pages/Saved';
 import { Live } from './pages/Live';
 import { Broadcast } from './pages/Broadcast';
 import { Login } from './pages/Login';
@@ -29,6 +30,7 @@ export function App() {
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="/noticia/:slug" element={<NewsDetail />} />
+        <Route path="/guardadas" element={<Saved />} />
         <Route path="/ao-vivo" element={<Live />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registar" element={<Register />} />

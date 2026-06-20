@@ -147,6 +147,11 @@ export type PublicBaseResponse = {
   url: string | null; // ex.: "https://abc.trycloudflare.com"
 };
 
+/** Resposta de `GET /news/saved/ids` — ids das notícias guardadas pelo utilizador. */
+export type SavedIdsResponse = {
+  ids: string[];
+};
+
 export const updateNewsSchema = z.object({
   title: z.string().min(3).max(200).optional(),
   summary: z.string().max(500).optional(),

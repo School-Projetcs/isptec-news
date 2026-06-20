@@ -18,7 +18,17 @@ function fmt(iso: string): string {
   );
 }
 
-export function Comments({ slug }: { slug: string }) {
+export function Comments({
+  slug,
+  onLayoutY,
+  onInputFocus,
+}: {
+  slug: string;
+  /** Reporta a posição vertical da secção dentro do ScrollView pai (p/ revelar o input). */
+  onLayoutY?: (y: number) => void;
+  /** Chamado quando o input ganha foco (o pai faz scroll para o trazer acima do teclado). */
+  onInputFocus?: () => void;
+}) {
   const { user } = useAuth();
   const { theme } = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
@@ -75,7 +85,7 @@ export function Comments({ slug }: { slug: string }) {
   const count = comments?.length ?? 0;
 
   return (
-    <View style={styles.wrap}>
+    <View style={styles.wrap} onLayout={(e) => onLayoutY?.(e.nativeEvent.layout.y)}>
       <Text style={styles.h3}>Comentários{count ? ` (${count})` : ''}</Text>
 
       {user && (
@@ -86,6 +96,7 @@ export function Comments({ slug }: { slug: string }) {
             placeholderTextColor={theme.muted}
             value={body}
             onChangeText={setBody}
+            onFocus={onInputFocus}
             multiline
             maxLength={1000}
           />

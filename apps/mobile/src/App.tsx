@@ -5,6 +5,7 @@ import { NavigationContainer, type Theme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { AuthProvider, useAuth } from './lib/auth';
+import { SavedProvider } from './lib/saved';
 import { ThemeProvider, useTheme, type Palette, type ThemeName } from './lib/theme';
 import { useLiveStatus } from './lib/useLiveStatus';
 import { LoginScreen } from './screens/LoginScreen';
@@ -12,6 +13,7 @@ import { FeedScreen } from './screens/FeedScreen';
 import { LiveScreen } from './screens/LiveScreen';
 import { AccountScreen } from './screens/AccountScreen';
 import { NewsDetailScreen } from './screens/NewsDetailScreen';
+import { SavedScreen } from './screens/SavedScreen';
 import { UploadScreen } from './screens/UploadScreen';
 import { ThemeToggle } from './components/ThemeToggle';
 
@@ -19,6 +21,7 @@ export type RootStackParamList = {
   Login: undefined;
   Tabs: undefined;
   NewsDetail: { slug: string; title: string };
+  Saved: undefined;
   Upload: undefined;
 };
 
@@ -136,6 +139,7 @@ function Router() {
             component={NewsDetailScreen}
             options={({ route }) => ({ title: route.params.title })}
           />
+          <Stack.Screen name="Saved" component={SavedScreen} options={{ title: 'Guardadas' }} />
           <Stack.Screen name="Upload" component={UploadScreen} options={{ title: 'Media · Compressão' }} />
         </>
       ) : (
@@ -161,7 +165,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Shell />
+        <SavedProvider>
+          <Shell />
+        </SavedProvider>
       </AuthProvider>
     </ThemeProvider>
   );

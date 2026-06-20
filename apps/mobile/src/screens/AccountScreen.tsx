@@ -55,6 +55,17 @@ export function AccountScreen({ navigation }: Props) {
         })}
       </View>
 
+      {/* Guardadas */}
+      {user && (
+        <>
+          <Text style={styles.section}>Biblioteca</Text>
+          <Pressable style={styles.rowBtn} onPress={() => navigation.navigate('Saved')}>
+            <Text style={styles.rowBtnTxt}>🔖  Guardadas</Text>
+            <Text style={styles.rowChevron}>›</Text>
+          </Pressable>
+        </>
+      )}
+
       {/* Ações de editor/admin */}
       {canEdit && (
         <>

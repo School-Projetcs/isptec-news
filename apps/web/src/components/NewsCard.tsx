@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { API_BASE } from '../lib/api';
 import type { NewsItem } from '../types';
 import { fmtDate, isRecent, metaLine, readingMinutes } from '../lib/format';
+import { CardActions } from './CardActions';
 
 // Card de notícia reutilizável (feed/landing). Image-forward, com metadados.
 
@@ -10,6 +11,7 @@ export function NewsCard({ item }: { item: NewsItem }) {
   const mins = readingMinutes(item.body ?? item.summary);
   return (
     <Link to={`/noticia/${item.slug}`} className="newscard">
+      <CardActions news={item} />
       {item.cover && (
         <div className="thumbwrap">
           <img

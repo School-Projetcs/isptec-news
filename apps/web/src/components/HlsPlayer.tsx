@@ -28,7 +28,15 @@ export function HlsPlayer({ src, className, autoPlay = true, muted = true, contr
       // Preferimos hls.js (MSE) no Chrome/Firefox — é o caminho fiável. O HLS nativo
       // do <video> só se usa quando o hls.js não é suportado (Safari/iOS).
       // lowLatencyMode desligado: o nosso HLS é clássico (segmentos de 2 s).
-      hls = new Hls({ liveSyncDurationCount: 3, lowLatencyMode: false });
+      // liveMaxLatencyDurationCount: se o player ficar muito atrás do vivo (rede/CPU),
+      // salta para perto do direto em vez de ficar congelado a fazer buffering.
+      hls = new Hls({
+        lowLatencyMode: false,
+        liveSyncDurationCount: 3,        // alvo: ~6 s atrás do vivo (3 × segmentos de 2 s)
+        liveMaxLatencyDurationCount: 10, // se passar disto, recupera saltando para o vivo
+        backBufferLength: 30,
+        maxBufferLength: 30,
+      });
       hls.loadSource(src);
       hls.attachMedia(video);
       hls.on(Hls.Events.ERROR, (_e, data) => {

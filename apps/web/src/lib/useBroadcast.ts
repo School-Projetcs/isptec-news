@@ -79,7 +79,7 @@ export function useBroadcast() {
             if (ws.readyState === WebSocket.OPEN) ws.send(buf);
           }).catch(() => { /* chunk perdido — tolerável num stream ao vivo */ });
         };
-        rec.start(1000); // emite um chunk por segundo
+        rec.start(250); // chunk a cada 250 ms → feed mais suave p/ o FFmpeg (menos jitter/latência)
         setState('live');
       };
 

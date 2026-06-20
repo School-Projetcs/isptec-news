@@ -47,10 +47,17 @@ function hlsArgs(indexPath: string): string[] {
   const segPattern = indexPath.replace(/index\.m3u8$/, 'seg_%03d.ts');
   return [
     '-c:v', 'libx264', '-preset', 'veryfast', '-tune', 'zerolatency',
-    '-pix_fmt', 'yuv420p', '-g', '50', '-sc_threshold', '0',
+    '-pix_fmt', 'yuv420p',
+    // Normaliza o ritmo VARIÁVEL (VFR) do MediaRecorder/captureStream para 25 fps
+    // CONSTANTES e força um keyframe exatamente em cada fronteira de segmento (2 s).
+    // Sem isto os segmentos saem com durações irregulares e desalinhados → o player
+    // engasga. `independent_segments` deixa cada segmento descodificável por si só.
+    '-r', '25', '-fps_mode', 'cfr',
+    '-g', '50', '-keyint_min', '50', '-sc_threshold', '0',
+    '-force_key_frames', 'expr:gte(t,n_forced*2)',
     '-c:a', 'aac', '-b:a', '128k', '-ar', '44100',
     '-f', 'hls', '-hls_time', '2', '-hls_list_size', '6',
-    '-hls_flags', 'delete_segments+omit_endlist',
+    '-hls_flags', 'delete_segments+omit_endlist+independent_segments',
     '-hls_segment_filename', segPattern,
     indexPath,
   ];
@@ -162,8 +169,18 @@ export function startWsIngest(
   stopWsIngest(key); // garante uma única ingestão por chave
   resetDir(key);
   const indexPath = livePath(key, 'index.m3u8');
-  // `-fflags +genpts` reconstrói timestamps de um stream ao vivo que pode ter pausas.
-  const args = ['-y', '-loglevel', 'warning', '-fflags', '+genpts', '-i', 'pipe:0', ...hlsArgs(indexPath)];
+  // Entrada ao vivo do browser (WebM/Matroska do MediaRecorder).
+  // `-use_wallclock_as_timestamps 1` carimba os frames pela hora de CHEGADA, ignorando os
+  // timestamps da fonte — elimina os saltos quando a fonte "Ficheiro de Vídeo" recomeça em
+  // loop (currentTime volta a 0), que eram a causa dos congelamentos "para e volta".
+  // `-fflags +genpts` cobre pausas pontuais do feed.
+  const args = [
+    '-y', '-loglevel', 'warning',
+    '-fflags', '+genpts',
+    '-use_wallclock_as_timestamps', '1',
+    '-i', 'pipe:0',
+    ...hlsArgs(indexPath),
+  ];
 
   const proc = spawn(FF, args, { stdio: ['pipe', 'ignore', 'pipe'] });
   wsProcs.set(key, { proc, startedAt: Date.now(), mode, source });

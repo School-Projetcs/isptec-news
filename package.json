@@ -10,6 +10,7 @@
     "postinstall": "node scripts/ensure-env.mjs && pnpm db:generate",
     "start:all": "node scripts/start-all.mjs",
     "start:all:tunnel": "node scripts/start-all.mjs --tunnel",
+    "predev": "node scripts/ensure-env.mjs",
     "dev": "pnpm --parallel --filter @isptec/api --filter @isptec/web dev",
     "dev:api": "pnpm --filter @isptec/api dev",
     "dev:web": "pnpm --filter @isptec/web dev",

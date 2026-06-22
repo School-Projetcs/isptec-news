@@ -16,7 +16,7 @@ export function Register() {
     setError(null);
     setBusy(true);
     try {
-      await register(name, email, password);
+      await register(name.trim(), email.trim(), password);
       nav('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao registar');

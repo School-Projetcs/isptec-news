@@ -40,10 +40,11 @@ pnpm install      # instala dependências e cria os .env automaticamente (a part
 pnpm start:all    # liga BD (Docker), migra, popula dados e lança os 3 clientes
 ```
 
-Só isto. O `pnpm install` **cria os ficheiros `.env`** (que estão no `.gitignore`, por isso não vêm no
-clone) a partir dos `.env.example` — os valores de exemplo já funcionam em desenvolvimento local. O
-`start:all` faz o resto **sozinho**: liga a base de dados (Docker), aplica migrações, popula dados de
-demonstração e lança os três clientes. Detalhe dos terminais que abrem ⬇️.
+Só isto. Não precisas de criar `.env` à mão: **qualquer** comando de arranque
+(`pnpm dev`, `pnpm dev:tunnel`, `pnpm start:all`) cria os `.env` em falta a partir dos `.env.example`
+— tal como o `pnpm install`. Os `.env` estão no `.gitignore` (não vêm no clone) e os valores de exemplo
+já funcionam em dev. O `start:all` faz o resto **sozinho**: liga a base de dados (Docker), aplica
+migrações, popula dados de demonstração e lança os três clientes. Detalhe dos terminais que abrem ⬇️.
 
 > **Produção:** aponta a `DATABASE_URL` (em `apps/api/.env`) para um PostgreSQL online — ver
 > [`docs/06-deploy-zero-cost.md`](docs/06-deploy-zero-cost.md).
@@ -94,6 +95,14 @@ Sem o túnel, o QR de transmissão aponta para `localhost` e o telemóvel não o
 | Admin | `admin@isptec.local` | `admin123` |
 | Editor | `editor@isptec.local` | `editor123` |
 | Leitor | `leitor@isptec.local` | `reader123` |
+
+**Criar a tua própria conta** — não precisas das contas de demonstração:
+
+- **Web:** menu **Conta → Criar conta** (ou abre `/registar` diretamente).
+- **Mobile:** no ecrã de entrada toca em **"Não tens conta? Regista-te"**.
+
+Novas contas entram com o papel **Leitor** (READER) — podem ler, comentar e guardar notícias. Os papéis
+Editor/Admin (redação, gestão, transmissão) atribuem-se na BD ou pelas contas de demonstração.
 
 ---
 

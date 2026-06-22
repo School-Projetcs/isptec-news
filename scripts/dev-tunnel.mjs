@@ -17,7 +17,7 @@ import { existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 import net from 'node:net';
 
-import { bootStack } from './dev-setup.mjs';
+import { bootStack, ensureEnvFiles } from './dev-setup.mjs';
 
 const WEB_URL = process.env.TUNNEL_TARGET || 'http://localhost:5173';
 const API_URL = (process.env.API_URL || 'http://localhost:3333').replace(/\/$/, '');
@@ -126,6 +126,10 @@ async function ensureWebRunning() {
   console.log(`\n✓ Web pronta em ${WEB_URL}.\n`);
   return true;
 }
+
+// Garante os .env em falta (idempotente) também neste comando — menos fricção: basta
+// `pnpm dev:tunnel` num clone novo, sem passos manuais.
+ensureEnvFiles();
 
 let cloudflared;
 try {

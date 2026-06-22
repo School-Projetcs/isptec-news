@@ -122,7 +122,10 @@ export function UserMenu() {
           {user ? (
             <button className="usermenu-link signout" onClick={() => { logout(); setOpen(false); nav('/'); }}>⎋ Sair</button>
           ) : (
-            <Link className="usermenu-link" to="/login" role="menuitem" onClick={() => setOpen(false)}>⎆ Entrar</Link>
+            <>
+              <Link className="usermenu-link" to="/login" role="menuitem" onClick={() => setOpen(false)}>⎆ Entrar</Link>
+              <Link className="usermenu-link" to="/registar" role="menuitem" onClick={() => setOpen(false)}>✚ Criar conta</Link>
+            </>
           )}
         </div>
       )}

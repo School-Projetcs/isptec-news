@@ -33,7 +33,13 @@ export function useCameraPreview(opts: {
   const facingRef = useRef<Facing | undefined>(preferredFacing);
   const camIdxRef = useRef(0);
   const mountedRef = useRef(true);
-  useEffect(() => () => { mountedRef.current = false; }, []);
+  // Repõe true na montagem (não só false no unmount): em React.StrictMode (dev) o
+  // componente é montado→desmontado→remontado; sem repor, mountedRef ficava false e o
+  // guard pós-getUserMedia parava as faixas — a câmara acendia e apagava logo a seguir.
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const stopStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((t) => t.stop());

@@ -1,0 +1,95 @@
+// Setup de desenvolvimento partilhado por `start-all.mjs` e `dev-tunnel.mjs`.
+// Centraliza a orquestração "zero fricção" (Docker → BD → migrações → seed → clientes →
+// API/Web) para que ambos os comandos arranquem EXATAMENTE o mesmo ambiente.
+
+import { execSync, spawn, exec } from 'child_process';
+import os from 'os';
+import { setTimeout as delay } from 'timers/promises';
+
+export const isWindows = os.platform() === 'win32';
+export const isMac = os.platform() === 'darwin';
+
+/** Abre um comando numa nova janela de terminal (para clientes que devem ter logs próprios). */
+export function runInNewTerminal(command, title) {
+  if (isWindows) {
+    exec(`start "${title}" cmd.exe /k "${command}"`);
+  } else if (isMac) {
+    spawn('osascript', ['-e', `tell app "Terminal" to do script "cd \\"${process.cwd()}\\" && ${command}"`], { detached: true, stdio: 'ignore' });
+  } else {
+    spawn(command.split(' ')[0], command.split(' ').slice(1), { stdio: 'inherit', shell: true });
+  }
+}
+
+/** Garante que o Docker está a correr; tenta iniciá-lo automaticamente e espera (até 90s). */
+export async function ensureDocker() {
+  try {
+    console.log('🐳 A verificar o estado do Docker...');
+    execSync('docker info', { stdio: 'ignore' });
+    console.log('✅ Docker está a correr!\n');
+    return;
+  } catch {
+    /* não está a correr — tenta iniciar abaixo */
+  }
+
+  console.log('⏳ Docker não está a correr. A tentar iniciar o Docker Desktop automaticamente...');
+  if (isWindows) {
+    exec('start "" "C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe"');
+  } else if (isMac) {
+    spawn('open', ['-a', 'Docker'], { detached: true, stdio: 'ignore' });
+  } else {
+    console.log('⚠️ Por favor, inicia o serviço do Docker manualmente (ex: sudo systemctl start docker).');
+  }
+
+  process.stdout.write('⏳ A aguardar que o motor do Docker inicie (isto pode demorar alguns segundos)');
+  let ready = false;
+  for (let i = 0; i < 45; i++) {
+    try {
+      execSync('docker info', { stdio: 'ignore' });
+      ready = true;
+      break;
+    } catch {
+      process.stdout.write('.');
+      await delay(2000);
+    }
+  }
+  console.log(); // quebra de linha limpa
+
+  if (!ready) {
+    console.error('❌ Tempo esgotado! Não foi possível comunicar com o Docker após 90 segundos. Verifica se o Docker Desktop está devidamente instalado no teu PC.');
+    process.exit(1);
+  }
+  console.log('✅ Docker iniciado com sucesso!\n');
+}
+
+/** Sobe a BD (Docker), corre migrações e popula dados de teste (seed). Síncrono. */
+export function prepareDatabase() {
+  console.log('📦 A subir a Base de Dados (Docker)...');
+  execSync('pnpm db:up', { stdio: 'inherit' });
+
+  console.log('\n🔄 A correr Migrações...');
+  execSync('pnpm db:migrate', { stdio: 'inherit' });
+
+  console.log('\n🌱 A popular dados de teste (Seed)...');
+  execSync('pnpm db:seed', { stdio: 'inherit' });
+}
+
+/** Abre os clientes Desktop (Electron) e Mobile (Expo), cada um na sua janela de terminal. */
+export function launchClients() {
+  console.log('🖥️  A abrir o cliente Desktop (Electron) num novo terminal...');
+  runInNewTerminal('pnpm dev:desktop', 'ISPTEC News - Desktop');
+  console.log('📱 A abrir o cliente Mobile (Expo) num novo terminal...');
+  runInNewTerminal('pnpm dev:mobile', 'ISPTEC News - Mobile');
+}
+
+/**
+ * Arranque completo "zero fricção": Docker → BD → migrações → seed → (opcional) clientes →
+ * API + Web. Devolve o processo-filho do `pnpm dev` (API + Web) para o chamador o gerir.
+ */
+export async function bootStack({ withClients = true } = {}) {
+  await ensureDocker();
+  prepareDatabase();
+  console.log('\n✅ Setup concluído! A lançar os clientes...\n');
+  if (withClients) launchClients();
+  console.log('🌐 A iniciar API e Web (React)...\n');
+  return spawn('pnpm', ['dev'], { stdio: 'inherit', shell: true });
+}

@@ -5,15 +5,19 @@
 // (getUserMedia exige contexto seguro) e o WSS (ingestão de vídeo) através do túnel.
 //
 //   pnpm dev:tunnel        # auto-suficiente: se a Web/API não estiverem a correr,
-//                          # arranca o `pnpm dev` sozinho e só depois abre o túnel.
+//                          # arranca a stack completa (Docker → BD → migrações → seed →
+//                          # API + Web) e só depois abre o túnel. Não sobe os clientes
+//                          # Desktop/Mobile (para isso usa `pnpm start:all:tunnel`).
 //
 // Não requer conta nem configuração. O URL muda a cada arranque; este script regista-o
 // na API (POST /stream/public-base), por isso o QR Code do modal aponta automaticamente
 // para o túnel mesmo com a app aberta em localhost — não é preciso reabrir a app.
 
 import { existsSync } from 'node:fs';
-import { spawn, execSync } from 'node:child_process';
+import { execSync } from 'node:child_process';
 import net from 'node:net';
+
+import { bootStack } from './dev-setup.mjs';
 
 const WEB_URL = process.env.TUNNEL_TARGET || 'http://localhost:5173';
 const API_URL = (process.env.API_URL || 'http://localhost:3333').replace(/\/$/, '');
@@ -22,6 +26,11 @@ const webUrl = new URL(WEB_URL);
 const WEB_PORT = Number(webUrl.port || 80);
 // localhost → 127.0.0.1 evita resolução IPv6 (::1) lenta/falhada no Windows.
 const WEB_HOST = webUrl.hostname === 'localhost' ? '127.0.0.1' : webUrl.hostname;
+
+// Modo "anexar": quem nos invoca (ex.: `start:all:tunnel`) já está a arrancar a stack
+// completa (Docker + BD + API + Web). Neste modo NÃO voltamos a subir nada — apenas
+// esperamos a Web ficar pronta, para não correr Docker/migrações/seed em duplicado.
+const ATTACH_ONLY = process.env.TUNNEL_ATTACH_ONLY === '1';
 
 /** Há algo a escutar em host:port? (uma tentativa de ligação TCP) */
 function isPortOpen(port, host, timeout = 1000) {
@@ -87,8 +96,9 @@ function killDev() {
 
 /**
  * Garante que a Web está a responder em :5173. Se já estiver (ex.: `start:all:tunnel`
- * ou `pnpm dev` noutro terminal), não faz nada. Caso contrário arranca o `pnpm dev`
- * (API + Web) neste terminal e espera o Vite ficar pronto.
+ * ou `pnpm dev` noutro terminal), não faz nada. Caso contrário arranca a stack completa
+ * (Docker → BD → migrações → seed → API + Web) através do `bootStack` partilhado e espera
+ * o Vite ficar pronto. Em modo ATTACH_ONLY, limita-se a esperar (a stack já vem de fora).
  */
 async function ensureWebRunning() {
   if (await isPortOpen(WEB_PORT, WEB_HOST)) {
@@ -96,13 +106,18 @@ async function ensureWebRunning() {
     return true;
   }
 
-  console.log(`▶️  Web não detetada em ${WEB_URL}. A arrancar API + Web (pnpm dev)…\n`);
-  devChild = spawn('pnpm', ['dev'], { stdio: 'inherit', shell: true });
-  devChild.on('exit', (code) => {
-    if (code && code !== 0) console.error(`\n❌ "pnpm dev" terminou com código ${code}.`);
-  });
+  if (ATTACH_ONLY) {
+    console.log(`⏳ A aguardar que a Web fique pronta em ${WEB_URL} (stack a arrancar noutro terminal)…\n`);
+  } else {
+    console.log(`▶️  Web não detetada em ${WEB_URL}. A arrancar a stack completa (Docker → BD → API + Web)…\n`);
+    devChild = await bootStack({ withClients: false });
+    devChild.on('exit', (code) => {
+      if (code && code !== 0) console.error(`\n❌ "pnpm dev" terminou com código ${code}.`);
+    });
+  }
 
-  const ready = await waitForPort(WEB_PORT, WEB_HOST);
+  // ATTACH_ONLY espera mais tempo: a stack externa pode ainda estar a subir Docker/BD/seed.
+  const ready = await waitForPort(WEB_PORT, WEB_HOST, { timeoutMs: ATTACH_ONLY ? 240_000 : 90_000 });
   if (!ready) {
     console.error(`\n❌ A Web não respondeu em ${WEB_URL} a tempo. A abortar o túnel.`);
     killDev();

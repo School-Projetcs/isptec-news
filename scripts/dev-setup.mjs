@@ -9,14 +9,20 @@ import { setTimeout as delay } from 'timers/promises';
 export const isWindows = os.platform() === 'win32';
 export const isMac = os.platform() === 'darwin';
 
-/** Abre um comando numa nova janela de terminal (para clientes que devem ter logs próprios). */
-export function runInNewTerminal(command, title) {
+/**
+ * Abre um comando numa nova janela de terminal (para clientes que devem ter logs próprios).
+ * `env` injeta variáveis de ambiente extra no novo terminal (de forma portável).
+ */
+export function runInNewTerminal(command, title, env = {}) {
+  const entries = Object.entries(env);
   if (isWindows) {
-    exec(`start "${title}" cmd.exe /k "${command}"`);
+    const prefix = entries.map(([k, v]) => `set ${k}=${v} && `).join('');
+    exec(`start "${title}" cmd.exe /k "${prefix}${command}"`);
   } else if (isMac) {
-    spawn('osascript', ['-e', `tell app "Terminal" to do script "cd \\"${process.cwd()}\\" && ${command}"`], { detached: true, stdio: 'ignore' });
+    const prefix = entries.map(([k, v]) => `${k}=${v} `).join('');
+    spawn('osascript', ['-e', `tell app "Terminal" to do script "cd \\"${process.cwd()}\\" && ${prefix}${command}"`], { detached: true, stdio: 'ignore' });
   } else {
-    spawn(command.split(' ')[0], command.split(' ').slice(1), { stdio: 'inherit', shell: true });
+    spawn(command.split(' ')[0], command.split(' ').slice(1), { stdio: 'inherit', shell: true, env: { ...process.env, ...env } });
   }
 }
 

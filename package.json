@@ -7,7 +7,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "postinstall": "pnpm db:generate",
+    "postinstall": "node scripts/ensure-env.mjs && pnpm db:generate",
     "start:all": "node scripts/start-all.mjs",
     "start:all:tunnel": "node scripts/start-all.mjs --tunnel",
     "dev": "pnpm --parallel --filter @isptec/api --filter @isptec/web dev",
@@ -30,17 +30,5 @@
   "devDependencies": {
     "cloudflared": "^0.7.1",
     "typescript": "^5.7.2"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@prisma/client",
-      "@prisma/engines",
-      "electron",
-      "esbuild",
-      "ffmpeg-static",
-      "ffprobe-static",
-      "prisma",
-      "sharp"
-    ]
   }
 }

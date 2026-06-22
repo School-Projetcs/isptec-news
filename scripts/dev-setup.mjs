@@ -5,9 +5,36 @@
 import { execSync, spawn, exec } from 'child_process';
 import os from 'os';
 import { setTimeout as delay } from 'timers/promises';
+import { existsSync, copyFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
 export const isWindows = os.platform() === 'win32';
 export const isMac = os.platform() === 'darwin';
+
+// Raiz do monorepo (este ficheiro vive em scripts/). Independente do cwd de quem invoca.
+const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
+
+/**
+ * Garante que os .env existem, copiando-os do respetivo .env.example na 1ª vez.
+ * O .env está no .gitignore — um clone novo não o tem, e sem ele o Prisma falha com
+ * "Environment variable not found: DATABASE_URL". Os valores de exemplo funcionam
+ * tal-e-qual em desenvolvimento local. Idempotente (não sobrepõe .env já existentes).
+ */
+export function ensureEnvFiles() {
+  const targets = ['.env', 'apps/api/.env'];
+  let created = 0;
+  for (const rel of targets) {
+    const target = join(ROOT, rel);
+    const example = `${target}.example`;
+    if (!existsSync(target) && existsSync(example)) {
+      copyFileSync(example, target);
+      console.log(`📝 Criado ${rel} a partir de ${rel}.example`);
+      created++;
+    }
+  }
+  if (created > 0) console.log('');
+}
 
 /**
  * Abre um comando numa nova janela de terminal (para clientes que devem ter logs próprios).
@@ -92,6 +119,7 @@ export function launchClients() {
  * API + Web. Devolve o processo-filho do `pnpm dev` (API + Web) para o chamador o gerir.
  */
 export async function bootStack({ withClients = true } = {}) {
+  ensureEnvFiles();
   await ensureDocker();
   prepareDatabase();
   console.log('\n✅ Setup concluído! A lançar os clientes...\n');

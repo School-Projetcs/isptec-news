@@ -1,8 +1,31 @@
 // Base do servidor. Em desenvolvimento (Vite) fica "/api" e usa o proxy do vite.config;
 // em produção (Electron/Mobile/publicado) lê VITE_API_URL → os clientes apontam para a
 // API com uma única variável de ambiente (cumpre o requisito de configuração de ambiente).
-const ENV_URL = import.meta.env.VITE_API_URL as string | undefined;
-export const API_BASE = ENV_URL ? ENV_URL.replace(/\/$/, '') : '/api';
+const ENV_URL = ((import.meta.env.VITE_API_URL as string | undefined) ?? '').replace(/\/$/, '');
+
+/**
+ * Resolve a base da API de forma resiliente:
+ *  • Sem VITE_API_URL → "/api" (proxy do Vite, mesma origem).
+ *  • Com VITE_API_URL absoluto → usa-o (Electron sob app://, deploy com API noutra origem).
+ *  • EXCEÇÃO importante: se VITE_API_URL aponta para localhost/127.0.0.1 MAS a app foi
+ *    servida por HTTP(S) de outro host (túnel/LAN/telemóvel), esse "localhost" seria o
+ *    *dispositivo do cliente*, não o servidor — e seria ainda mixed-content sob HTTPS.
+ *    Nesse caso ignoramos a env e usamos caminho relativo (mesma origem → proxy/servidor),
+ *    para a app funcionar no telemóvel sem reconfigurar nada.
+ */
+function resolveApiBase(): string {
+  if (!ENV_URL) return '/api';
+  if (typeof window !== 'undefined') {
+    const { protocol, hostname } = window.location;
+    const servedOverHttp = protocol === 'http:' || protocol === 'https:';
+    const apiIsLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/i.test(ENV_URL);
+    const pageIsLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+    if (servedOverHttp && apiIsLocalhost && !pageIsLocalhost) return '/api';
+  }
+  return ENV_URL;
+}
+
+export const API_BASE = resolveApiBase();
 
 /**
  * Base WebSocket derivada do API_BASE (sem hardcode de host/porta):

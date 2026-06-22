@@ -13,28 +13,44 @@ Plataforma cliente-servidor para **criar, comprimir, transmitir (streaming) e co
 
 ---
 
-## 1. Arranque rápido
+## 1. Requisitos
 
-Precisas de **Node ≥ 20**, **pnpm ≥ 9** (`npm i -g pnpm`) e **Docker Desktop** instalado (abre-o uma vez
-depois de instalar). O FFmpeg já vem incluído (`ffmpeg-static`), não precisas de instalar nada à parte.
+Instala isto **antes** de começar:
 
-```bash
-git clone https://github.com/School-Projetcs/isptec-news.git && cd isptec-news
-pnpm install
-cp .env.example .env && cp apps/api/.env.example apps/api/.env   # 1ª vez: cria os .env (valores de dev já funcionam)
-pnpm start:all
-```
+| Requisito | Versão | Notas |
+|---|---|---|
+| **Node.js** | **≥ 20** | https://nodejs.org (LTS). Confirma com `node -v`. |
+| **pnpm** | **≥ 10** | `npm i -g pnpm` (ou `corepack enable`). Confirma com `pnpm -v`. |
+| **Docker Desktop** | recente | https://docker.com/products/docker-desktop — **instala e abre uma vez** (o script tenta iniciá-lo sozinho, mas tem de estar instalado). |
+| **Git** | qualquer | Para clonar o repositório. |
 
-> No primeiro arranque copia os `.env` (os valores de exemplo funcionam em dev local). Se já existirem,
-> salta esse passo. Em produção, aponta a `DATABASE_URL` para um PostgreSQL online — ver
-> [`docs/06-deploy-zero-cost.md`](docs/06-deploy-zero-cost.md).
+Não precisas de instalar mais nada: o **FFmpeg** vem incluído (`ffmpeg-static`/`ffprobe-static`), o
+**PostgreSQL** corre em Docker, e o **túnel** (`cloudflared`) é descarregado automaticamente na 1ª vez.
 
-O `start:all` faz **tudo sozinho**: liga a base de dados (Docker), aplica migrações, popula dados de
-demonstração e lança os três clientes. Detalhe dos terminais que abrem ⬇️.
+> **Windows:** o script inicia o Docker a partir de `C:\Program Files\Docker\Docker\Docker Desktop.exe`
+> (caminho de instalação por omissão). Se instalaste o Docker noutro sítio, abre-o manualmente antes.
 
 ---
 
-## 2. O que o `start:all` abre (terminais)
+## 2. Arranque rápido
+
+```bash
+git clone https://github.com/School-Projetcs/isptec-news.git && cd isptec-news
+pnpm install      # instala dependências e cria os .env automaticamente (a partir dos .env.example)
+pnpm start:all    # liga BD (Docker), migra, popula dados e lança os 3 clientes
+```
+
+Só isto. O `pnpm install` **cria os ficheiros `.env`** (que estão no `.gitignore`, por isso não vêm no
+clone) a partir dos `.env.example` — os valores de exemplo já funcionam em desenvolvimento local. O
+`start:all` faz o resto **sozinho**: liga a base de dados (Docker), aplica migrações, popula dados de
+demonstração e lança os três clientes. Detalhe dos terminais que abrem ⬇️.
+
+> **Produção:** aponta a `DATABASE_URL` (em `apps/api/.env`) para um PostgreSQL online — ver
+> [`docs/06-deploy-zero-cost.md`](docs/06-deploy-zero-cost.md).
+
+---
+
+## 3. O que o `start:all` abre (terminais)
 
 > ⚠️ Não fecho nada por ti. Cada cliente corre na sua própria janela. **A app não abre o browser
 > sozinha** — a Web abres tu em http://localhost:5173.
@@ -63,7 +79,7 @@ Sem o túnel, o QR de transmissão aponta para `localhost` e o telemóvel não o
 
 ---
 
-## 3. Aceder à aplicação
+## 4. Aceder à aplicação
 
 | Serviço | URL |
 |---|---|
@@ -81,7 +97,7 @@ Sem o túnel, o QR de transmissão aponta para `localhost` e o telemóvel não o
 
 ---
 
-## 4. Arrancar à mão (alternativa ao `start:all`)
+## 5. Arrancar à mão (alternativa ao `start:all`)
 
 ```bash
 # Base de dados (Docker)
@@ -90,15 +106,18 @@ pnpm db:migrate   # aplica o esquema
 pnpm db:seed      # insere as notícias de demonstração
 
 # Clientes (cada um no seu terminal)
-pnpm dev          # API + Web juntas
+pnpm dev          # API + Web juntas (assume a BD já a correr)
 pnpm dev:desktop  # cliente Desktop (Electron)
 pnpm dev:mobile   # cliente Mobile (Expo) com o IP da LAN auto-configurado
-pnpm dev:tunnel   # túnel público HTTPS (para transmitir do telemóvel)
+pnpm dev:tunnel   # túnel público HTTPS — também liga a BD sozinho se não estiver de pé
 ```
+
+> `pnpm dev` (sozinho) assume que a base de dados já está a correr. Se ainda não correste o `db:up`,
+> usa o `pnpm start:all` ou o `pnpm dev:tunnel`, que ligam a BD automaticamente.
 
 ---
 
-## 5. Scripts úteis
+## 6. Scripts úteis
 
 | Comando | Ação |
 |---|---|
@@ -113,7 +132,42 @@ Empacotar o Desktop (instalador) e detalhes do cliente: [`apps/desktop/README.md
 
 ---
 
-## 6. Estrutura (monorepo pnpm)
+## 7. Portas usadas
+
+Garante que estão livres (ou fecha quem as ocupa) antes de arrancar:
+
+| Porta | Serviço |
+|---|---|
+| `5173` | Web (Vite) — a app principal no browser |
+| `3333` | API REST + streaming (WebSocket/HTTP Range) |
+| `5432` | PostgreSQL (container Docker) |
+| `8080` | Adminer (ver a base de dados no browser) |
+| `8081` | Metro/Expo (cliente Mobile) |
+
+---
+
+## 8. Resolução de problemas
+
+| Sintoma | Causa & solução |
+|---|---|
+| **`Environment variable not found: DATABASE_URL`** | Falta o `apps/api/.env`. Corre `pnpm install` (cria-o automaticamente) ou copia-o à mão: `cp apps/api/.env.example apps/api/.env`. |
+| **`Cannot find module` / sharp ou prisma falham** | Build scripts não correram. Confirma **pnpm ≥ 10** (`pnpm -v`) e corre `pnpm install` outra vez. |
+| **Aviso `The "pnpm" field in package.json is no longer read`** | pnpm antigo a ler config nova. Atualiza o pnpm (`npm i -g pnpm`); o allowlist de builds vive agora em `pnpm-workspace.yaml`. |
+| **Docker não arranca / `docker info` falha** | Abre o **Docker Desktop** manualmente e espera ficar "Running"; depois repete. No Windows tem de estar instalado em `C:\Program Files\Docker`. |
+| **`port is already allocated` / `EADDRINUSE`** | Uma porta da tabela acima já está ocupada. Fecha o processo que a usa (ex.: outra instância) ou corre `pnpm db:down` antes de re-tentar. |
+| **No telemóvel (túnel) a página abre mas as notícias dão "load failed"** | Existe um `apps/web/.env` com `VITE_API_URL=http://localhost:3333` — no telemóvel "localhost" é o próprio telemóvel. Apaga esse ficheiro (em dev a Web usa o proxy `/api`) e recarrega. A app já ignora este caso automaticamente, mas não deixes o ficheiro a apontar para localhost. |
+| **QR de transmissão não abre no telemóvel** | O QR aponta para `localhost`. Usa `pnpm start:all:tunnel` (ou `pnpm dev:tunnel`) — a câmara do telemóvel exige HTTPS. |
+| **Mobile (Expo) não liga à API** | O telemóvel tem de estar na **mesma rede Wi-Fi**; o `dev:mobile` injeta o IP da LAN. Em rede com isolamento de clientes, usa o túnel. |
+
+Reset total da base de dados (apaga e repõe os dados de demonstração):
+
+```bash
+pnpm db:down && pnpm db:up && pnpm db:migrate && pnpm db:seed
+```
+
+---
+
+## 9. Estrutura (monorepo pnpm)
 
 | Pasta | Conteúdo |
 |---|---|
@@ -125,7 +179,7 @@ Empacotar o Desktop (instalador) e detalhes do cliente: [`apps/desktop/README.md
 
 ---
 
-## 7. Documentação
+## 10. Documentação
 
 | Documento | Para quê |
 |---|---|

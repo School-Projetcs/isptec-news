@@ -4,16 +4,49 @@
 // testar em telemóveis e outros dispositivos. O HTTPS é o que permite a câmara
 // (getUserMedia exige contexto seguro) e o WSS (ingestão de vídeo) através do túnel.
 //
-//   pnpm dev:tunnel        # com a app já a correr (pnpm dev / start:all)
+//   pnpm dev:tunnel        # auto-suficiente: se a Web/API não estiverem a correr,
+//                          # arranca o `pnpm dev` sozinho e só depois abre o túnel.
 //
 // Não requer conta nem configuração. O URL muda a cada arranque; este script regista-o
 // na API (POST /stream/public-base), por isso o QR Code do modal aponta automaticamente
 // para o túnel mesmo com a app aberta em localhost — não é preciso reabrir a app.
 
 import { existsSync } from 'node:fs';
+import { spawn, execSync } from 'node:child_process';
+import net from 'node:net';
 
 const WEB_URL = process.env.TUNNEL_TARGET || 'http://localhost:5173';
 const API_URL = (process.env.API_URL || 'http://localhost:3333').replace(/\/$/, '');
+
+const webUrl = new URL(WEB_URL);
+const WEB_PORT = Number(webUrl.port || 80);
+// localhost → 127.0.0.1 evita resolução IPv6 (::1) lenta/falhada no Windows.
+const WEB_HOST = webUrl.hostname === 'localhost' ? '127.0.0.1' : webUrl.hostname;
+
+/** Há algo a escutar em host:port? (uma tentativa de ligação TCP) */
+function isPortOpen(port, host, timeout = 1000) {
+  return new Promise((resolve) => {
+    const socket = net.connect({ port, host });
+    const done = (val) => {
+      socket.destroy();
+      resolve(val);
+    };
+    socket.setTimeout(timeout);
+    socket.once('connect', () => done(true));
+    socket.once('timeout', () => done(false));
+    socket.once('error', () => done(false));
+  });
+}
+
+/** Espera até a porta aceitar ligações (ou esgota o tempo). */
+async function waitForPort(port, host, { timeoutMs = 90_000, interval = 1000 } = {}) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (await isPortOpen(port, host)) return true;
+    await new Promise((r) => setTimeout(r, interval));
+  }
+  return false;
+}
 
 /** Regista (url) ou limpa (url = '') a base pública na API, para o QR apontar para o túnel. */
 async function setPublicBase(url, { retries = 0 } = {}) {
@@ -32,6 +65,51 @@ async function setPublicBase(url, { retries = 0 } = {}) {
       await new Promise((r) => setTimeout(r, 1000));
     }
   }
+}
+
+// Processo `pnpm dev` arrancado por nós (se a Web ainda não estava a correr).
+let devChild = null;
+
+/** Mata o processo `pnpm dev` (e a sua árvore) que tenhamos arrancado. */
+function killDev() {
+  if (!devChild || devChild.killed) return;
+  try {
+    if (process.platform === 'win32' && devChild.pid) {
+      // shell:true → o pnpm vive numa subárvore; /T mata os filhos (vite, api).
+      execSync(`taskkill /pid ${devChild.pid} /T /F`, { stdio: 'ignore' });
+    } else {
+      devChild.kill('SIGTERM');
+    }
+  } catch {
+    /* noop */
+  }
+}
+
+/**
+ * Garante que a Web está a responder em :5173. Se já estiver (ex.: `start:all:tunnel`
+ * ou `pnpm dev` noutro terminal), não faz nada. Caso contrário arranca o `pnpm dev`
+ * (API + Web) neste terminal e espera o Vite ficar pronto.
+ */
+async function ensureWebRunning() {
+  if (await isPortOpen(WEB_PORT, WEB_HOST)) {
+    console.log(`✓ Web já está a correr em ${WEB_URL} — a reutilizar.\n`);
+    return true;
+  }
+
+  console.log(`▶️  Web não detetada em ${WEB_URL}. A arrancar API + Web (pnpm dev)…\n`);
+  devChild = spawn('pnpm', ['dev'], { stdio: 'inherit', shell: true });
+  devChild.on('exit', (code) => {
+    if (code && code !== 0) console.error(`\n❌ "pnpm dev" terminou com código ${code}.`);
+  });
+
+  const ready = await waitForPort(WEB_PORT, WEB_HOST);
+  if (!ready) {
+    console.error(`\n❌ A Web não respondeu em ${WEB_URL} a tempo. A abortar o túnel.`);
+    killDev();
+    process.exit(1);
+  }
+  console.log(`\n✓ Web pronta em ${WEB_URL}.\n`);
+  return true;
 }
 
 let cloudflared;
@@ -56,7 +134,11 @@ try {
   process.exit(1);
 }
 
-console.log(`\n🌐 A abrir túnel Cloudflare para ${WEB_URL} …\n`);
+// Antes de expor o túnel, garante que há mesmo algo do outro lado (senão o URL público
+// devolve "site is not reachable" / erro Cloudflare 1033).
+await ensureWebRunning();
+
+console.log(`🌐 A abrir túnel Cloudflare para ${WEB_URL} …\n`);
 
 // API do cloudflared >= 0.7: Tunnel.quick() corre o quick tunnel correto
 // (`cloudflared tunnel --url …`, sem `run`, que exigiria um túnel de conta) e devolve
@@ -89,8 +171,12 @@ const shutdown = async () => {
   // Limpa o registo na API para o QR não ficar a apontar para um túnel já fechado.
   try { await setPublicBase(''); } catch { /* noop */ }
   try { cf.stop(); } catch { /* noop */ }
+  killDev();
   process.exit(0);
 };
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
-cf.on('exit', (code) => process.exit(code ?? 0));
+cf.on('exit', (code) => {
+  killDev();
+  process.exit(code ?? 0);
+});

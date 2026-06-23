@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { api, uploadForm, API_BASE } from '../lib/api';
 import type { Category, Media, NewsItem } from '../types';
 import { Modal } from './Modal';
+import { CategoryPicker } from './CategoryPicker';
+import { CUSTOM_CATEGORY } from '../lib/categories';
+import { CoverImage } from './CoverImage';
 
 // Modal centralizado de criação/edição de notícia — fluxo COMPLETO sem navegar para
 // outra página: título, conteúdo, categoria, capa (imagem, obrigatória), vídeo
@@ -18,6 +21,7 @@ export function NewsModal({ editId, onClose, onDone }: Props) {
   const [summary, setSummary] = useState('');
   const [body, setBody] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [categoryName, setCategoryName] = useState(''); // categoria escrita ("Outra…")
 
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -66,7 +70,14 @@ export function NewsModal({ editId, onClose, onDone }: Props) {
     try {
       // 1) Campos de texto → cria rascunho (ou atualiza).
       setPhase('A guardar o texto…');
-      const fields = { title, summary, body, categoryId: categoryId || (isEdit ? null : undefined) };
+      const isCustom = categoryId === CUSTOM_CATEGORY;
+      const fields = {
+        title,
+        summary,
+        body,
+        categoryId: isCustom ? (isEdit ? null : undefined) : categoryId || (isEdit ? null : undefined),
+        categoryName: isCustom && categoryName.trim() ? categoryName.trim() : undefined,
+      };
       const saved = isEdit
         ? await api.put<NewsItem>(`/news/${editId}`, fields)
         : await api.post<NewsItem>('/news', { ...fields, status: 'DRAFT' });
@@ -103,7 +114,10 @@ export function NewsModal({ editId, onClose, onDone }: Props) {
   }
 
   const previewCover = coverUrl ?? (existingCover ? `${API_BASE}/media/${existingCover.id}/raw?variant=webp-q80` : null);
-  const catName = cats.find((c) => c.id === categoryId)?.name ?? 'Geral';
+  const catName =
+    categoryId === CUSTOM_CATEGORY
+      ? categoryName.trim() || 'Geral'
+      : cats.find((c) => c.id === categoryId)?.name ?? 'Geral';
 
   const footer = (
     <>
@@ -135,13 +149,15 @@ export function NewsModal({ editId, onClose, onDone }: Props) {
               Resumo <span className="muted small">(opcional)</span>
               <input value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Uma linha de resumo" />
             </label>
-            <label>
-              Categoria
-              <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-                <option value="">— Geral —</option>
-                {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </label>
+            <CategoryPicker
+              cats={cats}
+              categoryId={categoryId}
+              categoryName={categoryName}
+              onChange={({ categoryId, categoryName }) => {
+                setCategoryId(categoryId);
+                setCategoryName(categoryName);
+              }}
+            />
             <label>
               Conteúdo
               <textarea rows={7} value={body} onChange={(e) => setBody(e.target.value)} placeholder="Escreve a notícia…" />
@@ -183,7 +199,7 @@ export function NewsModal({ editId, onClose, onDone }: Props) {
             <span className="usermenu-section-label">Pré-visualização</span>
             <div className="newscard preview-card">
               {previewCover ? (
-                <img className="thumb" src={previewCover} alt="" />
+                <CoverImage src={previewCover} />
               ) : videoUrl ? (
                 <video className="thumb" src={videoUrl} muted />
               ) : (

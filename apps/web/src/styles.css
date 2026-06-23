@@ -171,6 +171,29 @@ button.danger:hover { background: var(--bad); color: #fff; filter: none; }
 .newscard .thumbwrap { overflow: hidden; border-radius: 8px; margin-bottom: 12px; }
 .newscard .thumbwrap .thumb { margin-bottom: 0; transition: transform 0.35s ease; }
 .newscard:hover .thumbwrap .thumb { transform: scale(1.05); }
+.newscard .thumbwrap .cover { margin-bottom: 0; border-radius: 0; }
+.newscard .thumbwrap .cover-img { transition: transform 0.35s ease; }
+.newscard:hover .thumbwrap .cover-img { transform: scale(1.05); }
+
+/* ── Capa sempre visível por inteiro (nunca cortada) ──────────────────────
+   Moldura 16:9 estável; a imagem real fica contida e centrada, e as margens
+   são preenchidas com uma cópia desfocada da própria imagem (letterbox). */
+.cover {
+  position: relative; display: grid; place-items: center;
+  width: 100%; aspect-ratio: 16 / 9; overflow: hidden;
+  border-radius: 8px; background: var(--panel2);
+}
+.cover-bg {
+  position: absolute; inset: 0;
+  background-size: cover; background-position: center;
+  filter: blur(22px) brightness(0.6); transform: scale(1.18);
+}
+.cover-img {
+  position: relative; z-index: 1;
+  max-width: 100%; max-height: 100%;
+  object-fit: contain; display: block;
+}
+.mt8 { margin-top: 8px; }
 
 /* estados */
 .errorstate { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -321,7 +344,7 @@ button.danger:hover { background: var(--bad); color: #fff; filter: none; }
 .backlink { display: inline-block; margin-bottom: 14px; }
 .kicker { display: block; color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.5px; }
 .article-title { font-size: 2.4rem; line-height: 1.08; margin: 8px 0 10px; color: var(--ink); }
-.article-hero { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 14px; margin: 18px 0 6px; display: block; }
+.cover.article-hero { border-radius: 14px; margin: 18px 0 6px; }
 .article-body { font-size: 1.08rem; }
 .article-body p { margin: 0 0 16px; }
 @media (max-width: 640px) {

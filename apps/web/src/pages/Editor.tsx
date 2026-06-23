@@ -3,6 +3,8 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { api, uploadForm, API_BASE } from '../lib/api';
 import type { Category, Media, NewsItem } from '../types';
 import { ErrorState, Loading } from '../components/States';
+import { CategoryPicker } from '../components/CategoryPicker';
+import { CUSTOM_CATEGORY } from '../lib/categories';
 
 export function Editor() {
   const nav = useNavigate();
@@ -14,6 +16,7 @@ export function Editor() {
   const [summary, setSummary] = useState('');
   const [body, setBody] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [categoryName, setCategoryName] = useState('');
   const [cats, setCats] = useState<Category[]>([]);
   const [loading, setLoading] = useState(isEdit);
   const [error, setError] = useState<string | null>(null);
@@ -44,14 +47,23 @@ export function Editor() {
   }, [isEdit, loadNews]);
 
   async function saveFields(): Promise<NewsItem> {
+    const isCustom = categoryId === CUSTOM_CATEGORY;
+    const catName = isCustom && categoryName.trim() ? categoryName.trim() : undefined;
     if (isEdit) {
-      return api.put<NewsItem>(`/news/${id}`, { title, summary, body, categoryId: categoryId || null });
+      return api.put<NewsItem>(`/news/${id}`, {
+        title,
+        summary,
+        body,
+        categoryId: isCustom ? null : categoryId || null,
+        categoryName: catName,
+      });
     }
     return api.post<NewsItem>('/news', {
       title,
       summary,
       body,
-      categoryId: categoryId || undefined,
+      categoryId: isCustom ? undefined : categoryId || undefined,
+      categoryName: catName,
       status: 'DRAFT',
     });
   }
@@ -112,15 +124,15 @@ export function Editor() {
             Resumo
             <input value={summary} onChange={(e) => setSummary(e.target.value)} />
           </label>
-          <label>
-            Categoria
-            <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-              <option value="">— Geral —</option>
-              {cats.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-          </label>
+          <CategoryPicker
+            cats={cats}
+            categoryId={categoryId}
+            categoryName={categoryName}
+            onChange={({ categoryId, categoryName }) => {
+              setCategoryId(categoryId);
+              setCategoryName(categoryName);
+            }}
+          />
           <label>
             Conteúdo
             <textarea rows={10} value={body} onChange={(e) => setBody(e.target.value)} required />

@@ -34,44 +34,46 @@ async function main() {
     if (u.role === Role.ADMIN) adminId = created.id;
   }
 
-  // ---- Categorias ----
+  // ---- Categorias (agrupadas pelos departamentos do ISPTEC) ----
+  // Conjunto enxuto e organizado por departamento. O seed é declarativo: faz
+  // upsert das canónicas (atualizando o grupo) e remove as que já não existem,
+  // convergindo sempre para este estado mesmo sobre uma BD antiga.
   const categorias = [
-    { name: 'Geral', slug: 'geral' },
-    { name: 'Tecnologia', slug: 'tecnologia' },
-    { name: 'Campus', slug: 'campus' },
-    { name: 'Cultura', slug: 'cultura' },
-    { name: 'Desporto', slug: 'desporto' },
-    // Economia e setores produtivos
-    { name: 'Economia', slug: 'economia' },
-    { name: 'Finanças', slug: 'financas' },
-    { name: 'Petróleo e Gás', slug: 'petroleo-gas' },
-    { name: 'Energia', slug: 'energia' },
-    { name: 'Mineração', slug: 'mineracao' },
-    { name: 'Agricultura', slug: 'agricultura' },
-    { name: 'Indústria', slug: 'industria' },
-    { name: 'Construção', slug: 'construcao' },
-    { name: 'Imobiliário', slug: 'imobiliario' },
-    { name: 'Negócios', slug: 'negocios' },
-    { name: 'Mercados', slug: 'mercados' },
-    { name: 'Empreendedorismo', slug: 'empreendedorismo' },
-    { name: 'Emprego', slug: 'emprego' },
-    { name: 'Telecomunicações', slug: 'telecomunicacoes' },
-    { name: 'Transportes', slug: 'transportes' },
-    { name: 'Turismo', slug: 'turismo' },
-    // Sociedade e conhecimento
-    { name: 'Política', slug: 'politica' },
-    { name: 'Internacional', slug: 'internacional' },
-    { name: 'Ciência', slug: 'ciencia' },
-    { name: 'Saúde', slug: 'saude' },
-    { name: 'Educação', slug: 'educacao' },
-    { name: 'Ambiente', slug: 'ambiente' },
-    { name: 'Inovação', slug: 'inovacao' },
-    { name: 'Opinião', slug: 'opiniao' },
-    { name: 'Entretenimento', slug: 'entretenimento' },
+    // Geral / institucional
+    { name: 'Geral', slug: 'geral', group: 'Geral' },
+    { name: 'Campus', slug: 'campus', group: 'Geral' },
+    { name: 'Eventos', slug: 'eventos', group: 'Geral' },
+    { name: 'Cultura', slug: 'cultura', group: 'Geral' },
+    { name: 'Desporto', slug: 'desporto', group: 'Geral' },
+    // Departamento de Engenharia
+    { name: 'Tecnologia', slug: 'tecnologia', group: 'Engenharia' },
+    { name: 'Engenharia Informática', slug: 'engenharia-informatica', group: 'Engenharia' },
+    { name: 'Engenharia Civil', slug: 'engenharia-civil', group: 'Engenharia' },
+    { name: 'Engenharia Electromecânica', slug: 'engenharia-electromecanica', group: 'Engenharia' },
+    { name: 'Telecomunicações', slug: 'telecomunicacoes', group: 'Engenharia' },
+    // Departamento de Ciências Sociais
+    { name: 'Economia', slug: 'economia', group: 'Ciências Sociais' },
+    { name: 'Gestão', slug: 'gestao', group: 'Ciências Sociais' },
+    { name: 'Contabilidade', slug: 'contabilidade', group: 'Ciências Sociais' },
+    { name: 'Administração', slug: 'administracao', group: 'Ciências Sociais' },
+    // Departamento de Geociências
+    { name: 'Geologia', slug: 'geologia', group: 'Geociências' },
+    { name: 'Petróleo e Gás', slug: 'petroleo-gas', group: 'Geociências' },
+    { name: 'Minas e Mineração', slug: 'mineracao', group: 'Geociências' },
+    { name: 'Ambiente', slug: 'ambiente', group: 'Geociências' },
   ];
   for (const c of categorias) {
-    await prisma.category.upsert({ where: { slug: c.slug }, update: {}, create: c });
+    await prisma.category.upsert({
+      where: { slug: c.slug },
+      update: { name: c.name, group: c.group },
+      create: c,
+    });
   }
+  // Remove categorias antigas que já não fazem parte do conjunto canónico
+  // (as notícias que as usavam ficam com categoria nula — relação opcional).
+  await prisma.category.deleteMany({
+    where: { slug: { notIn: categorias.map((c) => c.slug) } },
+  });
   const catBySlug = Object.fromEntries(
     (await prisma.category.findMany()).map((c) => [c.slug, c.id]),
   );

@@ -3,6 +3,7 @@ import type { NewsItem } from '../types';
 import { fmtRelative, isRecent, metaLine, readingMinutes } from '../lib/format';
 import { imageThumbSrc } from '../lib/media';
 import { CardActions } from './CardActions';
+import { CoverImage } from './CoverImage';
 
 // Card de notícia reutilizável (feed/landing). Image-forward, com metadados.
 
@@ -14,12 +15,7 @@ export function NewsCard({ item }: { item: NewsItem }) {
       <CardActions news={item} />
       {item.cover && (
         <div className="thumbwrap">
-          <img
-            className="thumb"
-            src={imageThumbSrc(item.cover.id)}
-            alt=""
-            loading="lazy"
-          />
+          <CoverImage src={imageThumbSrc(item.cover.id)} />
           {isRecent(when) && <span className="tag new floating">Recente</span>}
         </div>
       )}

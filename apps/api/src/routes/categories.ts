@@ -21,8 +21,13 @@ categoriesRouter.post(
   ah(async (req, res) => {
     const name = String(req.body?.name ?? '').trim();
     if (!name) return res.status(400).json({ ok: false, error: 'Nome obrigatório' });
+    const group = String(req.body?.group ?? '').trim() || null;
     const slug = slugify(name);
-    const cat = await prisma.category.upsert({ where: { slug }, update: {}, create: { name, slug } });
+    const cat = await prisma.category.upsert({
+      where: { slug },
+      update: {},
+      create: { name, slug, group },
+    });
     res.status(201).json({ ok: true, data: cat });
   }),
 );

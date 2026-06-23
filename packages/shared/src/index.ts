@@ -64,6 +64,8 @@ export const createNewsSchema = z.object({
   summary: z.string().max(500).optional().default(''),
   body: z.string().min(1),
   categoryId: z.string().optional(),
+  // Categoria escrita à mão ("Outra…"): cria/reaproveita a categoria pelo nome.
+  categoryName: z.string().max(80).optional(),
   status: z.enum(['DRAFT', 'PUBLISHED']).default('DRAFT'),
 });
 export type CreateNewsInput = z.infer<typeof createNewsSchema>;
@@ -185,6 +187,7 @@ export const updateNewsSchema = z.object({
   summary: z.string().max(500).optional(),
   body: z.string().min(1).optional(),
   categoryId: z.string().nullable().optional(),
+  categoryName: z.string().max(80).optional(),
   coverMediaId: z.string().nullable().optional(),
   status: z.enum(['DRAFT', 'PUBLISHED']).optional(),
 });

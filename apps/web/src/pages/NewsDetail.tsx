@@ -9,6 +9,7 @@ import { SaveButton } from '../components/SaveButton';
 import { Comments } from '../components/Comments';
 import { fmtRelative, isRecent, metaLine, readingMinutes } from '../lib/format';
 import { imageDetailSrc } from '../lib/media';
+import { CoverImage } from '../components/CoverImage';
 
 export function NewsDetail() {
   const { slug } = useParams();
@@ -58,11 +59,7 @@ export function NewsDetail() {
         <SaveButton news={news} />
       </div>
       {news.cover && (
-        <img
-          className="article-hero"
-          src={imageDetailSrc(news.cover.id)}
-          alt={news.title}
-        />
+        <CoverImage className="article-hero" src={imageDetailSrc(news.cover.id)} alt={news.title} eager />
       )}
       {news.summary && <p className="lead">{news.summary}</p>}
       <div className="body article-body">

@@ -10,6 +10,21 @@ import { writeLog } from '../lib/logService';
 
 export const newsRouter = Router();
 
+/**
+ * Resolve a categoria escrita à mão ("Outra…"): cria-a (ou reaproveita pelo slug)
+ * e devolve o id. Categorias criadas assim ficam no grupo "Outras".
+ */
+async function resolveCategoryName(name: string): Promise<string> {
+  const trimmed = name.trim();
+  const slug = slugify(trimmed);
+  const cat = await prisma.category.upsert({
+    where: { slug },
+    update: {},
+    create: { name: trimmed, slug, group: 'Outras' },
+  });
+  return cat.id;
+}
+
 // Público — lista notícias publicadas (pesquisa + filtro por categoria)
 newsRouter.get(
   '/',
@@ -238,17 +253,19 @@ newsRouter.post(
   requireRole('EDITOR', 'ADMIN'),
   validateBody(createNewsSchema),
   ah(async (req, res) => {
-    const { title, summary, body, categoryId, status } = req.body;
+    const { title, summary, body, categoryId, categoryName, status } = req.body;
     let slug = slugify(title);
     if (await prisma.news.findUnique({ where: { slug } })) {
       slug = `${slug}-${Date.now().toString(36)}`;
     }
+    const resolvedCategoryId =
+      categoryId || (categoryName?.trim() ? await resolveCategoryName(categoryName) : null);
     const news = await prisma.news.create({
       data: {
         title,
         summary,
         body,
-        categoryId: categoryId || null,
+        categoryId: resolvedCategoryId,
         status,
         slug,
         authorId: req.user!.id,
@@ -279,7 +296,10 @@ newsRouter.put(
       data.status = b.status;
       data.publishedAt = b.status === 'PUBLISHED' ? (existing.publishedAt ?? new Date()) : null;
     }
-    if ('categoryId' in b) {
+    if (typeof b.categoryName === 'string' && b.categoryName.trim()) {
+      // Categoria escrita à mão ("Outra…") tem prioridade: cria/reaproveita.
+      data.category = { connect: { id: await resolveCategoryName(b.categoryName) } };
+    } else if ('categoryId' in b) {
       data.category = b.categoryId
         ? { connect: { id: String(b.categoryId) } }
         : { disconnect: true };

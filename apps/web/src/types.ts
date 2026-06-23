@@ -1,6 +1,6 @@
 import type { Role } from '@isptec/shared';
 
-export type Category = { id: string; name: string; slug: string };
+export type Category = { id: string; name: string; slug: string; group?: string | null };
 
 export type MediaVariant = {
   id: string;

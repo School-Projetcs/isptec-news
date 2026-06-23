@@ -50,10 +50,13 @@ model User {
 }
 
 model Category {
-  id   String @id @default(cuid())
-  name String
-  slug String @unique
-  news News[]
+  id    String  @id @default(cuid())
+  name  String
+  slug  String  @unique
+  // Departamento/agrupamento visual (ex.: "Engenharia", "Ciências Sociais",
+  // "Geociências", "Geral"). Usado para agrupar as categorias na UI (optgroups).
+  group String?
+  news  News[]
 }
 
 model News {

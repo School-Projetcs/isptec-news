@@ -27,15 +27,20 @@ export type NewsStatus = (typeof NewsStatus)[keyof typeof NewsStatus];
 /* ------------------------------------------------------------------ *
  * Schemas de validação (zod) — reutilizados na API e nos clientes
  * ------------------------------------------------------------------ */
+// Email canónico: remove espaços e normaliza para minúsculas ANTES de validar o
+// formato. Garante que registo, login e atualização de perfil usam sempre a mesma
+// chave — senão criar conta com "Maria@X.com" e entrar com "maria@x.com" falhava.
+const emailField = z.string().trim().toLowerCase().email();
+
 export const loginSchema = z.object({
-  email: z.string().email(),
+  email: emailField,
   password: z.string().min(6),
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 
 export const registerSchema = z.object({
   name: z.string().min(2).max(80),
-  email: z.string().email(),
+  email: emailField,
   password: z.string().min(6).max(100),
 });
 export type RegisterInput = z.infer<typeof registerSchema>;
@@ -43,7 +48,7 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 /** Atualização do perfil (nome/email) do próprio utilizador. */
 export const updateProfileSchema = z.object({
   name: z.string().min(2).max(80),
-  email: z.string().email(),
+  email: emailField,
 });
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 

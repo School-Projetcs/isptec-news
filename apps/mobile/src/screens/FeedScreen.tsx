@@ -22,6 +22,7 @@ import { shareNews } from '../lib/share';
 import type { Category, NewsItem } from '../lib/types';
 import { DailyDigest } from '../components/DailyDigest';
 import { LiveBadge } from '../components/LiveBadge';
+import { fmtRelative } from '../lib/format';
 
 type Styles = ReturnType<typeof makeStyles>;
 
@@ -150,7 +151,7 @@ export function FeedScreen({ navigation }: Props) {
                   </Text>
                 )}
                 <Text style={styles.meta}>
-                  {item.author?.name ?? '—'} · {item.viewCount} visualizações
+                  {fmtRelative(item.publishedAt ?? item.createdAt)} · {item.viewCount} visualizações
                 </Text>
                 <View style={styles.cardActions}>
                   <Pressable hitSlop={6} style={styles.cardActionBtn} onPress={() => { void shareNews(item); }}>

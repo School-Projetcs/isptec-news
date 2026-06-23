@@ -7,7 +7,7 @@ import { ListenButton } from '../components/ListenButton';
 import { ShareButton } from '../components/ShareButton';
 import { SaveButton } from '../components/SaveButton';
 import { Comments } from '../components/Comments';
-import { fmtDate, fmtTime, isRecent, metaLine, readingMinutes } from '../lib/format';
+import { fmtRelative, isRecent, metaLine, readingMinutes } from '../lib/format';
 
 export function NewsDetail() {
   const { slug } = useParams();
@@ -46,8 +46,7 @@ export function NewsDetail() {
       <h1 className="article-title">{news.title}</h1>
       <p className="meta">
         {metaLine([
-          news.author?.name,
-          when && `${fmtDate(when)} às ${fmtTime(when)}`,
+          when && fmtRelative(when),
           mins > 0 && `${mins} min de leitura`,
           `${news.viewCount} visualizações`,
         ])}

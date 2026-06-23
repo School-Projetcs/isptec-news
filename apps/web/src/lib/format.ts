@@ -15,6 +15,26 @@ export function fmtTime(iso?: string | null): string {
   return new Date(iso).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
 }
 
+/**
+ * Tempo relativo em pt-PT (ex.: "agora mesmo", "há 5 min", "há 3 h", "há 2 dias",
+ * "há 3 semanas"). A partir de ~1 mês passa a mostrar a data absoluta.
+ */
+export function fmtRelative(iso?: string | null): string {
+  if (!iso) return '';
+  const diffMs = Date.now() - new Date(iso).getTime();
+  if (diffMs < 0) return fmtDate(iso); // data futura → cai para data absoluta
+  const min = Math.floor(diffMs / 60_000);
+  const hr = Math.floor(min / 60);
+  const day = Math.floor(hr / 24);
+  const week = Math.floor(day / 7);
+  if (min < 1) return 'agora mesmo';
+  if (min < 60) return `há ${min} min`;
+  if (hr < 24) return `há ${hr} h`;
+  if (day < 7) return `há ${day} ${day === 1 ? 'dia' : 'dias'}`;
+  if (week < 4) return `há ${week} ${week === 1 ? 'semana' : 'semanas'}`;
+  return fmtDate(iso);
+}
+
 /** Tempo estimado de leitura, em minutos (mín. 1). Devolve 0 se não houver texto. */
 export function readingMinutes(text?: string | null): number {
   if (!text) return 0;

@@ -14,6 +14,7 @@ import { ListenButton } from '../components/ListenButton';
 import { Comments } from '../components/Comments';
 import { shareNews } from '../lib/share';
 import { useSaved } from '../lib/saved';
+import { fmtRelative } from '../lib/format';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'NewsDetail'>;
 
@@ -60,7 +61,7 @@ export function NewsDetailScreen({ route }: Props) {
         <Text style={styles.cat}>{news.category?.name ?? 'Geral'}</Text>
         <Text style={styles.title}>{news.title}</Text>
         <Text style={styles.meta}>
-          {news.author?.name ?? '—'} · {news.viewCount} visualizações
+          {fmtRelative(news.publishedAt ?? news.createdAt)} · {news.viewCount} visualizações
         </Text>
         {news.cover && (
           <Image source={{ uri: mediaUrl(news.cover.id, 'webp-q80') }} style={styles.hero} />

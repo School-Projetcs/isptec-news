@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { API_BASE } from '../lib/api';
 import type { NewsItem } from '../types';
-import { fmtDate, isRecent, metaLine, readingMinutes } from '../lib/format';
+import { fmtRelative, isRecent, metaLine, readingMinutes } from '../lib/format';
 import { CardActions } from './CardActions';
 
 // Card de notícia reutilizável (feed/landing). Image-forward, com metadados.
@@ -30,7 +30,7 @@ export function NewsCard({ item }: { item: NewsItem }) {
       <h3>{item.title}</h3>
       <p className="muted">{item.summary || '—'}</p>
       <p className="meta">
-        {metaLine([item.author?.name, fmtDate(when), mins > 0 && `${mins} min`, `${item.viewCount} visualizações`])}
+        {metaLine([fmtRelative(when), mins > 0 && `${mins} min`, `${item.viewCount} visualizações`])}
       </p>
     </Link>
   );

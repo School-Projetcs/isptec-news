@@ -470,6 +470,18 @@ code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; }
 .devrow-ch { font-weight: 700; text-transform: uppercase; font-size: 0.66rem; letter-spacing: 0.3px; }
 .devrow-msg { color: var(--text); word-break: break-word; }
 
+/* Linha-introdução (purpose) do painel */
+.devpanel-hint {
+  margin: 0; padding: 8px 12px; border-bottom: 1px solid var(--border);
+  background: var(--panel2); color: var(--muted); font-size: 0.74rem; line-height: 1.45;
+}
+
+/* Narração didática: explicação (💡) e resultado/saldo (✅) destacados do log técnico. */
+.devrow-explain { background: color-mix(in srgb, var(--accent) 9%, transparent); }
+.devrow-explain .devrow-msg { color: var(--text); font-style: italic; line-height: 1.45; }
+.devrow-summary { background: color-mix(in srgb, var(--good) 14%, transparent); border-left-color: var(--good); }
+.devrow-summary .devrow-msg { color: var(--ink); font-weight: 600; line-height: 1.45; }
+
 .btn-xs, button.ghost.xs { padding: 2px 8px; font-size: 0.75rem; border-radius: 6px; cursor: pointer; }
 .chip {
   border: 1px solid var(--border); background: var(--panel2); color: var(--muted);

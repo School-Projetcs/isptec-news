@@ -7,7 +7,7 @@
 // ninguém estiver a ouvir, apenas mantém um pequeno histórico circular.
 
 import { EventEmitter } from 'node:events';
-import type { DevChannel, DevEvent } from '@isptec/shared';
+import type { DevChannel, DevEvent, DevEventLevel } from '@isptec/shared';
 
 /** Quantos eventos recentes guardar para "backfill" de quem se liga agora. */
 const BUFFER_MAX = 120;
@@ -24,12 +24,27 @@ export function emitDev(
   action: string,
   message: string,
   data?: Record<string, unknown>,
+  level?: DevEventLevel,
 ): DevEvent {
-  const event: DevEvent = { id: ++seq, ts: Date.now(), channel, action, message, data };
+  const event: DevEvent = { id: ++seq, ts: Date.now(), channel, action, message, ...(level ? { level } : {}), data };
   buffer.push(event);
   if (buffer.length > BUFFER_MAX) buffer.shift();
   emitter.emit('dev', event);
   return event;
+}
+
+/**
+ * Narração didática: explica, em linguagem simples, O QUE vai acontecer e PORQUÊ
+ * (ex.: "comprimir = guardar a mesma imagem em menos bytes"). Para o Modo Dev
+ * servir de "legenda ao vivo" do pipeline, sem ruído técnico.
+ */
+export function explainDev(channel: DevChannel, message: string, data?: Record<string, unknown>): DevEvent {
+  return emitDev(channel, `${channel}.explain`, message, data, 'explain');
+}
+
+/** Resultado final de uma ação (ex.: poupança total da compressão) — o "saldo". */
+export function summaryDev(channel: DevChannel, message: string, data?: Record<string, unknown>): DevEvent {
+  return emitDev(channel, `${channel}.summary`, message, data, 'summary');
 }
 
 /** Histórico recente (mais antigo → mais novo), para preencher um painel acabado de abrir. */

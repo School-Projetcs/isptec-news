@@ -106,6 +106,11 @@ export function DevPanel() {
         <button className="ghost xs" onClick={() => setEnabled(false)} title="Desligar Modo Dev">✕</button>
       </header>
 
+      <p className="devpanel-hint">
+        Legenda ao vivo do que acontece nos bastidores. <span aria-hidden="true">💡</span> explica cada passo;{' '}
+        <span aria-hidden="true">✅</span> mostra o resultado (ex.: quanto se poupou). Faz um upload em Media para ver.
+      </p>
+
       <div className="devpanel-filters">
         <button className={`chip ${filter === 'all' ? 'sel' : ''}`} onClick={() => setFilter('all')}>
           Tudo {events.length}
@@ -130,10 +135,14 @@ export function DevPanel() {
           <p className="muted small pad">Sem eventos ainda. Faz um upload em Media ou inicia uma transmissão em Ao Vivo.</p>
         ) : (
           shown.map((e) => (
-            <div key={e.id} className={`devrow ${CHANNELS[e.channel].cls}`}>
+            <div key={e.id} className={`devrow ${CHANNELS[e.channel].cls}${e.level ? ` devrow-${e.level}` : ''}`}>
               <span className="devrow-time">{fmtClock(e.ts)}</span>
               <span className="devrow-ch">{CHANNELS[e.channel].label}</span>
-              <span className="devrow-msg">{e.message}</span>
+              <span className="devrow-msg">
+                {e.level === 'explain' && <span aria-hidden="true">💡 </span>}
+                {e.level === 'summary' && <span aria-hidden="true">✅ </span>}
+                {e.message}
+              </span>
             </div>
           ))
         )}

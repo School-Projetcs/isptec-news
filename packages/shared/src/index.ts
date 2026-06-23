@@ -111,6 +111,14 @@ export const DevChannel = {
 } as const;
 export type DevChannel = (typeof DevChannel)[keyof typeof DevChannel];
 
+/**
+ * Nível do evento (didática do Modo Dev):
+ *  • 'explain' → narração em linguagem simples do QUE vai acontecer e PORQUÊ.
+ *  • 'summary' → resultado final de uma ação (ex.: poupança total da compressão).
+ *  • ausente   → linha técnica do pipeline (medições, passos internos).
+ */
+export type DevEventLevel = 'explain' | 'summary';
+
 /** Evento observável do pipeline, transmitido por SSE para o painel de Modo Dev. */
 export type DevEvent = {
   id: number;
@@ -118,6 +126,7 @@ export type DevEvent = {
   channel: DevChannel;
   action: string; // ex.: "image.variant", "huffman.encode", "hls.start"
   message: string; // descrição legível (pt)
+  level?: DevEventLevel; // narração didática (explain/summary) vs. linha técnica
   data?: Record<string, unknown>;
 };
 

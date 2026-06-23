@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import { API_BASE } from '../lib/api';
 import type { NewsItem } from '../types';
 import { fmtRelative, isRecent, metaLine, readingMinutes } from '../lib/format';
+import { imageThumbSrc } from '../lib/media';
 import { CardActions } from './CardActions';
 
 // Card de notícia reutilizável (feed/landing). Image-forward, com metadados.
@@ -16,7 +16,7 @@ export function NewsCard({ item }: { item: NewsItem }) {
         <div className="thumbwrap">
           <img
             className="thumb"
-            src={`${API_BASE}/media/${item.cover.id}/raw?variant=webp-q80`}
+            src={imageThumbSrc(item.cover.id)}
             alt=""
             loading="lazy"
           />

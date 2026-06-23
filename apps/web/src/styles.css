@@ -406,6 +406,15 @@ figure { margin: 0; }
 .comparerow figure { flex: 1; min-width: 240px; }
 .mediastack { margin-top: 24px; display: flex; flex-direction: column; gap: 14px; }
 audio, video { width: 100%; margin-top: 8px; }
+/* Vídeo de notícia: nunca ultrapassa a altura do ecrã — vídeos verticais filmados
+   no telemóvel (9:16) ficam visíveis sem scroll, centrados com barras pretas. O
+   botão de ecrã inteiro nativo do <video> expande apenas o vídeo. */
+.news-video {
+  max-height: 75vh;
+  object-fit: contain;
+  background: #000;
+  border-radius: 10px;
+}
 code { background: var(--panel2); padding: 1px 5px; border-radius: 4px; }
 
 /* ── Definições ─────────────────────────────────────────────────────────── */

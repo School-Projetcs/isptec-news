@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, API_BASE } from '../lib/api';
+import { api } from '../lib/api';
 import type { Category, Media, NewsItem } from '../types';
 import { ErrorState, Loading } from '../components/States';
 import { fmtDate } from '../lib/format';
+import { imageThumbSrc } from '../lib/media';
 import { NEWS_CHANGED } from '../lib/ui';
 import { WeatherWidget } from '../components/WeatherWidget';
 import { MarketsWidget } from '../components/MarketsWidget';
@@ -32,7 +33,7 @@ function FeaturedHero({ item }: { item: NewsItem }) {
   return (
     <Link to={`/noticia/${item.slug}`} className="hero-feature">
       {item.cover ? (
-        <img className="hero-media" src={`${API_BASE}/media/${item.cover.id}/raw?variant=webp-q80`} alt="" />
+        <img className="hero-media" src={imageThumbSrc(item.cover.id)} alt="" />
       ) : (
         <div className="hero-media hero-media-empty" />
       )}

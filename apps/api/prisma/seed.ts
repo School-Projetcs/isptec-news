@@ -41,6 +41,33 @@ async function main() {
     { name: 'Campus', slug: 'campus' },
     { name: 'Cultura', slug: 'cultura' },
     { name: 'Desporto', slug: 'desporto' },
+    // Economia e setores produtivos
+    { name: 'Economia', slug: 'economia' },
+    { name: 'Finanças', slug: 'financas' },
+    { name: 'Petróleo e Gás', slug: 'petroleo-gas' },
+    { name: 'Energia', slug: 'energia' },
+    { name: 'Mineração', slug: 'mineracao' },
+    { name: 'Agricultura', slug: 'agricultura' },
+    { name: 'Indústria', slug: 'industria' },
+    { name: 'Construção', slug: 'construcao' },
+    { name: 'Imobiliário', slug: 'imobiliario' },
+    { name: 'Negócios', slug: 'negocios' },
+    { name: 'Mercados', slug: 'mercados' },
+    { name: 'Empreendedorismo', slug: 'empreendedorismo' },
+    { name: 'Emprego', slug: 'emprego' },
+    { name: 'Telecomunicações', slug: 'telecomunicacoes' },
+    { name: 'Transportes', slug: 'transportes' },
+    { name: 'Turismo', slug: 'turismo' },
+    // Sociedade e conhecimento
+    { name: 'Política', slug: 'politica' },
+    { name: 'Internacional', slug: 'internacional' },
+    { name: 'Ciência', slug: 'ciencia' },
+    { name: 'Saúde', slug: 'saude' },
+    { name: 'Educação', slug: 'educacao' },
+    { name: 'Ambiente', slug: 'ambiente' },
+    { name: 'Inovação', slug: 'inovacao' },
+    { name: 'Opinião', slug: 'opiniao' },
+    { name: 'Entretenimento', slug: 'entretenimento' },
   ];
   for (const c of categorias) {
     await prisma.category.upsert({ where: { slug: c.slug }, update: {}, create: c });

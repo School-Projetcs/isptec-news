@@ -8,6 +8,7 @@ import { ShareButton } from '../components/ShareButton';
 import { SaveButton } from '../components/SaveButton';
 import { Comments } from '../components/Comments';
 import { fmtRelative, isRecent, metaLine, readingMinutes } from '../lib/format';
+import { imageDetailSrc } from '../lib/media';
 
 export function NewsDetail() {
   const { slug } = useParams();
@@ -59,7 +60,7 @@ export function NewsDetail() {
       {news.cover && (
         <img
           className="article-hero"
-          src={`${API_BASE}/media/${news.cover.id}/raw?variant=webp-q80`}
+          src={imageDetailSrc(news.cover.id)}
           alt={news.title}
         />
       )}
@@ -87,15 +88,16 @@ export function NewsDetail() {
 function NewsMedia({ media }: { media: Media }) {
   const base = `${API_BASE}/media/${media.id}/raw`;
   if (media.type === 'IMAGE') {
-    return <img className="preview" src={`${base}?variant=webp-q80`} alt={media.originalName} />;
+    return <img className="preview" src={imageDetailSrc(media.id)} alt={media.originalName} />;
   }
   if (media.type === 'AUDIO') {
     return <audio controls src={`${base}?variant=mp3-128k`} />;
   }
   return (
     <video
-      className="preview"
+      className="preview news-video"
       controls
+      playsInline
       poster={`${base}?variant=thumbnail`}
       src={`${base}?variant=h264-720p`}
     />

@@ -42,6 +42,17 @@ export function AccountScreen({ navigation }: Props) {
         {user && <View style={styles.roleBadge}><Text style={styles.roleTxt}>{ROLE_LABEL[user.role]}</Text></View>}
       </View>
 
+      {/* Editar perfil */}
+      {user && (
+        <>
+          <Text style={styles.section}>Conta</Text>
+          <Pressable style={styles.rowBtn} onPress={() => navigation.navigate('EditProfile')}>
+            <Text style={styles.rowBtnTxt}>✏️  Editar perfil</Text>
+            <Text style={styles.rowChevron}>›</Text>
+          </Pressable>
+        </>
+      )}
+
       {/* Tema */}
       <Text style={styles.section}>Aparência</Text>
       <View style={styles.segment}>

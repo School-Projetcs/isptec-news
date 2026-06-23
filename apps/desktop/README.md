@@ -47,4 +47,4 @@ pnpm --filter @isptec/desktop dist
 ```
 O executável final ficará guardado na pasta `apps/desktop/release/`.
 
-> Detalhes no [plano-mestre](../../docs/00-plano-mestre.md).
+> Detalhes no [relatório técnico](../../docs/RELATORIO-TECNICO.md).

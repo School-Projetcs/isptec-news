@@ -97,14 +97,11 @@ isptec-news/
 │  ├─ uploads/.gitkeep             # originais
 │  └─ processed/.gitkeep           # variantes comprimidas
 │
-├─ docs/
-│  ├─ 00-plano-mestre.md           # PLANO COMPLETO (referência de avaliação)
-│  ├─ 01-relatorio-tecnico.md      # relatório técnico (arquitetura, compressão, métricas)
-│  ├─ 02-manual-utilizador.md      # manual: instalar, executar, demonstrar, troubleshooting
-│  ├─ 03-proposta-redesign.md      # proposta de redesign (implementada)
-│  ├─ 04-arquitetura-streaming.md  # fluxo RTMP→FFmpeg→HLS
-│  ├─ 05-auditoria-conformidade.md # mapa de conformidade por critério/peso
-│  └─ 06-deploy-zero-cost.md       # guia de deploy grátis (Neon + Fly/Render + Vercel)
+├─ docs/                           # ENTREGÁVEIS ACADÉMICOS (limpos)
+│  ├─ RELATORIO-TECNICO.md         # relatório técnico final (intro→conclusões)
+│  ├─ AUDITORIA-FINAL.md           # auditoria + matriz de conformidade + checklist
+│  ├─ DEFESA.md                    # slides + guião de vídeo + 34 perguntas de defesa
+│  └─ 02-manual-utilizador.md      # manual: instalar, executar, demonstrar, troubleshooting
 │
 ├─ docker-compose.yml             # PostgreSQL 16 + Adminer
 ├─ pnpm-workspace.yaml            # workspaces: apps/*, packages/*

@@ -1,7 +1,7 @@
 # ARCHITECTURE — ISPTEC News
 
 > Visão de arquitetura **operacional** (fonte de verdade para o comando `architecture`).
-> Planeamento detalhado e justificações: [`docs/00-plano-mestre.md`](docs/00-plano-mestre.md).
+> Planeamento detalhado e justificações: [`docs/RELATORIO-TECNICO.md`](docs/RELATORIO-TECNICO.md).
 > Última sincronização com o código: **2026-06-20** (refactor do início de transmissão: modal 3 fontes
 > Telemóvel/Webcam/Ficheiro com captura no browser MediaRecorder→WS→FFmpeg→HLS; túnel Cloudflare p/ dev).
 
@@ -130,7 +130,7 @@ Cada variante grava em `MediaVariant`: `size`, `compressionRatio`, `processingMs
   clássico RTMP+FFmpeg+HLS. Módulo: `src/live/rtmp.ts`.
 - **Live — simulada:** `POST /stream/simulate/start|stop` (FFmpeg→HLS de demo/`testsrc`) para demo sem dispositivo.
 - **Distribuição (única para todas as vias):** `GET /stream/hls/:key/:file` → `hls.js` no `LiveCard`.
-  Decisão técnica (MediaRecorder+WS vs WebRTC) e fluxo em [`docs/04-arquitetura-streaming.md`](docs/04-arquitetura-streaming.md).
+  Decisão técnica (MediaRecorder+WS vs WebRTC) e fluxo em [`docs/RELATORIO-TECNICO.md`](docs/RELATORIO-TECNICO.md) §7.
 - **Live (legacy):** `GET /stream/live` → MJPEG sintético, mantido como pré-visualização instantânea.
 - **Offline:** `GET /media/:id/download` entrega a variante processada para guardar localmente.
 

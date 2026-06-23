@@ -15,6 +15,7 @@ import { AccountScreen } from './screens/AccountScreen';
 import { NewsDetailScreen } from './screens/NewsDetailScreen';
 import { SavedScreen } from './screens/SavedScreen';
 import { UploadScreen } from './screens/UploadScreen';
+import { EditProfileScreen } from './screens/EditProfileScreen';
 import { ThemeToggle } from './components/ThemeToggle';
 
 export type RootStackParamList = {
@@ -23,6 +24,7 @@ export type RootStackParamList = {
   NewsDetail: { slug: string; title: string };
   Saved: undefined;
   Upload: undefined;
+  EditProfile: undefined;
 };
 
 export type TabParamList = {
@@ -140,6 +142,7 @@ function Router() {
             options={({ route }) => ({ title: route.params.title })}
           />
           <Stack.Screen name="Saved" component={SavedScreen} options={{ title: 'Guardadas' }} />
+          <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ title: 'O meu perfil' }} />
           <Stack.Screen name="Upload" component={UploadScreen} options={{ title: 'Media · Compressão' }} />
         </>
       ) : (

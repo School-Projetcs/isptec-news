@@ -56,9 +56,14 @@ export function UserMenu() {
           {user && <div className="usermenu-header">{user.name} <span className="muted small">· {user.role}</span></div>}
 
           {user && (
-            <Link className="usermenu-link" to="/guardadas" role="menuitem" title="As notícias que guardaste" onClick={() => setOpen(false)}>
-              🔖 Guardadas
-            </Link>
+            <>
+              <Link className="usermenu-link" to="/perfil" role="menuitem" title="Editar nome, email e palavra-passe" onClick={() => setOpen(false)}>
+                👤 O meu perfil
+              </Link>
+              <Link className="usermenu-link" to="/guardadas" role="menuitem" title="As notícias que guardaste" onClick={() => setOpen(false)}>
+                🔖 Guardadas
+              </Link>
+            </>
           )}
 
           <div className="usermenu-theme">

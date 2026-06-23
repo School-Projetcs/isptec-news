@@ -40,6 +40,20 @@ export const registerSchema = z.object({
 });
 export type RegisterInput = z.infer<typeof registerSchema>;
 
+/** Atualização do perfil (nome/email) do próprio utilizador. */
+export const updateProfileSchema = z.object({
+  name: z.string().min(2).max(80),
+  email: z.string().email(),
+});
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
+/** Alteração da palavra-passe do próprio utilizador. */
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(6),
+  newPassword: z.string().min(6).max(100),
+});
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
 export const createNewsSchema = z.object({
   title: z.string().min(3).max(200),
   summary: z.string().max(500).optional().default(''),

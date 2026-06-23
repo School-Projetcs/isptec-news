@@ -49,20 +49,30 @@ export function Home() {
   const [error, setError] = useState<string | null>(null);
   const [cats, setCats] = useState<Category[]>([]);
   const [cat, setCat] = useState('');
+  const [q, setQ] = useState('');
 
-  const load = () => {
+  // Pesquisa servidor (GET /news?search=): a API filtra por título/resumo.
+  const load = (search = '') => {
     setError(null);
     setNews(null);
-    api.get<NewsItem[]>('/news').then(setNews).catch((e) => setError(e.message));
+    const qs = search.trim() ? `?search=${encodeURIComponent(search.trim())}` : '';
+    api.get<NewsItem[]>(`/news${qs}`).then(setNews).catch((e) => setError(e.message));
   };
 
   useEffect(() => {
-    load();
     api.get<Category[]>('/categories').then(setCats).catch(() => {});
-    const onChanged = () => load();
+    const onChanged = () => load(q);
     window.addEventListener(NEWS_CHANGED, onChanged);
     return () => window.removeEventListener(NEWS_CHANGED, onChanged);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Pesquisa com debounce (refaz o pedido ao servidor 300 ms após parar de escrever).
+  useEffect(() => {
+    const t = setTimeout(() => load(q), 300);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
 
   const featured = news?.[0] ?? null;
   const latest = news?.slice(1, 3) ?? []; // "Últimas notícias": no máximo 2 itens
@@ -126,6 +136,15 @@ export function Home() {
       <section className="section" id="todas-noticias">
         <div className="row between section-head">
           <h2 className="section-h">{cat ? cats.find((c) => c.slug === cat)?.name ?? 'Notícias' : 'Todas as notícias'}</h2>
+          <div className="search">
+            <input
+              type="search"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Pesquisar notícias…"
+              aria-label="Pesquisar notícias"
+            />
+          </div>
           <div className="catfilter">
             <button className={`chip ${cat === '' ? 'sel' : ''}`} onClick={() => setCat('')}>Todas</button>
             {cats.map((c) => (

@@ -1,7 +1,7 @@
 # ISPTEC News — Manual do Utilizador
 
 > Como instalar, executar e demonstrar a plataforma. Complementa o
-> [`README.md`](../README.md) (instalação rápida) e o [relatório técnico](01-relatorio-tecnico.md).
+> [`README.md`](../README.md) (instalação rápida) e o [relatório técnico](RELATORIO-TECNICO.md).
 
 ---
 

@@ -8,6 +8,7 @@ type AuthCtx = {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (user: PublicUser) => void;
 };
 
 const Ctx = createContext<AuthCtx | null>(null);
@@ -51,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <Ctx.Provider value={{ user, loading, login, register, logout }}>{children}</Ctx.Provider>
+    <Ctx.Provider value={{ user, loading, login, register, logout, updateUser: setUser }}>{children}</Ctx.Provider>
   );
 }
 

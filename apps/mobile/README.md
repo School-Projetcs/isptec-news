@@ -66,4 +66,4 @@ pnpm dev:mobile
 - Monorepo pnpm: `metro.config.js` observa a raiz do workspace e resolve `node_modules`
   da app e da raiz (necessário para o symlink de `@isptec/shared`).
 
-> Plano completo no [plano-mestre](../../docs/00-plano-mestre.md).
+> Detalhes no [relatório técnico](../../docs/RELATORIO-TECNICO.md).

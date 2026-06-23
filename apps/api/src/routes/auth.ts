@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import bcrypt from 'bcryptjs';
-import { loginSchema, registerSchema } from '@isptec/shared';
+import { loginSchema, registerSchema, updateProfileSchema, changePasswordSchema } from '@isptec/shared';
 import { prisma } from '../lib/prisma';
 import { signToken } from '../lib/jwt';
 import { ah } from '../lib/asyncHandler';
@@ -65,5 +65,45 @@ authRouter.get(
     const user = await prisma.user.findUnique({ where: { id: req.user!.id } });
     if (!user) return res.status(404).json({ ok: false, error: 'Utilizador não encontrado' });
     res.json({ ok: true, data: publicUser(user) });
+  }),
+);
+
+// Atualizar o próprio perfil (nome/email)
+authRouter.patch(
+  '/me',
+  requireAuth,
+  validateBody(updateProfileSchema),
+  ah(async (req, res) => {
+    const { name, email } = req.body;
+    const taken = await prisma.user.findFirst({
+      where: { email, NOT: { id: req.user!.id } },
+    });
+    if (taken) return res.status(409).json({ ok: false, error: 'Email já está em uso' });
+
+    const user = await prisma.user.update({
+      where: { id: req.user!.id },
+      data: { name, email },
+    });
+    await writeLog({ action: 'auth.profile.update', userId: user.id, ip: req.ip });
+    res.json({ ok: true, data: publicUser(user) });
+  }),
+);
+
+// Alterar a própria palavra-passe (exige a atual)
+authRouter.post(
+  '/change-password',
+  requireAuth,
+  validateBody(changePasswordSchema),
+  ah(async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    const user = await prisma.user.findUnique({ where: { id: req.user!.id } });
+    if (!user) return res.status(404).json({ ok: false, error: 'Utilizador não encontrado' });
+    if (!(await bcrypt.compare(currentPassword, user.passwordHash))) {
+      return res.status(401).json({ ok: false, error: 'Palavra-passe atual incorreta' });
+    }
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
+    await writeLog({ action: 'auth.password.change', userId: user.id, ip: req.ip });
+    res.json({ ok: true, data: { changed: true } });
   }),
 );

@@ -43,8 +43,8 @@ entregáveis/documentação de defesa (Fase 6).
 ## Fase atual
 
 **Fase 5 ✅ · Fase 6 quase ✅ · Fase 7 (feedback de produto) 🔵 em curso.** Segurança ✅; F5.3 ✅
-polish UX Web; F6.3 ✅ seed rico (verificados no browser). Entregáveis: [relatório](docs/01-relatorio-tecnico.md),
-[manual](docs/02-manual-utilizador.md), [TEST_PLAN](TEST_PLAN.md), [auditoria](docs/05-auditoria-conformidade.md).
+polish UX Web; F6.3 ✅ seed rico (verificados no browser). Entregáveis: [relatório](docs/RELATORIO-TECNICO.md),
+[manual](docs/02-manual-utilizador.md), [TEST_PLAN](TEST_PLAN.md), [auditoria](docs/AUDITORIA-FINAL.md), [defesa](docs/DEFESA.md).
 **Fase 7 ✅ COMPLETA:** F7.1 streaming RTMP→HLS · F7.2 CMS multi-formato · F7.3 metadados · F7.4 Modo
 Dev/Demo · F7.5 **redesign** · F7.6 auditoria de UX · F7.7 docs/conformidade · F7.8 TTS · F7.9 "Resumo do
 dia" — todas ✅. Bónus B8 comentários ✅. Restam só tarefas manuais (VERIF-M, empacotar Desktop, vídeo).

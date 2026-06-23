@@ -232,9 +232,33 @@ function WebcamBroadcast({ onClose, onBack }: { onClose: () => void; onBack: () 
 
 const ACCEPTED = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
 
+/**
+ * Espera o <video> ter produzido MESMO um frame antes de capturar. Sem isto, o
+ * `captureStream()` pode arrancar antes do primeiro frame estar pronto e o primeiro
+ * segmento HLS sai preto/vazio — o player encrava nos espetadores ("não processa").
+ * Resolve no 1.º frame apresentado (requestVideoFrameCallback) ou após 1s (fallback).
+ */
+function waitForFirstFrame(video: HTMLVideoElement): Promise<void> {
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = () => { if (!done) { done = true; resolve(); } };
+    const v = video as HTMLVideoElement & { requestVideoFrameCallback?: (cb: () => void) => number };
+    if (typeof v.requestVideoFrameCallback === 'function') {
+      v.requestVideoFrameCallback(() => finish());
+    } else if (video.readyState >= 2 /* HAVE_CURRENT_DATA */) {
+      finish();
+    } else {
+      video.addEventListener('loadeddata', finish, { once: true });
+    }
+    setTimeout(finish, 1000); // fallback de segurança
+  });
+}
+
 function FileBroadcast({ onClose, onBack }: { onClose: () => void; onBack: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const rafRef = useRef<number | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>('');
   const [dragOver, setDragOver] = useState(false);
@@ -242,6 +266,14 @@ function FileBroadcast({ onClose, onBack }: { onClose: () => void; onBack: () =>
   const { state, error, start, stop } = useBroadcast();
 
   useEffect(() => () => { if (fileUrl) URL.revokeObjectURL(fileUrl); }, [fileUrl]);
+
+  // Pára o loop de desenho do canvas e a reprodução local.
+  const stopCapture = () => {
+    if (rafRef.current != null) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+    try { videoRef.current?.pause(); } catch { /* noop */ }
+  };
+  const handleStop = () => { stopCapture(); stop(); };
+  useEffect(() => stopCapture, []); // cancela o rAF ao desmontar
 
   function accept(file: File | undefined) {
     if (!file) return;
@@ -257,21 +289,60 @@ function FileBroadcast({ onClose, onBack }: { onClose: () => void; onBack: () =>
 
   const live = state === 'live' || state === 'connecting';
 
-  function begin() {
+  async function begin() {
     const token = tokenStore.get();
     const video = videoRef.current;
     if (!token) { setFileError('Sessão expirada — volta a entrar.'); return; }
     if (!video) return;
-    video.loop = true;
-    video.play().then(() => {
-      const capture = (video as HTMLVideoElement & {
-        captureStream?: () => MediaStream;
-        mozCaptureStream?: () => MediaStream;
-      });
-      const stream = capture.captureStream?.() ?? capture.mozCaptureStream?.();
-      if (!stream) { setFileError('Este navegador não suporta captura do vídeo (captureStream).'); return; }
-      start(stream, { source: 'file', key: LIVE_KEY, token });
-    }).catch(() => setFileError('Não foi possível reproduzir o vídeo.'));
+    setFileError(null);
+    video.loop = true;       // o ficheiro repete-se enquanto a transmissão estiver no ar
+    video.muted = false;     // queremos o ÁUDIO do ficheiro na transmissão
+    try {
+      await video.play();
+    } catch {
+      setFileError('Não foi possível reproduzir o vídeo (o navegador bloqueou a reprodução).');
+      return;
+    }
+    // Só captura depois de haver mesmo um frame — senão o 1.º segmento sai preto.
+    await waitForFirstFrame(video);
+
+    // Captura ROBUSTA via <canvas>: desenhamos cada frame do vídeo num canvas por
+    // requestAnimationFrame e capturamos o CANVAS. O <video>.captureStream() direto
+    // devolve frames PRETOS em vários browsers (problema de composição/aceleração) —
+    // era essa a "imagem preta/congelada" nos espetadores. O drawImage lê sempre os
+    // pixels já descodificados, por isso o vídeo flui de verdade.
+    const w = video.videoWidth || 1280;
+    const h = video.videoHeight || 720;
+    const canvas = canvasRef.current ?? document.createElement('canvas');
+    canvasRef.current = canvas;
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) { setFileError('Captura de vídeo indisponível neste navegador.'); return; }
+    const draw = () => {
+      if (!video.paused && !video.ended) {
+        try { ctx.drawImage(video, 0, 0, w, h); } catch { /* frame ainda não pronto */ }
+      }
+      rafRef.current = requestAnimationFrame(draw);
+    };
+    draw();
+
+    const capCanvas = canvas as HTMLCanvasElement & { captureStream?: (fps?: number) => MediaStream };
+    const stream = capCanvas.captureStream?.(25); // vídeo estável a 25 fps
+    if (!stream) {
+      stopCapture();
+      setFileError('Este navegador não suporta captura de vídeo (captureStream). Tenta o Chrome/Edge/Firefox no computador.');
+      return;
+    }
+    // Junta o ÁUDIO do ficheiro (do captureStream do <video>, fiável para áudio).
+    const vcap = video as HTMLVideoElement & {
+      captureStream?: () => MediaStream;
+      mozCaptureStream?: () => MediaStream;
+    };
+    const audioTrack = (vcap.captureStream?.() ?? vcap.mozCaptureStream?.())?.getAudioTracks()[0];
+    if (audioTrack) stream.addTrack(audioTrack);
+
+    start(stream, { source: 'file', key: LIVE_KEY, token });
   }
 
   return (
@@ -282,7 +353,7 @@ function FileBroadcast({ onClose, onBack }: { onClose: () => void; onBack: () =>
         <>
           <button className="ghost" onClick={onBack} disabled={live}>← Mudar fonte</button>
           {live ? (
-            <button className="danger" style={{ marginLeft: 'auto' }} onClick={stop}>Terminar transmissão</button>
+            <button className="danger" style={{ marginLeft: 'auto' }} onClick={handleStop}>Terminar transmissão</button>
           ) : (
             <button style={{ marginLeft: 'auto' }} disabled={!fileUrl} onClick={begin}>Iniciar transmissão</button>
           )}

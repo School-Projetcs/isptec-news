@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { PublicUser, AuthResponse } from '@isptec/shared';
 import { api, tokenStore } from './api';
+import { ensureDeviceSession } from './device';
 
 type AuthCtx = {
   user: PublicUser | null;
@@ -18,15 +19,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!tokenStore.get()) {
-      setLoading(false);
-      return;
-    }
-    api
-      .get<PublicUser>('/auth/me')
-      .then(setUser)
-      .catch(() => tokenStore.clear())
-      .finally(() => setLoading(false));
+    (async () => {
+      // Estabelece a sessão de dispositivo (PKI) ANTES de qualquer pedido autenticado —
+      // se a porta de dispositivo estiver ativa no servidor, sem isto nada passa.
+      await ensureDeviceSession().catch(() => {});
+      if (!tokenStore.get()) {
+        setLoading(false);
+        return;
+      }
+      api
+        .get<PublicUser>('/auth/me')
+        .then(setUser)
+        .catch(() => tokenStore.clear())
+        .finally(() => setLoading(false));
+    })();
   }, []);
 
   async function login(email: string, password: string) {

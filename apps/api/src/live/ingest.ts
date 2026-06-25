@@ -6,7 +6,7 @@
 // (ver ./hls.ts). A distribuição aos espetadores reutiliza GET /stream/hls/:key/:file.
 //
 // Autorização: query `?token=` aceita um token de broadcast (escopo "broadcast",
-// emitido por um editor para a página do telemóvel) OU um JWT normal de EDITOR/ADMIN
+// emitido por um editor para a página do telemóvel) OU um JWT normal de EDITOR
 // (webcam/ficheiro operados pelo próprio jornalista autenticado).
 
 import type { Server } from 'node:http';
@@ -30,7 +30,7 @@ function authorize(token: string, key: string): { userId: string } | null {
   }
   try {
     const p = verifyToken(token);
-    if (p.role === 'EDITOR' || p.role === 'ADMIN') return { userId: p.sub };
+    if (p.role === 'EDITOR') return { userId: p.sub };
   } catch {
     /* inválido */
   }

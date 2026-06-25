@@ -1,7 +1,26 @@
 # CURRENT_STATE — ISPTEC News
 
 > Estado operacional atual (fonte de verdade para `status`, `continue`, `resume-work`).
-> Atualizado: **2026-06-20** · branch `main` · **Fase 7 COMPLETA + refactor do início de transmissão**.
+> Atualizado: **2026-06-25** · branch `main` · **Fase 7 COMPLETA + Segurança PKI/CA**.
+
+## 🔐 Segurança por Certificados (PKI/CA) — 2026-06-25 (no working tree, não committado)
+
+Requisito de segurança do professor implementado **ponta-a-ponta (API + Web + CLI)**. Detalhe e
+guião de defesa em [`docs/SEGURANCA-PKI.md`](docs/SEGURANCA-PKI.md).
+
+- **CA própria** (`apps/api/src/security/pki/`): emite certificados (ECDSA P-256). Chave privada
+  isolada em `apps/api/.pki/ca.private.pem` (gitignored); servidor só verifica com a pública.
+- **Handshake desafio-resposta** (`routes/devices.ts`) + **porta de dispositivo** `deviceGate`
+  (`middleware/deviceCert.ts`, env `PKI_ENFORCE`): sem certificado válido → 403 (anti-pirataria/MITM).
+- **Não-repúdio:** `POST /news/:id/sign` + `GET /news/:id/signature` (botão "Verificar autenticidade").
+- **CLI** (`scripts/pki.ts`): `pnpm ca:init | cert:issue | cert:list | cert:revoke | cert:bypass`
+  (o último autoriza **máquina sem certificado** — cenário do exame).
+- **RBAC estrito:** ADMIN deixou de criar/publicar conteúdo (só gere contas/dispositivos/logs);
+  EDITOR trata do conteúdo. Rotas e UI ajustadas.
+- **Modelo de dados:** novos `Device` + `ContentSignature` (migração `20260625120000_pki`).
+- **Verificado:** `pnpm -r typecheck` ✅; primitivas cripto (CA, prova de posse, não-repúdio,
+  Web Crypto↔Node) testadas ✅; `pnpm ca:init` ✅. ⚠️ **Falta** aplicar a migração e testar os
+  comandos que tocam a BD (`cert:issue/bypass/revoke`) — requer `pnpm db:up` (Docker).
 
 ## ⭐ Refactor do início de transmissão (2026-06-20) — verificado em runtime
 

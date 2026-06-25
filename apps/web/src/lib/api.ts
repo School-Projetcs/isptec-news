@@ -51,15 +51,26 @@ export const tokenStore = {
   clear: () => localStorage.removeItem(TOKEN_KEY),
 };
 
-async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
+// Token de sessão de DISPOSITIVO (PKI). Lido diretamente do localStorage para não criar
+// dependência circular com device.ts. Enviado em cada pedido quando a PKI está ativa.
+function deviceToken(): string | null {
+  return localStorage.getItem('isptec_device_token');
+}
+
+function authHeaders(extra?: HeadersInit): HeadersInit {
   const t = tokenStore.get();
+  const d = deviceToken();
+  return {
+    ...(t ? { Authorization: `Bearer ${t}` } : {}),
+    ...(d ? { 'X-Device-Token': d } : {}),
+    ...(extra || {}),
+  };
+}
+
+async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const res = await fetch(API_BASE + path, {
     ...opts,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(t ? { Authorization: `Bearer ${t}` } : {}),
-      ...(opts.headers || {}),
-    },
+    headers: authHeaders({ 'Content-Type': 'application/json', ...(opts.headers || {}) }),
   });
   const json = await res.json().catch(() => ({ ok: false, error: 'Resposta inválida' }));
   if (!res.ok || !json.ok) throw new Error(json.error || `Erro ${res.status}`);
@@ -68,11 +79,10 @@ async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
 
 /** Upload multipart (ficheiros) — não define Content-Type (o browser trata). */
 export async function uploadForm<T>(path: string, form: FormData): Promise<T> {
-  const t = tokenStore.get();
   const res = await fetch(API_BASE + path, {
     method: 'POST',
     body: form,
-    headers: { ...(t ? { Authorization: `Bearer ${t}` } : {}) },
+    headers: authHeaders(),
   });
   const json = await res.json().catch(() => ({ ok: false, error: 'Resposta inválida' }));
   if (!res.ok || !json.ok) throw new Error(json.error || `Erro ${res.status}`);

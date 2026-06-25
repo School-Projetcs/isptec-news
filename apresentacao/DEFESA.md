@@ -49,10 +49,13 @@ Alinhado com a estrutura oficial de defesa: Parte 1 (apresentação, 5 min), Par
 - **Notas:** controlos: play/pause/stop/avançar/retroceder/volume/progresso.
 - **Tempo:** 40s.
 
-### Slide 7 — Segurança
-- **Objetivo:** mostrar a segurança da comunicação.
-- **Conteúdo:** JWT + bcrypt, papéis (Admin/Editor/Leitor), zod, helmet/cors, rate-limit, logs.
-- **Tempo:** 30s.
+### Slide 7 — Segurança (certificados / CA)
+- **Objetivo:** mostrar a segurança da comunicação **e** a segurança por certificados.
+- **Conteúdo:** **PKI com Autoridade Certificadora** — só dispositivos com certificado conectam
+  (anti-pirataria/MITM); **não-repúdio** (conteúdo assinado, verificável); **separação de papéis**
+  (Admin só gere contas/certificados). Base: JWT + bcrypt, zod, helmet/cors, rate-limit, logs.
+- **Visual:** diagrama do handshake (desafio→assinatura→token) — o mesmo de `docs/SEGURANCA-PKI.md`.
+- **Tempo:** 45s.
 
 ### Slide 8 — Cliente multiplataforma (auto-fail 3)
 - **Objetivo:** provar os três clientes.
@@ -122,12 +125,41 @@ Alinhado com a estrutura oficial de defesa: Parte 1 (apresentação, 5 min), Par
   obrigatório."
 - **Requisito:** **cliente multiplataforma (auto-fail)**.
 
-### Cena 8 — Segurança e administração + fecho (8:00–9:00)
-- **Mostrar:** painel de Admin (utilizadores + logs); referir rate-limit/JWT.
-- **Dizer:** "Resumindo: compressão, streaming e clientes cumpridos, com segurança e logs."
-- **Requisito:** permissões, logs, segurança.
+### Cena 8 — Segurança por certificados (PKI / CA) (8:00–9:30) ⭐
+> A cena mais importante para a nota de segurança. **Preparar antes de gravar:**
+> `pnpm ca:init` e `pnpm cert:issue --user editor@isptec.local --label "PC do Editor"`,
+> e pôr `PKI_ENFORCE="true"` em `apps/api/.env`. Ter o terminal visível ao lado da app.
 
-> Margem de 1 min para imprevistos. Manter entre 5 e 10 min.
+- **Mostrar (sem certificado):** abrir a Web — as chamadas falham com *"Dispositivo não
+  certificado"*. **Dizer:** *"Antes de mais: esta máquina não tem certificado, por isso o servidor
+  recusa-a — nem sequer obtém uma sessão. É assim que evitamos pirataria e man-in-the-middle."*
+- **Mostrar (importar certificado):** menu → **Dispositivo & Certificado** → importar o
+  `.enrollment.json` → "sessão de dispositivo ativa"; a app passa a funcionar.
+  **Dizer:** *"Quem emite os certificados é a Autoridade Certificadora, não o servidor. O servidor
+  só tem a chave pública da CA e verifica. No login, o dispositivo prova que tem a chave privada
+  assinando um desafio aleatório — apresentar o certificado não chega."*
+- **Mostrar (não-repúdio):** publicar/abrir uma notícia → clicar **"🔏 Verificar autenticidade"**
+  → ✔ assinada por <Editor>, certificado <série>, emitido por ISPTEC-CA.
+  **Dizer:** *"Esta é a resposta à pergunta 'como validam que foi este utilizador a colocar este
+  conteúdo?': o conteúdo está assinado pela chave privada do dispositivo do autor; a assinatura é
+  verificável por qualquer um e quebra se o conteúdo for alterado — isto é o não-repúdio."*
+  (Opcional: alterar o texto na BD e verificar de novo → ✘ inválida.)
+- **Mostrar (máquina sem certificado — exame):** no terminal `pnpm cert:bypass --label "Júri"` →
+  colar o `deviceId` em **"Ligar sem certificado"** → conecta.
+  **Dizer:** *"O administrador pode, à parte, autorizar uma máquina sem certificado — é uma exceção
+  explícita e registada, controlada pelo servidor."*
+- **Requisito:** **segurança (certificados/CA), não-repúdio, autorização de dispositivos**.
+
+### Cena 9 — Administração, papéis e fecho (9:30–10:00)
+- **Mostrar:** painel de Admin (utilizadores, **dispositivos/certificados**, logs). Referir que o
+  **Admin não cria conteúdo** (separação de papéis) e o rate-limit/JWT de base.
+- **Dizer:** *"O administrador só gere contas e certificados — não publica. Resumindo: compressão,
+  streaming e clientes multiplataforma cumpridos, com segurança por certificados, não-repúdio e logs."*
+- **Requisito:** permissões (separação de papéis), logs, segurança.
+
+> **Dicas de gravação:** falar devagar e ligar cada ação a um **requisito** ("isto prova…"); ter os
+> comandos prontos num bloco de notas para colar; se algo falhar, continuar e voltar atrás depois;
+> gravar o ecrã a 1080p e o microfone perto. Manter o total **entre 5 e 10 min** (margem de 1 min).
 
 ---
 
@@ -231,9 +263,45 @@ Alinhado com a estrutura oficial de defesa: Parte 1 (apresentação, 5 min), Par
 - *Resposta:* bcrypt é *hash* lento com *salt*, resistente a *brute-force* e *rainbow tables*;
   nunca guardamos a palavra-passe em claro.
 
-**21. Como controlas permissões?**
-- *Resposta:* `requireRole(...)` por rota (ex.: criar media exige EDITOR/ADMIN; gerir utilizadores
-  exige ADMIN); a propriedade do autor é validada no DELETE.
+**21. Como controlas permissões? (separação de papéis)**
+- *Resposta:* `requireRole(...)` por rota. **EDITOR** trata do conteúdo (notícias/media/streaming);
+  **ADMIN** só faz gestão (contas, certificados, logs) e **não cria/publica conteúdo**; **READER**
+  consome. A propriedade do autor é validada no DELETE.
+
+### Segurança por certificados (PKI / CA) — ver `docs/SEGURANCA-PKI.md`
+
+**21.1. Como funciona o vosso sistema de certificados?**
+- *Resposta:* Uma **Autoridade Certificadora (CA)** emite, para cada dispositivo, um certificado
+  (documento assinado pela CA que liga o dispositivo à sua chave pública). No arranque, o cliente
+  faz um **handshake**: pede um desafio (nonce), assina-o com a **chave privada** e troca-o por um
+  token de sessão. Sem certificado válido, o servidor recusa (`PKI_ENFORCE`).
+
+**21.2. Quem gere os certificados — o servidor?**
+- *Resposta:* Não. A **CA** emite (chave privada da CA isolada em `apps/api/.pki`, fora do git). O
+  **servidor só tem a chave pública** da CA e **verifica**. Separar quem emite de quem serve dá mais
+  segurança.
+
+**21.3. Como impede pirataria e man-in-the-middle?**
+- *Resposta:* Só máquinas com certificado da CA entram (pirataria). E apresentar o certificado **não
+  chega** — é preciso **assinar o desafio** com a chave privada, que nunca circula; quem estiver pelo
+  meio não a tem, logo não obtém sessão (MITM).
+
+**21.4. Como validam que foi este utilizador a colocar este conteúdo? (não-repúdio)**
+- *Resposta:* O conteúdo é **assinado** pela chave privada do dispositivo do autor (`POST
+  /news/:id/sign`). Qualquer um pode revalidar (`GET /news/:id/signature`): só aquela chave privada,
+  certificada pela CA a esse utilizador, poderia ter produzido a assinatura, e ela **quebra** se o
+  conteúdo mudar. Botão "Verificar autenticidade" na app.
+
+**21.5. Como adicionam uma máquina SEM certificado?** *(pergunta provável do exame)*
+- *Resposta:* Com o comando do servidor `pnpm cert:bypass --label "<nome>"`, que regista o dispositivo
+  numa **lista de exceção** (estado `BYPASS`). A máquina liga-se só com o `deviceId` — é uma exceção
+  explícita e auditável, controlada pelo administrador.
+
+**21.6. Que algoritmo usam e porquê ao nível da aplicação?**
+- *Resposta:* **ECDSA P-256 + SHA-256**, nativo no Node e na Web Crypto (sem bibliotecas). Fizemos a
+  PKI ao nível da aplicação (e não TLS de transporte) para funcionar igual em Web, Desktop e Mobile
+  sem instalar certificados no sistema operativo — os conceitos (CA, certificado, prova de posse,
+  não-repúdio) são os mesmos.
 
 **22. O que é o rate-limiting e onde está?**
 - *Resposta:* Limita pedidos por IP/janela; global + estrito em login/registo (anti força-bruta),

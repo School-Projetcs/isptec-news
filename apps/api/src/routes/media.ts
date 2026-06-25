@@ -17,7 +17,7 @@ export const mediaRouter = Router();
 mediaRouter.post(
   '/',
   requireAuth,
-  requireRole('EDITOR', 'ADMIN'),
+  requireRole('EDITOR'),
   upload.single('file'),
   ah(async (req, res) => {
     const file = req.file;
@@ -156,7 +156,7 @@ mediaRouter.get(
 mediaRouter.delete(
   '/:id',
   requireAuth,
-  requireRole('EDITOR', 'ADMIN'),
+  requireRole('EDITOR'),
   ah(async (req, res) => {
     const media = await prisma.media.findUnique({
       where: { id: req.params.id },

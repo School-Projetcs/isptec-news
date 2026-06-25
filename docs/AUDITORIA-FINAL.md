@@ -15,7 +15,8 @@
 | API REST | `apps/api/src/app.ts` monta auth, news, categories, users, logs, media, stream, comments |
 | Base de dados | Prisma + PostgreSQL — `apps/api/prisma/schema.prisma` (User, Category, News, Media, MediaVariant, Comment, Log, SavedNews) |
 | Autenticação | JWT + bcrypt — `routes/auth.ts`, `lib/jwt.ts`, `middleware/auth.ts` |
-| Permissões | `requireRole(ADMIN/EDITOR/READER)` aplicado em news, users, media, stream |
+| **Segurança PKI/CA** | CA própria + certificados de dispositivo + handshake + não-repúdio — `src/security/pki/`, `routes/devices.ts`, `middleware/deviceCert.ts`, `scripts/pki.ts` (ver `docs/SEGURANCA-PKI.md`) |
+| Permissões (separação estrita) | `requireRole(...)`: EDITOR=conteúdo, ADMIN=só gestão de contas/certificados/logs |
 | Logs | `middleware/requestLogger.ts` + `writeLog()` → tabela `Log` |
 | Upload + compressão automática | `routes/media.ts` (multer) → `media-engine/process.ts` (síncrono) |
 | Compressão imagem | `media-engine/image.ts` — WebP q80/q50, JPEG q70 + PSNR |

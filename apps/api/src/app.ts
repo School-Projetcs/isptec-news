@@ -14,6 +14,8 @@ import { logsRouter } from './routes/logs';
 import { mediaRouter } from './routes/media';
 import { streamRouter } from './routes/stream';
 import { commentsRouter } from './routes/comments';
+import { devicesRouter } from './routes/devices';
+import { deviceGate } from './middleware/deviceCert';
 
 export function createApp() {
   const app = express();
@@ -34,6 +36,11 @@ export function createApp() {
     res.json({ ok: true, data: { name: 'ISPTEC News API', health: '/health' } });
   });
   app.use('/health', healthRouter);
+  // Rotas da PKI (handshake, gestão de certificados) ficam ANTES da porta de dispositivo,
+  // pois são o próprio mecanismo de obter acesso.
+  app.use('/devices', devicesRouter);
+  // Porta de dispositivo: quando PKI_ENFORCE=true, exige máquina certificada (ou bypass).
+  app.use(deviceGate);
   app.use('/auth', authRouter);
   app.use('/news', newsRouter);
   app.use('/categories', categoriesRouter);

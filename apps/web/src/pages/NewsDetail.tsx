@@ -7,6 +7,7 @@ import { ListenButton } from '../components/ListenButton';
 import { ShareButton } from '../components/ShareButton';
 import { SaveButton } from '../components/SaveButton';
 import { Comments } from '../components/Comments';
+import { Authenticity } from '../components/Authenticity';
 import { fmtRelative, isRecent, metaLine, readingMinutes } from '../lib/format';
 import { imageDetailSrc } from '../lib/media';
 import { CoverImage } from '../components/CoverImage';
@@ -58,6 +59,7 @@ export function NewsDetail() {
         <ShareButton news={news} />
         <SaveButton news={news} />
       </div>
+      <Authenticity newsId={news.id} />
       {news.cover && (
         <CoverImage className="article-hero" src={imageDetailSrc(news.cover.id)} alt={news.title} eager />
       )}

@@ -12,7 +12,12 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "db:reset": "prisma migrate reset --force"
+    "db:reset": "prisma migrate reset --force",
+    "ca:init": "tsx scripts/pki.ts ca-init",
+    "cert:issue": "tsx scripts/pki.ts cert-issue",
+    "cert:list": "tsx scripts/pki.ts cert-list",
+    "cert:revoke": "tsx scripts/pki.ts cert-revoke",
+    "cert:bypass": "tsx scripts/pki.ts cert-bypass"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

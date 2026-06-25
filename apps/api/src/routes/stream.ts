@@ -128,7 +128,7 @@ streamRouter.get('/live/status', (_req, res) => {
 streamRouter.post(
   '/simulate/start',
   requireAuth,
-  requireRole('EDITOR', 'ADMIN'),
+  requireRole('EDITOR'),
   ah(async (req, res) => {
     const data = await startSimulated(req.user!.id);
     res.json({ ok: true, data });
@@ -139,7 +139,7 @@ streamRouter.post(
 streamRouter.post(
   '/simulate/stop',
   requireAuth,
-  requireRole('EDITOR', 'ADMIN'),
+  requireRole('EDITOR'),
   ah(async (req, res) => {
     const data = await stopSimulated(req.user!.id);
     res.json({ ok: true, data });
@@ -153,7 +153,7 @@ streamRouter.post(
 streamRouter.post(
   '/broadcast-token',
   requireAuth,
-  requireRole('EDITOR', 'ADMIN'),
+  requireRole('EDITOR'),
   ah(async (req, res) => {
     const token = signBroadcastToken(LIVE_KEY, req.user!.id);
     const data: BroadcastTokenResponse = { token, key: LIVE_KEY, expiresIn: BROADCAST_TTL_SECONDS };
@@ -165,7 +165,7 @@ streamRouter.post(
 streamRouter.post(
   '/stop',
   requireAuth,
-  requireRole('EDITOR', 'ADMIN'),
+  requireRole('EDITOR'),
   ah(async (req, res) => {
     const key = typeof req.body?.key === 'string' && /^[a-z0-9_-]+$/i.test(req.body.key) ? req.body.key : LIVE_KEY;
     stopWsIngest(key, req.user!.id);

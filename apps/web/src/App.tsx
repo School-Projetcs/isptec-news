@@ -13,6 +13,7 @@ import { Editor } from './pages/Editor';
 import { Manage } from './pages/Manage';
 import { MediaLab } from './pages/MediaLab';
 import { Admin } from './pages/Admin';
+import { Device } from './pages/Device';
 import { useAuth } from './lib/auth';
 
 function Protected({ roles, children }: { roles?: string[]; children: ReactNode }) {
@@ -41,12 +42,13 @@ export function App() {
           }
         />
         <Route path="/ao-vivo" element={<Live />} />
+        <Route path="/dispositivo" element={<Device />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registar" element={<Register />} />
         <Route
           path="/gerir"
           element={
-            <Protected roles={['EDITOR', 'ADMIN']}>
+            <Protected roles={['EDITOR']}>
               <Manage />
             </Protected>
           }
@@ -54,7 +56,7 @@ export function App() {
         <Route
           path="/gerir/nova"
           element={
-            <Protected roles={['EDITOR', 'ADMIN']}>
+            <Protected roles={['EDITOR']}>
               <Editor />
             </Protected>
           }
@@ -62,7 +64,7 @@ export function App() {
         <Route
           path="/gerir/editar/:id"
           element={
-            <Protected roles={['EDITOR', 'ADMIN']}>
+            <Protected roles={['EDITOR']}>
               <Editor />
             </Protected>
           }
@@ -70,7 +72,7 @@ export function App() {
         <Route
           path="/media"
           element={
-            <Protected roles={['EDITOR', 'ADMIN']}>
+            <Protected roles={['EDITOR']}>
               <MediaLab />
             </Protected>
           }

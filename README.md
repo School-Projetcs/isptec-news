@@ -17,7 +17,8 @@ por HLS) — os dois requisitos cuja ausência implica reprovação automática.
 ## Funcionalidades
 
 - **Autenticação e perfis** — registo, login (JWT) e três papéis: Administrador, Editor e Leitor.
-- **Gestão de notícias** — criar, editar, publicar/despublicar e apagar (Editor/Admin).
+- **Gestão de notícias** — criar, editar, publicar/despublicar e apagar (**Editor**; o
+  Administrador faz apenas a gestão de contas e certificados).
 - **Upload com compressão automática** — cada ficheiro enviado é comprimido em várias variantes.
 - **Compressão multimédia real:**
   - Imagens → WebP (q80/q50), JPEG (q70) + **Huffman próprio** (lossless) com PSNR.
@@ -33,8 +34,12 @@ por HLS) — os dois requisitos cuja ausência implica reprovação automática.
 - **Pesquisa e filtro** — pesquisa por texto e filtro por categoria.
 - **Extras** — comentários, notícias guardadas, "Ouvir notícia" (TTS), "Resumo do dia",
   tema claro/escuro/sistema e widgets de tempo/mercados com dados reais.
-- **Segurança** — JWT + bcrypt, controlo de permissões por papel, validação (zod),
-  rate-limiting, Helmet/CORS e registo de logs.
+- **Segurança por certificados (PKI/CA)** — autenticação de **dispositivos por certificado**
+  emitido por uma **Autoridade Certificadora**, **não-repúdio** do conteúdo (assinatura digital
+  verificável) e **separação de papéis** (o Administrador só gere contas/certificados).
+  Ver [`docs/SEGURANCA-PKI.md`](docs/SEGURANCA-PKI.md).
+- **Segurança (base)** — JWT + bcrypt, permissões por papel, validação (zod), rate-limiting,
+  Helmet/CORS e registo de logs.
 
 ## Dependências
 
@@ -105,6 +110,18 @@ pnpm dev:mobile   # cliente Mobile (Expo) — ler o QR com o Expo Go
 **Conta de demonstração:** `admin@isptec.local` / `admin123`
 
 A Web fica disponível em `http://localhost:5173` e a API em `http://localhost:3333`.
+
+### Segurança por certificados (CA)
+
+```bash
+pnpm ca:init                                          # criar a Autoridade Certificadora (uma vez)
+pnpm cert:issue --user editor@isptec.local --label "PC do Editor"   # emitir um certificado
+pnpm cert:bypass --label "Máquina sem certificado"    # autorizar uma máquina SEM certificado
+pnpm cert:list                                        # listar; cert:revoke --serial <s> p/ revogar
+```
+
+Para **exigir** certificado a todas as máquinas, pôr `PKI_ENFORCE="true"` em `apps/api/.env`.
+Guia completo e roteiro de demonstração em [`docs/SEGURANCA-PKI.md`](docs/SEGURANCA-PKI.md).
 
 ## Estrutura do Projeto
 

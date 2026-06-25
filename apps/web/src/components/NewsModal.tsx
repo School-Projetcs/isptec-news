@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, uploadForm, API_BASE } from '../lib/api';
+import { signContent } from '../lib/device';
 import type { Category, Media, NewsItem } from '../types';
 import { Modal } from './Modal';
 import { CategoryPicker } from './CategoryPicker';
@@ -102,6 +103,20 @@ export function NewsModal({ editId, onClose, onDone }: Props) {
       if (publish) {
         setPhase('A publicar…');
         await api.post(`/news/${saved.id}/publish`);
+      }
+      // 5) Não-repúdio: assinar a autoria com o certificado do dispositivo (se existir).
+      //    Best-effort — não bloqueia a publicação se não houver certificado.
+      try {
+        const authorId = saved.authorId;
+        if (authorId) {
+          const sig = await signContent({ title, body, authorId });
+          if (sig) {
+            setPhase('A assinar a autoria…');
+            await api.post(`/news/${saved.id}/sign`, sig);
+          }
+        }
+      } catch {
+        /* assinatura é opcional; ignora falhas */
       }
       onDone();
       onClose();

@@ -60,6 +60,12 @@ Montagem em [`apps/api/src/app.ts`](apps/api/src/app.ts). `🔒` = `requireAuth`
 | Método | Rota | Auth | Função |
 |---|---|---|---|
 | GET | `/health` | — | Estado da API + ligação à BD |
+| POST | `/devices/challenge` | — | Desafio (nonce) do handshake PKI |
+| POST | `/devices/handshake` | — | Handshake com certificado → token de dispositivo |
+| POST | `/devices/connect-bypass` | — | Ligar máquina autorizada **sem** certificado |
+| GET | `/devices` | 🔒 | Listar dispositivos/certificados (admin) |
+| POST | `/devices/:id/revoke` | 🔒 | Revogar certificado (admin) |
+| POST | `/devices/bypass` | 🔒 | Autorizar máquina sem certificado (admin) |
 | POST | `/auth/register` | — | Registo (zod) |
 | POST | `/auth/login` | — | Login → JWT |
 | GET | `/auth/me` | 🔒 | Utilizador atual |
@@ -70,6 +76,8 @@ Montagem em [`apps/api/src/app.ts`](apps/api/src/app.ts). `🔒` = `requireAuth`
 | PUT | `/news/:id` | 🔒 | Editar |
 | POST | `/news/:id/publish` | 🔒 | Publicar |
 | POST | `/news/:id/unpublish` | 🔒 | Despublicar |
+| POST | `/news/:id/sign` | 🔒 | **Assinar autoria** (não-repúdio) |
+| GET | `/news/:id/signature` | — | **Verificar autoria** (não-repúdio) |
 | DELETE | `/news/:id` | 🔒 | Apagar |
 | GET | `/categories` | — | Listar categorias |
 | POST | `/categories` | 🔒 | Criar categoria |
@@ -142,16 +150,30 @@ Definido em [`apps/api/prisma/schema.prisma`](apps/api/prisma/schema.prisma).
 
 `User (Role: ADMIN|EDITOR|READER)` · `Category` · `News (DRAFT|PUBLISHED)` ·
 `Media (IMAGE|AUDIO|VIDEO; UPLOADED→PROCESSING→READY→ERROR)` ·
-`MediaVariant` (materializa o relatório de compressão) · `Comment` · `Log`.
+`MediaVariant` (materializa o relatório de compressão) · `Comment` · `Log` ·
+`Device (DeviceStatus: ACTIVE|REVOKED|BYPASS)` (registo de certificados da PKI) ·
+`ContentSignature` (assinatura de autoria — não-repúdio, 1:1 com News).
 
 ---
 
 ## 7. Segurança
 
+- **PKI / Autoridade Certificadora (CA):** autenticação de **dispositivos por certificado** +
+  **não-repúdio** de conteúdo. Detalhe completo em [`docs/SEGURANCA-PKI.md`](docs/SEGURANCA-PKI.md).
+  - CA = entidade que **emite** certificados; chave privada isolada (`apps/api/.pki/ca.private.pem`,
+    gitignored). O servidor só tem a **chave pública** e **verifica** (`src/security/pki/`).
+  - **Handshake** (`routes/devices.ts`): desafio-resposta (nonce assinado pela chave privada do
+    dispositivo) → emite token de sessão (`signDeviceToken`). **Porta de dispositivo** `deviceGate`
+    (`middleware/deviceCert.ts`) bloqueia máquinas sem certificado quando `PKI_ENFORCE=true`
+    (anti-pirataria + anti-MITM).
+  - **Não-repúdio:** `POST /news/:id/sign` (assinatura do conteúdo) + `GET /news/:id/signature`
+    (verificação). Crypto ECDSA P-256 + SHA-256 (Node `crypto` ↔ Web Crypto, formato IEEE-P1363).
+  - **CLI** (`scripts/pki.ts`): `ca:init`, `cert:issue`, `cert:list`, `cert:revoke`, `cert:bypass`
+    (autorizar máquina **sem** certificado).
 - **Auth:** JWT (`lib/jwt.ts`) + bcrypt; middleware `requireAuth` (`middleware/auth.ts`).
-- **Permissões:** `requireRole(...roles)` (`middleware/auth.ts`) aplicado por rota em
-  `news`, `users` e `media` (ex.: criar/editar exige EDITOR/ADMIN; users exige ADMIN).
-  A propriedade (autor) é validada no handler do DELETE de notícias.
+- **Permissões (separação de papéis estrita):** `requireRole(...)` (`middleware/auth.ts`).
+  **EDITOR** = conteúdo (news, media, streaming); **ADMIN** = só gestão (users, devices, logs);
+  **READER** = consumo. O ADMIN **não** cria/publica conteúdo. Autoria validada no DELETE de notícias.
 - **Validação:** zod (`middleware/validate.ts` + schemas em `@isptec/shared`).
 - **HTTP:** `helmet` (com `crossOriginResourcePolicy: cross-origin` p/ media) + `cors`.
 - **Rate-limit** (`middleware/rateLimit.ts`): `apiLimiter` global (1000/15min, ignora
@@ -173,6 +195,8 @@ Definido em [`apps/api/prisma/schema.prisma`](apps/api/prisma/schema.prisma).
 | RTMP `:1935` | node-media-server (fixo) | ingestão RTMP do streaming ao vivo |
 | `CORS_ORIGIN` | `apps/api/.env` | `*` (dev; restringir em prod) |
 | `MEDIA_DIR` | `apps/api/.env` | `./media` |
+| `PKI_DIR` | `apps/api/.env` | `./.pki` (chaves da CA) |
+| `PKI_ENFORCE` | `apps/api/.env` | `false` (dev). `true` exige certificado de dispositivo |
 | `VITE_API_URL` | `apps/web/.env` | vazio em dev (usa proxy `/api`); URL absoluto em prod |
 | `API_PROXY_TARGET` | ambiente do Vite | `http://127.0.0.1:3333` (alvo do proxy `/api`) |
 

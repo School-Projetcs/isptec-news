@@ -7,6 +7,8 @@ import { requireAuth, requireRole } from '../middleware/auth';
 import { validateBody } from '../middleware/validate';
 import { slugify } from '../lib/slug';
 import { writeLog } from '../lib/logService';
+import { contentMessage, ISSUER } from '../security/pki/cert';
+import { sha256Hex, publicKeyFromB64, verifyData } from '../security/pki/keys';
 
 export const newsRouter = Router();
 
@@ -125,7 +127,7 @@ newsRouter.get(
 newsRouter.get(
   '/manage/all',
   requireAuth,
-  requireRole('EDITOR', 'ADMIN'),
+  requireRole('EDITOR'),
   ah(async (_req, res) => {
     const news = await prisma.news.findMany({
       orderBy: { createdAt: 'desc' },
@@ -139,7 +141,7 @@ newsRouter.get(
 newsRouter.get(
   '/manage/:id',
   requireAuth,
-  requireRole('EDITOR', 'ADMIN'),
+  requireRole('EDITOR'),
   ah(async (req, res) => {
     const news = await prisma.news.findUnique({
       where: { id: req.params.id },
@@ -250,7 +252,7 @@ newsRouter.delete(
 newsRouter.post(
   '/',
   requireAuth,
-  requireRole('EDITOR', 'ADMIN'),
+  requireRole('EDITOR'),
   validateBody(createNewsSchema),
   ah(async (req, res) => {
     const { title, summary, body, categoryId, categoryName, status } = req.body;
@@ -281,7 +283,7 @@ newsRouter.post(
 newsRouter.put(
   '/:id',
   requireAuth,
-  requireRole('EDITOR', 'ADMIN'),
+  requireRole('EDITOR'),
   validateBody(updateNewsSchema),
   ah(async (req, res) => {
     const existing = await prisma.news.findUnique({ where: { id: req.params.id } });
@@ -319,7 +321,7 @@ newsRouter.put(
 newsRouter.post(
   '/:id/publish',
   requireAuth,
-  requireRole('EDITOR', 'ADMIN'),
+  requireRole('EDITOR'),
   ah(async (req, res) => {
     const news = await prisma.news
       .update({ where: { id: req.params.id }, data: { status: 'PUBLISHED', publishedAt: new Date() } })
@@ -332,7 +334,7 @@ newsRouter.post(
 newsRouter.post(
   '/:id/unpublish',
   requireAuth,
-  requireRole('EDITOR', 'ADMIN'),
+  requireRole('EDITOR'),
   ah(async (req, res) => {
     const news = await prisma.news
       .update({ where: { id: req.params.id }, data: { status: 'DRAFT' } })
@@ -343,16 +345,101 @@ newsRouter.post(
   }),
 );
 
-// Eliminar (admin ou autor)
+// ── Não-repúdio (assinatura de autoria) ─────────────────────────────────────
+
+/**
+ * Assinar a autoria de uma notícia. O cliente (dispositivo certificado do autor)
+ * envia a assinatura da mensagem canónica do conteúdo, feita com a sua chave PRIVADA.
+ * O servidor verifica-a contra a chave PÚBLICA certificada do dispositivo e só então
+ * a guarda. Passa a ser PROVA, verificável por terceiros, de quem colocou o conteúdo.
+ */
+newsRouter.post(
+  '/:id/sign',
+  requireAuth,
+  requireRole('EDITOR'),
+  ah(async (req, res) => {
+    const { signature, deviceId } = req.body as { signature?: string; deviceId?: string };
+    if (!signature || !deviceId) {
+      return res.status(400).json({ ok: false, error: 'signature e deviceId são obrigatórios' });
+    }
+    const news = await prisma.news.findUnique({ where: { id: req.params.id } });
+    if (!news) return res.status(404).json({ ok: false, error: 'Notícia não encontrada' });
+
+    const device = await prisma.device.findUnique({ where: { deviceId } });
+    if (!device || device.status === 'REVOKED' || !device.publicKey) {
+      return res.status(400).json({ ok: false, error: 'Dispositivo sem certificado válido' });
+    }
+    const message = contentMessage({ title: news.title, body: news.body, authorId: news.authorId });
+    const ok = verifyData(publicKeyFromB64(device.publicKey), message, signature);
+    if (!ok) {
+      return res.status(400).json({ ok: false, error: 'Assinatura não corresponde ao conteúdo/dispositivo' });
+    }
+    const data = {
+      deviceId,
+      certSerial: device.serial,
+      algo: 'ECDSA-P256-SHA256',
+      hash: sha256Hex(message),
+      signature,
+    };
+    await prisma.contentSignature.upsert({
+      where: { newsId: news.id },
+      create: { newsId: news.id, ...data },
+      update: { ...data, signedAt: new Date() },
+    });
+    await writeLog({ action: 'news.sign', userId: req.user!.id, message: news.id });
+    res.status(201).json({ ok: true, data: { signed: true, ...data } });
+  }),
+);
+
+/**
+ * Verificar a autoria de uma notícia. Recalcula o hash do conteúdo atual e revalida a
+ * assinatura guardada contra a chave pública certificada do dispositivo. Responde à
+ * pergunta "como validam que este utilizador colocou este conteúdo?": se `valid` for
+ * verdadeiro, só a chave privada daquele dispositivo certificado o poderia ter assinado;
+ * se o conteúdo tiver sido adulterado, `valid` passa a falso.
+ */
+newsRouter.get(
+  '/:id/signature',
+  ah(async (req, res) => {
+    const news = await prisma.news.findUnique({
+      where: { id: req.params.id },
+      include: { author: { select: { id: true, name: true, role: true } }, signature: true },
+    });
+    if (!news) return res.status(404).json({ ok: false, error: 'Notícia não encontrada' });
+    if (!news.signature) {
+      return res.json({ ok: true, data: { signed: false } });
+    }
+    const device = await prisma.device.findUnique({ where: { deviceId: news.signature.deviceId } });
+    const message = contentMessage({ title: news.title, body: news.body, authorId: news.authorId });
+    const valid =
+      !!device?.publicKey && verifyData(publicKeyFromB64(device.publicKey), message, news.signature.signature);
+    res.json({
+      ok: true,
+      data: {
+        signed: true,
+        valid,
+        issuer: ISSUER,
+        algo: news.signature.algo,
+        certSerial: news.signature.certSerial,
+        deviceLabel: device?.label ?? null,
+        deviceStatus: device?.status ?? 'UNKNOWN',
+        signer: { id: news.author.id, name: news.author.name, role: news.author.role },
+        signedAt: news.signature.signedAt,
+      },
+    });
+  }),
+);
+
+// Eliminar (autor)
 newsRouter.delete(
   '/:id',
   requireAuth,
-  requireRole('EDITOR', 'ADMIN'),
+  requireRole('EDITOR'),
   ah(async (req, res) => {
     const existing = await prisma.news.findUnique({ where: { id: req.params.id } });
     if (!existing) return res.status(404).json({ ok: false, error: 'Notícia não encontrada' });
-    if (req.user!.role !== 'ADMIN' && existing.authorId !== req.user!.id) {
-      return res.status(403).json({ ok: false, error: 'Apenas o autor ou um admin pode eliminar' });
+    if (existing.authorId !== req.user!.id) {
+      return res.status(403).json({ ok: false, error: 'Apenas o autor pode eliminar a notícia' });
     }
     await prisma.news.delete({ where: { id: req.params.id } });
     await writeLog({ action: 'news.delete', userId: req.user!.id, message: req.params.id });

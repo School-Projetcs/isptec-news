@@ -12,15 +12,18 @@ isptec-news/
 │  │  │  ├─ schema.prisma          # modelo de dados (User, News, Media, MediaVariant, Log…)
 │  │  │  ├─ migrations/            # 20260602140549_init
 │  │  │  └─ seed.ts                # admin/editor/leitor + categorias + 1 notícia
+│  │  ├─ .pki/                     # 🔐 chaves da CA (ca.private.pem SECRETA + ca.public.pem) — gitignored
 │  │  ├─ scripts/
-│  │  │  └─ selftest-compression.ts# valida o media-engine sem subir a API
+│  │  │  ├─ selftest-compression.ts# valida o media-engine sem subir a API
+│  │  │  └─ pki.ts                 # 🔐 CLI da CA: ca-init/cert-issue/list/revoke/bypass
 │  │  └─ src/
-│  │     ├─ app.ts                 # cria o Express app + monta as rotas
+│  │     ├─ app.ts                 # cria o Express app + monta as rotas (+ deviceGate)
 │  │     ├─ index.ts               # arranque do servidor (porta 3333)
-│  │     ├─ env.ts                 # validação de ambiente (zod)
+│  │     ├─ env.ts                 # validação de ambiente (zod) (+ PKI_DIR/PKI_ENFORCE)
 │  │     ├─ lib/                   # prisma, logger, logService, jwt, slug, asyncHandler
-│  │     ├─ middleware/            # auth, validate, error, requestLogger
-│  │     ├─ routes/                # auth, news, categories, users, logs, media, stream, health
+│  │     ├─ middleware/            # auth, validate, error, requestLogger, deviceCert (porta PKI)
+│  │     ├─ security/pki/          # 🔐 keys, cert, ca, nonceStore (CA + cripto)
+│  │     ├─ routes/                # auth, news, categories, users, logs, media, stream, health, devices
 │  │     ├─ live/                  # streaming ao vivo
 │  │     │  ├─ ingest.ts           #   servidor WebSocket de ingestão (browser→FFmpeg→HLS)
 │  │     │  ├─ hls.ts              #   FFmpeg→HLS + estado (browser/simulada/RTMP) + liveStatus()
@@ -43,7 +46,8 @@ isptec-news/
 │  │     ├─ styles.css             # estilos globais
 │  │     ├─ types.ts               # tipos do cliente
 │  │     ├─ lib/
-│  │     │  ├─ api.ts              # cliente fetch + uploadForm + API_BASE + WS_BASE
+│  │     │  ├─ api.ts              # cliente fetch + uploadForm + API_BASE + WS_BASE (+ X-Device-Token)
+│  │     │  ├─ device.ts           # 🔐 certificado do dispositivo (Web Crypto) + handshake + assinatura
 │     │  ├─ useBroadcast.ts     # captura→envio (MediaRecorder→WS) p/ webcam/ficheiro/telemóvel
 │  │     │  ├─ auth.tsx            # contexto de autenticação (JWT)
 │  │     │  ├─ theme.tsx           # tema system(default)/light/dark
@@ -55,7 +59,8 @@ isptec-news/
 │  │     │  ├─ Layout.tsx          # cabeçalho (nav + UserMenu) + UIProvider
 │  │     │  ├─ UserMenu.tsx        # dropdown único (conta/tema/admin)
 │  │     │  ├─ Modal.tsx           # shell de modal reutilizável
-│  │     │  ├─ NewsModal.tsx       # criar/editar notícia (modal, capa+vídeo+preview)
+│  │     │  ├─ Authenticity.tsx    # 🔐 botão "Verificar autenticidade" (não-repúdio)
+│  │     │  ├─ NewsModal.tsx       # criar/editar notícia (modal, capa+vídeo+preview; assina ao publicar)
 │  │     │  ├─ LiveModal.tsx       # iniciar transmissão (Telemóvel/Webcam/Ficheiro; preview + confirmar)
 │  │     │  ├─ LiveCard.tsx        # base única de live (estados; hover-to-play)
 │  │     │  ├─ LiveSection.tsx     # secção de live na Home (usa LiveCard)
@@ -74,7 +79,8 @@ isptec-news/
 │  │        ├─ Manage.tsx          # gestão (modal add/edit + iniciar transmissão)
 │  │        ├─ Editor.tsx          # editor avançado de multimédia (galeria/áudio)
 │  │        ├─ MediaLab.tsx        # upload + relatório de compressão (admin)
-│  │        └─ Admin.tsx           # utilizadores + logs (admin)
+│  │        ├─ Device.tsx          # 🔐 Dispositivo & Certificado (importar/ligar/bypass)
+│  │        └─ Admin.tsx           # utilizadores + logs + 🔐 dispositivos/certificados (admin)
 │  │     # (removidos: Settings.tsx, ManageMenu.tsx, ThemeToggle.tsx)
 │  │
 │  ├─ desktop/                     # ✅ Electron — embrulha a Web (dev: Vite · prod: app://)

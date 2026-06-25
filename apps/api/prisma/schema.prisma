@@ -34,6 +34,16 @@ enum MediaStatus {
   ERROR
 }
 
+// Estado de um dispositivo na PKI.
+//  ACTIVE  = tem certificado válido emitido pela CA.
+//  REVOKED = certificado revogado (deixa de poder conectar) — base do não-repúdio.
+//  BYPASS  = máquina autorizada SEM certificado (lista de exceção criada no servidor).
+enum DeviceStatus {
+  ACTIVE
+  REVOKED
+  BYPASS
+}
+
 model User {
   id           String    @id @default(cuid())
   name         String
@@ -45,6 +55,7 @@ model User {
   comments     Comment[]
   saved        SavedNews[]
   logs         Log[]
+  devices      Device[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 }
@@ -76,6 +87,7 @@ model News {
   media        Media[]    @relation("NewsMedia")
   comments     Comment[]
   savedBy      SavedNews[]
+  signature    ContentSignature?
   publishedAt  DateTime?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
@@ -144,6 +156,41 @@ model Comment {
   user      User     @relation(fields: [userId], references: [id])
   userId    String
   createdAt DateTime @default(now())
+}
+
+// Dispositivo registado na PKI. Materializa o "registo de certificados" da CA:
+// guarda a chave pública certificada, o nº de série e o estado (ativo/revogado/bypass).
+// O servidor consulta-o no handshake para aceitar/recusar e para revogar.
+model Device {
+  id         String       @id @default(cuid())
+  deviceId   String       @unique // identificador apresentado pelo cliente
+  label      String // etiqueta legível (ex.: "Portátil do Dálcio")
+  status     DeviceStatus @default(ACTIVE)
+  publicKey  String? // chave pública do dispositivo (base64 SPKI DER); nula em BYPASS
+  serial     String?      @unique // nº de série do certificado; nulo em BYPASS
+  certJson   String? // certificado completo emitido (JSON); nulo em BYPASS
+  notBefore  DateTime?
+  notAfter   DateTime?
+  user       User?        @relation(fields: [userId], references: [id])
+  userId     String?
+  revokedAt  DateTime?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+// Assinatura de autoria de uma notícia (NÃO-REPÚDIO).
+// Prova criptográfica de que um dispositivo certificado de um utilizador concreto
+// produziu aquele conteúdo. Verificável por qualquer pessoa com a chave pública do cert.
+model ContentSignature {
+  id        String   @id @default(cuid())
+  news      News     @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  newsId    String   @unique
+  deviceId  String // dispositivo que assinou
+  certSerial String? // nº de série do certificado usado
+  algo      String   @default("ECDSA-P256-SHA256")
+  hash      String // SHA-256 (hex) da mensagem canónica assinada
+  signature String // assinatura (base64) sobre a mensagem canónica
+  signedAt  DateTime @default(now())
 }
 
 // Registo de logs (requisito obrigatório do servidor).

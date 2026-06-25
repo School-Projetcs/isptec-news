@@ -26,7 +26,12 @@
     "db:generate": "pnpm --filter @isptec/api db:generate",
     "db:migrate": "pnpm --filter @isptec/api db:migrate",
     "db:seed": "pnpm --filter @isptec/api db:seed",
-    "db:studio": "pnpm --filter @isptec/api db:studio"
+    "db:studio": "pnpm --filter @isptec/api db:studio",
+    "ca:init": "pnpm --filter @isptec/api ca:init",
+    "cert:issue": "pnpm --filter @isptec/api cert:issue",
+    "cert:list": "pnpm --filter @isptec/api cert:list",
+    "cert:revoke": "pnpm --filter @isptec/api cert:revoke",
+    "cert:bypass": "pnpm --filter @isptec/api cert:bypass"
   },
   "devDependencies": {
     "cloudflared": "^0.7.1",

@@ -130,7 +130,10 @@ h3 { margin: 0 0 6px; }
 .lead { font-size: 1.15rem; line-height: 1.6; color: var(--text); font-weight: 500; }
 .body p { line-height: 1.7; }
 .good { color: var(--good); }
+.ok { color: var(--good); }
 .bad { color: var(--bad); }
+.authenticity { margin: 6px 0; }
+.authenticity code { font-size: 0.85em; }
 
 /* forms */
 .form { display: flex; flex-direction: column; gap: 14px; }

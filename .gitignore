@@ -31,6 +31,13 @@ media/live/
 # prisma local
 apps/api/prisma/*.db
 
+# PKI — chaves da Autoridade Certificadora (NUNCA versionar a chave privada da CA)
+.pki/
+apps/api/.pki/
+*.private.pem
+# pacotes de inscrição gerados pela CLI (contêm chave privada do dispositivo)
+*.enrollment.json
+
 # editores / SO
 .DS_Store
 .idea/

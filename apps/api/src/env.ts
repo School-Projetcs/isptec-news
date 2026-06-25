@@ -8,6 +8,16 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(1).default('dev-secret-trocar-em-producao'),
   CORS_ORIGIN: z.string().default('*'),
   MEDIA_DIR: z.string().default('../../media'),
+  // PKI / Autoridade Certificadora
+  // Pasta onde ficam as chaves da CA (privada gitignored + pública distribuída).
+  PKI_DIR: z.string().default('./.pki'),
+  // Quando 'true', a "porta de dispositivo" (deviceGate) é EXIGIDA: nenhum
+  // dispositivo sem certificado válido (ou bypass autorizado) consegue sessão.
+  // Em dev fica desligada por omissão para não partir o fluxo existente.
+  PKI_ENFORCE: z
+    .string()
+    .default('false')
+    .transform((v) => v === 'true' || v === '1'),
 });
 
 const parsed = envSchema.safeParse(process.env);

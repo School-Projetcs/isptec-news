@@ -32,3 +32,27 @@ export function verifyBroadcastToken(token: string): BroadcastPayload {
   }
   return p as BroadcastPayload;
 }
+
+/* ------------------------------------------------------------------ *
+ * Token de DISPOSITIVO (escopo "device")
+ * Emitido depois de um handshake bem-sucedido (certificado válido + prova de
+ * posse da chave privada). Prova que o pedido vem de uma máquina certificada,
+ * sem ter de reassinar um desafio em cada pedido. É o equivalente, na camada da
+ * aplicação, à sessão estabelecida por um handshake mTLS.
+ * ------------------------------------------------------------------ */
+export const DEVICE_TTL_SECONDS = 12 * 60 * 60; // 12 h
+export type DevicePayload = { scope: 'device'; deviceId: string; mode: 'cert' | 'bypass' };
+
+export function signDeviceToken(deviceId: string, mode: 'cert' | 'bypass'): string {
+  const payload: DevicePayload = { scope: 'device', deviceId, mode };
+  return jwt.sign(payload, env.JWT_SECRET, { expiresIn: DEVICE_TTL_SECONDS });
+}
+
+/** Verifica um token de dispositivo; lança se inválido. */
+export function verifyDeviceToken(token: string): DevicePayload {
+  const p = jwt.verify(token, env.JWT_SECRET) as Partial<DevicePayload>;
+  if (p.scope !== 'device' || typeof p.deviceId !== 'string') {
+    throw new Error('Token de dispositivo inválido');
+  }
+  return p as DevicePayload;
+}

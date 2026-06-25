@@ -192,3 +192,83 @@ export const updateNewsSchema = z.object({
   status: z.enum(['DRAFT', 'PUBLISHED']).optional(),
 });
 export type UpdateNewsInput = z.infer<typeof updateNewsSchema>;
+
+/* ------------------------------------------------------------------ *
+ * PKI — certificados, dispositivos e não-repúdio
+ * Tipos partilhados entre a API (emite/verifica) e o cliente Web (handshake/assina).
+ * Algoritmo: ECDSA P-256 + SHA-256 (Node `crypto` ↔ Web Crypto), assinaturas em
+ * base64 no formato IEEE-P1363. Ver docs/SEGURANCA-PKI.md.
+ * ------------------------------------------------------------------ */
+export const DeviceStatus = { ACTIVE: 'ACTIVE', REVOKED: 'REVOKED', BYPASS: 'BYPASS' } as const;
+export type DeviceStatus = (typeof DeviceStatus)[keyof typeof DeviceStatus];
+
+export const CA_ISSUER = 'ISPTEC-CA';
+
+/** Sujeito de um certificado: a quem/que máquina pertence. */
+export type CertSubject = {
+  deviceId: string;
+  userId: string | null;
+  role: string;
+  label: string;
+};
+
+/** Conteúdo assinado pela CA. */
+export type CertPayload = {
+  ver: number;
+  serial: string;
+  subject: CertSubject;
+  publicKey: string; // base64 SPKI DER da chave pública do dispositivo
+  issuer: string;
+  notBefore: string;
+  notAfter: string;
+};
+
+/** Certificado = payload + assinatura da CA sobre a sua forma canónica. */
+export type Certificate = {
+  payload: CertPayload;
+  signature: string;
+};
+
+/** Pacote de inscrição gerado por `cert:issue` e importado no cliente. */
+export type EnrollmentBundle = {
+  kind: 'isptec-enrollment';
+  deviceId: string;
+  label: string;
+  user: { id: string; email: string; role: Role };
+  privateKeyPem: string; // chave PRIVADA do dispositivo (PKCS8)
+  certificate: Certificate;
+};
+
+/** Resposta de `POST /devices/challenge`. */
+export type ChallengeResponse = { nonce: string; expiresIn: number };
+
+/** DTO público de um dispositivo (gestão admin). */
+export type PublicDevice = {
+  id: string;
+  deviceId: string;
+  label: string;
+  status: DeviceStatus;
+  serial: string | null;
+  userId: string | null;
+  notAfter: string | null;
+  revokedAt: string | null;
+  createdAt: string;
+};
+
+/** Resposta do handshake / connect — token de sessão de dispositivo. */
+export type HandshakeResponse = { deviceToken: string; device: PublicDevice };
+
+/** Resultado de `GET /news/:id/signature` (verificação de autoria / não-repúdio). */
+export type SignatureVerify =
+  | { signed: false }
+  | {
+      signed: true;
+      valid: boolean;
+      issuer: string;
+      algo: string;
+      certSerial: string | null;
+      deviceLabel: string | null;
+      deviceStatus: string;
+      signer: { id: string; name: string; role: Role };
+      signedAt: string;
+    };

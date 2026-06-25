@@ -28,7 +28,8 @@ export function UserMenu() {
 
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const canEdit = user?.role === 'EDITOR' || user?.role === 'ADMIN';
+  // Separação de papéis: só o EDITOR gere conteúdo. O ADMIN gere contas/certificados.
+  const canEdit = user?.role === 'EDITOR';
   const isAdmin = user?.role === 'ADMIN';
 
   useEffect(() => {
@@ -65,6 +66,10 @@ export function UserMenu() {
               </Link>
             </>
           )}
+
+          <Link className="usermenu-link" to="/dispositivo" role="menuitem" title="Certificado/segurança desta máquina" onClick={() => setOpen(false)}>
+            🔐 Dispositivo & Certificado
+          </Link>
 
           <div className="usermenu-theme">
             <span className="usermenu-section-label">Tema</span>

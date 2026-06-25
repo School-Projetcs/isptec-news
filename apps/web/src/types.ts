@@ -33,6 +33,7 @@ export type NewsItem = {
   viewCount: number;
   createdAt: string;
   publishedAt: string | null;
+  authorId?: string;
   author?: { name: string };
   category?: Category | null;
   cover?: Media | null;

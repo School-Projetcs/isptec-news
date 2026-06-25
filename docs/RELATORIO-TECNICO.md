@@ -65,11 +65,13 @@ ambiente. O núcleo académico é o `media-engine` (compressão + VOD) e o módu
 
 ```
 User (id, name, email, passwordHash, role: ADMIN|EDITOR|READER)
-  └─< News (id, title, slug, summary, body, status: DRAFT|PUBLISHED, viewCount, authorId, categoryId)
-        ├─< Media (id, type: IMAGE|AUDIO|VIDEO, status, originalSize, mimeType, width, height, durationMs, ownerId, newsId)
-        │     └─< MediaVariant (label, format, codec, size, compressionRatio, processingMs, qualityScore)
-        ├─< Comment (body, userId, newsId)
-        └─< SavedNews (userId, newsId)
+  ├─< News (id, title, slug, summary, body, status: DRAFT|PUBLISHED, viewCount, authorId, categoryId)
+  │     ├─< Media (id, type: IMAGE|AUDIO|VIDEO, status, originalSize, mimeType, width, height, durationMs, ownerId, newsId)
+  │     │     └─< MediaVariant (label, format, codec, size, compressionRatio, processingMs, qualityScore)
+  │     ├─< Comment (body, userId, newsId)
+  │     ├─< SavedNews (userId, newsId)
+  │     └─o ContentSignature (newsId, deviceId, certSerial, algo, hash, signature)   ← não-repúdio
+  └─< Device (deviceId, label, status: ACTIVE|REVOKED|BYPASS, publicKey, serial, certJson, validade)  ← PKI
 Category (id, name, slug)
 Log (action, message, userId, createdAt)
 ```
@@ -91,6 +93,50 @@ VOD:  <video> → GET /media/:id/raw (Range) → 206 Partial Content (seek real)
 LIVE: câmara/ficheiro → MediaRecorder → WS /stream/ingest → FFmpeg → HLS
       → GET /stream/hls/:key/:file (.m3u8 + .ts) → hls.js no cliente
 ```
+
+### 4.4 Segurança por certificados (PKI / CA)
+
+**Emissão (a CA assina um certificado para o dispositivo):**
+
+```
+                ┌─────────────────────  Autoridade Certificadora (CA)  ─────────────────────┐
+                │  chave PRIVADA da CA  (apps/api/.pki/ca.private.pem — secreta, fora do git)│
+                └───────────────────────────────────┬───────────────────────────────────────┘
+   pnpm cert:issue ──────────────────────────────────┘  assina  ▼
+   1) gera par de chaves DO DISPOSITIVO        Certificado = { deviceId, userId, role,
+   2) CA assina o certificado                                   chave pública, validade } + assinaturaCA
+   3) regista Device (ACTIVE) na BD            → pacote de inscrição (.enrollment.json) p/ o cliente
+```
+
+**Handshake (o dispositivo prova quem é ao ligar-se) — resolve pirataria + MITM:**
+
+```
+   Cliente                                              Servidor (só tem a chave PÚBLICA da CA)
+     │  POST /devices/challenge  ───────────────────▶   gera NONCE aleatório (uso único)
+     │  ◀───────────────────────────  { nonce }
+     │  assina o nonce com a sua CHAVE PRIVADA
+     │  POST /devices/handshake { cert, nonce, assinatura } ─▶  (a) cert assinado pela CA?  [chave pública CA]
+     │                                                          (b) dentro da validade?
+     │                                                          (c) Device não revogado?
+     │                                                          (d) PROVA DE POSSE: assinatura do nonce
+     │                                                              confere com a chave pública do cert?
+     │  ◀───────────────  { deviceToken }  ─────────────── tudo OK → token de sessão de dispositivo
+     │
+     │  (sem cert válido → 403 "Dispositivo não certificado"; PKI_ENFORCE controla a exigência)
+     ▼  pedidos seguintes levam  X-Device-Token  +  Authorization: Bearer <JWT>
+```
+
+**Não-repúdio (provar a autoria de um conteúdo):**
+
+```
+   Publicar:  cliente assina  msg = "ISPTEC-NEWS|v1|autor|título|corpo"  com a chave privada
+              → POST /news/:id/sign → servidor verifica e guarda ContentSignature
+   Verificar: GET /news/:id/signature → recalcula o hash do conteúdo atual e revalida a assinatura
+              → ✔ válida (autor X, certificado Y, emitido pela CA)   |   ✘ inválida (conteúdo alterado)
+```
+
+> Algoritmo: ECDSA P-256 + SHA-256 (formato IEEE-P1363), comum a Node `crypto` e Web Crypto.
+> Detalhe e roteiro de demonstração em [`SEGURANCA-PKI.md`](SEGURANCA-PKI.md).
 
 ## 5. Tecnologias
 
@@ -137,17 +183,28 @@ Cada variante regista em `MediaVariant`: `size`, `compressionRatio`, `processing
 
 ## 8. Segurança
 
+- **PKI / Autoridade Certificadora (CA) — autenticação de dispositivos e não-repúdio.**
+  Detalhe completo em [`SEGURANCA-PKI.md`](SEGURANCA-PKI.md). Resumo:
+  - Uma **CA própria** (chave privada isolada, fora do versionamento) **emite certificados**
+    (ECDSA P-256). O servidor guarda só a **chave pública** e **verifica** — não emite.
+  - **Handshake desafio-resposta**: o dispositivo prova a posse da chave privada assinando um
+    *nonce*; só então recebe um token de sessão. A **porta de dispositivo** (`deviceGate`,
+    `PKI_ENFORCE`) recusa máquinas sem certificado → trata **pirataria** e **man-in-the-middle**.
+  - **Não-repúdio**: o conteúdo é assinado pelo dispositivo do autor; `GET /news/:id/signature`
+    revalida a assinatura → prova **verificável e inalterável** de quem publicou.
+  - **CLI no servidor**: `ca:init`, `cert:issue`, `cert:revoke`, `cert:list` e `cert:bypass`
+    (autorizar uma máquina **sem** certificado).
 - **Autenticação:** JWT assinado (`lib/jwt.ts`) + palavras-passe com **bcrypt**.
-- **Permissões:** middleware `requireAuth` + `requireRole(...)` por rota (ex.: criar/editar
-  notícias e media exige EDITOR/ADMIN; gerir utilizadores exige ADMIN); a propriedade do autor
-  é validada no DELETE de notícias.
+- **Permissões (separação de papéis estrita):** `requireAuth` + `requireRole(...)`. **EDITOR**
+  trata do **conteúdo** (notícias/media/streaming); **ADMIN** só faz **gestão** (contas,
+  dispositivos/certificados, logs) e **não** cria/publica conteúdo; autoria validada no DELETE.
 - **Validação de entrada:** schemas **zod** partilhados (`middleware/validate.ts`).
 - **Cabeçalhos e CORS:** **helmet** (com `crossOriginResourcePolicy: cross-origin` para servir
   media) e **cors** configurável por ambiente.
 - **Rate-limiting:** limite global + limite estrito em `/auth/login` e `/auth/register`
   (anti força-bruta).
 - **Logs:** todas as ações relevantes são registadas na tabela `Log`.
-- **Streaming ao vivo:** a ingestão WS exige JWT de EDITOR/ADMIN **ou** um token de broadcast
+- **Streaming ao vivo:** a ingestão WS exige JWT de EDITOR **ou** um token de broadcast
   de curta duração (para a página pública do telemóvel).
 
 ## 9. Testes

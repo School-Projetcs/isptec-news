@@ -1,3 +1,4 @@
+import { cpus } from 'node:os';
 import ffmpeg from './ffmpegSetup';
 import { processedPath, PROCESSED_DIR } from './storage';
 
@@ -9,6 +10,16 @@ export type VideoSpec = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   configure: (c: any) => void;
 };
+
+/** Nº de threads disponíveis para os encoders. */
+const THREADS = String(Math.max(1, cpus().length));
+
+/**
+ * Escala para 720p no máximo. O `min(720,ih)` evita AUMENTAR vídeos que já são
+ * mais pequenos: sem isto, um 640x360 era esticado para 1280x720 — mais lento
+ * de codificar e com ficheiro maior do que o necessário.
+ */
+const SCALE_720 = 'scale=-2:min(720\\,ih)';
 
 /** Variantes de vídeo (codecs reais: H.264, H.265/HEVC, VP9). Escala para 720p. */
 export const VIDEO_VARIANTS: VideoSpec[] = [
@@ -22,7 +33,8 @@ export const VIDEO_VARIANTS: VideoSpec[] = [
         .videoCodec('libx264')
         .addOption('-crf', '28')
         .addOption('-preset', 'veryfast')
-        .addOption('-vf', 'scale=-2:720')
+        .addOption('-threads', THREADS)
+        .addOption('-vf', SCALE_720)
         .addOption('-movflags', '+faststart')
         .audioCodec('aac')
         .audioBitrate('128k'),
@@ -38,7 +50,8 @@ export const VIDEO_VARIANTS: VideoSpec[] = [
         .addOption('-crf', '30')
         .addOption('-preset', 'veryfast')
         .addOption('-tag:v', 'hvc1')
-        .addOption('-vf', 'scale=-2:720')
+        .addOption('-vf', SCALE_720)
+        .addOption('-x265-params', `log-level=none:pools=${THREADS}`)
         .audioCodec('aac')
         .audioBitrate('128k'),
   },
@@ -52,7 +65,16 @@ export const VIDEO_VARIANTS: VideoSpec[] = [
         .videoCodec('libvpx-vp9')
         .addOption('-crf', '34')
         .addOption('-b:v', '0')
-        .addOption('-vf', 'scale=-2:720')
+        // Sem estas 4 opções o libvpx-vp9 corre num único core com a pesquisa
+        // mais exaustiva (cpu-used 0): era responsável por ~85% do tempo total
+        // de compressão. row-mt+tile-columns paralelizam; cpu-used 2 encurta a
+        // pesquisa com apenas ~3% de aumento no ficheiro final.
+        .addOption('-row-mt', '1')
+        .addOption('-threads', THREADS)
+        .addOption('-tile-columns', '2')
+        .addOption('-deadline', 'good')
+        .addOption('-cpu-used', '2')
+        .addOption('-vf', SCALE_720)
         .audioCodec('libopus'),
   },
 ];

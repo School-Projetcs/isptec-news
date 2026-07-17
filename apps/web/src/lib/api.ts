@@ -67,26 +67,98 @@ function authHeaders(extra?: HeadersInit): HeadersInit {
   };
 }
 
+/**
+ * Erro normalizado de qualquer pedido à API. `code` identifica a causa
+ * (ERR_NET_UNREACHABLE, ERR_HTTP_404, …) e fica também visível na mensagem
+ * quando é falha de ligação, para o utilizador poder reportá-lo.
+ */
+export class ApiError extends Error {
+  constructor(
+    readonly code: string,
+    message: string,
+    readonly status?: number,
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+/** Erro de infraestrutura — o código vai no texto porque não há mensagem da API. */
+function connError(code: string, text: string, status?: number) {
+  return new ApiError(code, `${text} (${code})`, status);
+}
+
+/**
+ * Evento global do estado da ligação ao servidor. Emitido só nas *transições*
+ * (não a cada pedido) para o banner não re-renderizar durante o polling.
+ */
+export const CONNECTION_EVENT = 'isptec:connection';
+export type ConnectionState = { online: boolean; code?: string; message?: string };
+
+let connection: ConnectionState | null = null;
+
+/** Último estado conhecido — `null` enquanto nenhum pedido tiver corrido ainda. */
+export const getConnection = () => connection;
+
+function reportConnection(next: ConnectionState) {
+  if (connection?.online === next.online) return;
+  connection = next;
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent<ConnectionState>(CONNECTION_EVENT, { detail: next }));
+  }
+}
+
+/** O servidor nunca respondeu: distingue rede do dispositivo de servidor em baixo. */
+function unreachable(status?: number): ApiError {
+  const err =
+    typeof navigator !== 'undefined' && navigator.onLine === false
+      ? connError('ERR_NET_OFFLINE', 'Sem ligação à Internet. Verifique a sua rede.', status)
+      : connError('ERR_NET_UNREACHABLE', 'A ligação ao servidor foi cortada.', status);
+  reportConnection({ online: false, code: err.code, message: err.message });
+  return err;
+}
+
+async function send(path: string, init: RequestInit): Promise<Response> {
+  try {
+    return await fetch(API_BASE + path, init);
+  } catch {
+    // fetch só rejeita por falha de rede (servidor em baixo, DNS, CORS, cabo/Wi-Fi).
+    throw unreachable();
+  }
+}
+
+async function parse<T>(res: Response): Promise<T> {
+  const json = (await res.json().catch(() => null)) as
+    | { ok?: boolean; error?: string; data?: unknown }
+    | null;
+  if (!json) {
+    // Corpo não-JSON: em dev o proxy do Vite responde 5xx quando a API está em
+    // baixo, e um reverse-proxy devolve 502/503/504 — a ligação está cortada.
+    if (res.status >= 500) throw unreachable(res.status);
+    throw connError('ERR_BAD_RESPONSE', 'Resposta inválida do servidor.', res.status);
+  }
+  // Houve JSON da API: o servidor está de pé, mesmo que devolva um erro de negócio.
+  reportConnection({ online: true });
+  if (!res.ok || !json.ok) {
+    const code = `ERR_HTTP_${res.status}`;
+    if (json.error) throw new ApiError(code, json.error, res.status);
+    throw connError(code, 'O servidor devolveu um erro.', res.status);
+  }
+  return json.data as T;
+}
+
 async function request<T>(path: string, opts: RequestInit = {}): Promise<T> {
-  const res = await fetch(API_BASE + path, {
+  const res = await send(path, {
     ...opts,
     headers: authHeaders({ 'Content-Type': 'application/json', ...(opts.headers || {}) }),
   });
-  const json = await res.json().catch(() => ({ ok: false, error: 'Resposta inválida' }));
-  if (!res.ok || !json.ok) throw new Error(json.error || `Erro ${res.status}`);
-  return json.data as T;
+  return parse<T>(res);
 }
 
 /** Upload multipart (ficheiros) — não define Content-Type (o browser trata). */
 export async function uploadForm<T>(path: string, form: FormData): Promise<T> {
-  const res = await fetch(API_BASE + path, {
-    method: 'POST',
-    body: form,
-    headers: authHeaders(),
-  });
-  const json = await res.json().catch(() => ({ ok: false, error: 'Resposta inválida' }));
-  if (!res.ok || !json.ok) throw new Error(json.error || `Erro ${res.status}`);
-  return json.data as T;
+  const res = await send(path, { method: 'POST', body: form, headers: authHeaders() });
+  return parse<T>(res);
 }
 
 export const api = {

@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { useDevMode } from '../lib/devmode';
 import { UIProvider } from '../lib/ui';
+import { ConnectionBanner } from './ConnectionBanner';
 import { DevPanel } from './DevPanel';
 import { DailyDigest } from './DailyDigest';
 import { UserMenu } from './UserMenu';
@@ -27,6 +28,7 @@ export function Layout() {
         <Outlet />
       </main>
       <DailyDigest />
+      <ConnectionBanner />
       {showDevPanel && <DevPanel />}
     </UIProvider>
   );

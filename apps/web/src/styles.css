@@ -247,6 +247,41 @@ button.danger:hover { background: var(--bad); color: #fff; filter: none; }
 .tts-rate { display: flex; align-items: center; gap: 6px; }
 .tts-rate select { width: auto; padding: 4px 8px; }
 
+/* ── Estado da ligação ao servidor (banner global, canto inferior esquerdo) ─ */
+.connbanner {
+  position: fixed; left: 16px; bottom: 16px; z-index: 60;
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+  width: min(420px, calc(100vw - 32px));
+  background: var(--panel); border: 1px solid var(--border); border-left-width: 4px;
+  border-radius: 12px; box-shadow: var(--shadow-lg);
+  animation: connbanner-in 0.22s ease-out;
+}
+.connbanner.is-offline { border-left-color: var(--bad); }
+.connbanner.is-online { border-left-color: var(--good); }
+.connbanner-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.connbanner.is-offline .connbanner-dot {
+  background: var(--bad); animation: connbanner-pulse 1.6s ease-out infinite;
+}
+.connbanner.is-online .connbanner-dot { background: var(--good); }
+.connbanner-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.connbanner-text strong { font-size: 0.92rem; }
+.connbanner-sub { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; color: var(--muted); font-size: 0.78rem; }
+.connbanner-code {
+  font-size: 0.68rem; padding: 1px 5px; border-radius: 4px; white-space: nowrap;
+  background: var(--panel2); border: 1px solid var(--border); color: var(--muted);
+}
+.connbanner button { flex: none; padding: 6px 10px; font-size: 0.8rem; }
+@keyframes connbanner-in { from { opacity: 0; transform: translateY(8px); } }
+@keyframes connbanner-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--bad) 70%, transparent); }
+  70% { box-shadow: 0 0 0 7px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+/* Em ecrãs estreitos passa a ocupar a largura toda, acima do FAB do "Resumo do dia". */
+@media (max-width: 560px) {
+  .connbanner { left: 16px; right: 16px; bottom: 76px; width: auto; }
+}
+
 /* ── "Resumo do dia" (FAB + painel, canto inferior esquerdo) ─────────────── */
 .digest-fab {
   position: fixed; right: 16px; bottom: 16px; z-index: 49;
